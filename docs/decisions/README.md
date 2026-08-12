@@ -49,4 +49,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0004](0004-virus-hunter-as-reference.md) | `virus_hunter.py` é a referência científica | Aceita |
 | [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | **Pendente** |
 | [0006](0006-no-import-side-effects.md) | Sem efeitos colaterais em tempo de importação | Aceita |
-| [0007](0007-inert-evalue-threshold.md) | Limiar de e-value inerte nos filtros | **Pendente** |
+| [0007](0007-inert-evalue-threshold.md) | Limiar de e-value inerte nos filtros | Aceita |

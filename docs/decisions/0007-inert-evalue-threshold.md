@@ -1,8 +1,8 @@
 # 0007 — Limiar de e-value inerte nos filtros
 
-- **Status:** **Pendente** — defeito confirmado e coberto por teste; correção aguarda autorização
+- **Status:** Aceita
 - **Data:** 2026-08-12
-- **Decidido por:** — (em aberto)
+- **Decidido por:** Alan M
 
 ## Contexto
 
@@ -74,19 +74,62 @@ tem valor para reproduzir análises antigas. Custo: mantém um parâmetro que me
 
 ## Decisão
 
-**Em aberto.** Este ADR registra o defeito, seu alcance e um teste que o expõe. A correção
-não foi aplicada porque altera comportamento científico, o que exige autorização explícita.
+Converter no ponto de ligação, nos três arquivos:
 
-O teste [`tests/check_argv_numeric_comparison.py`](../../tests/check_argv_numeric_comparison.py)
-**falha por projeto** enquanto o defeito existir. Ele é a evidência, não uma regressão.
+```python
+E_VALUE_THRESH = float(sys.argv[5])
+```
+
+Escolhida a alternativa mínima. **Não** se acrescentou `--evalue` às chamadas DIAMOND: isso
+é uma segunda mudança científica, com alcance próprio (afeta também a busca NR da rota
+ativa, cujo `.m8` determina a lista negra), e merece decisão separada. Fica registrada como
+pendência abaixo.
+
+A conversão é **estrita, sem tratamento de exceção**. Um argumento não numérico passa a
+falhar alto. Envolvê-la em `try/except` perpetuaria exatamente o padrão que torna este
+projeto difícil de confiar: erro silencioso disfarçado de sucesso.
 
 ## Consequências
 
-- Enquanto pendente, o repositório contém um teste que falha. Isso é intencional e está
-  declarado no docstring do próprio teste.
-- Se a correção for aprovada, a migração para Python 3 ([K12](../known-issues.md)) fica mais
-  segura: o mesmo padrão levantaria `TypeError` e quebraria a execução em vez de alterar
-  resultados silenciosamente.
-- Análises antigas feitas na rota DIAMOND usaram um limiar diferente do declarado. Reproduzi-las
-  exige o comportamento antigo, o que reforça a necessidade de versionar a configuração
-  junto ao resultado ([K6](../known-issues.md), [K9](../known-issues.md)).
+- O limiar declarado passa a ser aplicado de fato. Na rota padrão blastx a saída muda
+  apenas no limite exato (`<` estrito); na rota DIAMOND o `EVALUE` configurado passa a
+  governar de verdade.
+- A migração para Python 3 ([K12](../known-issues.md)) fica mais segura: o padrão corrigido
+  não depende mais da ordenação artificial do Python 2.
+
+### Efeito sobre os orquestradores legados — divulgação
+
+A verificação dos pontos de chamada revelou um defeito preexistente. Apenas o orquestrador
+de referência passa o e-value nessa posição:
+
+| Orquestrador | `argv[5]` recebe |
+|---|---|
+| [`virus_hunter.py:1825`](../../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
+| [`readseeds2.py:792`](../../script/readseeds2.py#L792) — legado | **`hsp`** (`'NO'`) |
+| [`readseeds_denovo.py:713`](../../script/readseeds_denovo.py#L713) — legado | **`hsp`** |
+| [`readseeds_cloud.py:416`](../../script/readseeds_cloud.py#L416) — legado | **`hsp`** |
+| [`readseeds.py:166`](../../script/readseeds.py#L166) — legado | só 3 argumentos |
+
+Nos legados, `'NO'` era usado como limiar — comparação sempre verdadeira, filtro inerte,
+sem erro. E como `argv[6]` não existia, `hsp_only` caía no `except` e virava `'NO'`. Os
+dois parâmetros estavam errados.
+
+Depois desta correção, `float('NO')` levanta `ValueError` e esses orquestradores **falham
+alto**. Isso é o resultado desejado — o defeito era real e estava oculto — mas é uma
+mudança de comportamento para eles, e está registrada como
+[K24](../known-issues.md). Eles já são legado por [ADR-0004](0004-virus-hunter-as-reference.md).
+
+Isso também **corrobora a ADR-0004**: a assinatura de `blast_filter_NR.py` foi atualizada
+junto com `virus_hunter.py`, e os demais nunca acompanharam — o que é esperado se
+`virus_hunter.py` era o orquestrador em manutenção ativa.
+
+### Pendências abertas por esta ADR
+
+1. **`--evalue` explícito nas chamadas DIAMOND.** A busca viral
+   ([`virus_hunter.py:1801`](../../script/virus_hunter.py#L1801)) e a busca NR
+   ([`:1848`](../../script/virus_hunter.py#L1848)) não passam `--evalue`, usando o padrão da
+   ferramenta. *Não verificado:* o valor padrão da versão instalada — confirmar com
+   `diamond blastx --help` no ambiente de execução.
+2. **Análises antigas na rota DIAMOND** usaram um limiar diferente do declarado.
+   Reproduzi-las exige o comportamento anterior, o que reforça a necessidade de versionar
+   configuração junto ao resultado ([K6](../known-issues.md), [K9](../known-issues.md)).

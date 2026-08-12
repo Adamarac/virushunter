@@ -166,7 +166,9 @@ if __name__ == '__main__':
 	nrxml=sys.argv[2]
 	cachename = sys.argv[3]
 	filtertxt = sys.argv[4]
-	E_VALUE_THRESH = sys.argv[5]
+	# float(): argv gives a string, and in Python 2 a number always compares as
+	# less than a string, so the threshold below never rejected anything. ADR-0007.
+	E_VALUE_THRESH = float(sys.argv[5])
 	try: hsp_only = sys.argv[6]
 	except: hsp_only = 'NO'
 	print 'hsp_only', hsp_only

@@ -1,7 +1,8 @@
 # Problemas conhecidos
 
-Levantamento sobre o código no estado de 2020. Cada item traz **problema → evidência →
-impacto → recomendação**. As recomendações são propostas; nenhuma foi aplicada.
+Levantamento iniciado sobre o código no estado de 2020. Cada item traz **problema →
+evidência → impacto → recomendação**. Itens já corrigidos aparecem riscados, com a
+resolução e a ADR correspondente; os demais são propostas ainda não aplicadas.
 
 Severidade:
 
@@ -14,10 +15,10 @@ Severidade:
 
 ## Críticas
 
-### K1 — O limiar de e-value do filtro é inerte
+### ~~K1~~ — O limiar de e-value do filtro é inerte — **RESOLVIDO**
 
-**Evidência.** [`diamond_filter_NR.py:132`](../script/diamond_filter_NR.py#L132) e
-[`blast_filter_NR.py:169`](../script/blast_filter_NR.py#L169):
+**Evidência** (linhas anteriores à correção): `diamond_filter_NR.py:132` e
+`blast_filter_NR.py:169`, além de `diamond_filter.py:162`:
 
 ```python
 E_VALUE_THRESH = sys.argv[5]          # permanece string
@@ -37,10 +38,13 @@ apenas hits com e-value ≤ 0,01. O problema real é outro: **endurecer o limiar
 não tem efeito nenhum, silenciosamente.** Quem ajustar esse parâmetro esperando um
 resultado mais restritivo obterá exatamente o mesmo resultado, sem qualquer aviso.
 
-**Recomendação.** `E_VALUE_THRESH = float(sys.argv[5])`. Antes de aplicar, verificar se
-alguma análise do grupo declarou um limiar diferente de 0,01 nesta etapa — nesse caso os
-resultados divergem do documentado e precisam ser reprocessados. Correção pequena, mas
-**altera comportamento**: exige ADR e validação.
+**Resolução.** Corrigido para `E_VALUE_THRESH = float(sys.argv[5])` nos três arquivos
+afetados ([ADR-0007](decisions/0007-inert-evalue-threshold.md)). Coberto por
+[`tests/check_argv_numeric_comparison.py`](../tests/check_argv_numeric_comparison.py), que
+falhava antes e passa agora. A verificação dos pontos de chamada revelou [K24](#k24).
+
+Segue pendente: as chamadas DIAMOND não passam `--evalue`, então nessa rota o limiar
+efetivo ainda é o padrão da ferramenta. Decisão separada, registrada na ADR-0007.
 
 ### K2 — `samNT.py` dessincroniza os arquivos SAM
 
@@ -160,9 +164,30 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 alcançava também `readseeds2.py` através do `firstpage.py`. Com ele fora do caminho, o
 Nível 1 da estratégia de validação (adiante) passa a ser executável.
 
-**Próximo passo sugerido: K1**, agora demonstrável. Um teste de unidade do
-`diamond_filter_NR.py` com dois hits de e-values distintos e um limiar entre eles falha no
-código atual e passa após a correção — exatamente o padrão de verificação usado em K10.
+K1 também foi resolvido, pelo mesmo padrão de verificação: um teste que falha no código
+defeituoso e passa após a correção. A verificação dos pontos de chamada durante essa
+correção revelou [K24](#k24).
+
+### K24 — Orquestradores legados passam o argumento errado ao filtro NR
+
+**Evidência.** Apenas o orquestrador de referência passa o e-value na posição correta:
+
+| Orquestrador | `argv[5]` recebe |
+|---|---|
+| [`virus_hunter.py:1825`](../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
+| [`readseeds2.py:792`](../script/readseeds2.py#L792) — legado | **`hsp`** (`'NO'`) |
+| [`readseeds_denovo.py:713`](../script/readseeds_denovo.py#L713) — legado | **`hsp`** |
+| [`readseeds_cloud.py:416`](../script/readseeds_cloud.py#L416) — legado | **`hsp`** |
+| [`readseeds.py:166`](../script/readseeds.py#L166) — legado | só 3 argumentos |
+
+**Impacto.** Nos legados, `'NO'` era usado como limiar (comparação sempre verdadeira) e
+`hsp_only` caía no `except`, virando `'NO'`. Ambos os parâmetros estavam errados, em
+silêncio. Após a correção de K1, esses orquestradores falham alto com `ValueError` —
+resultado desejado, mas é mudança de comportamento para eles.
+
+**Recomendação.** Nenhuma correção: são legado por
+[ADR-0004](decisions/0004-virus-hunter-as-reference.md) e serão removidos em incremento
+próprio. Registrado para que a falha, quando ocorrer, seja reconhecível.
 
 ## Médias
 
