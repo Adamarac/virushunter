@@ -48,3 +48,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0003](0003-canonical-orchestrator.md) | Orquestrador canônico | Substituída por 0004 |
 | [0004](0004-virus-hunter-as-reference.md) | `virus_hunter.py` é a referência científica | Aceita |
 | [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | **Pendente** |
+| [0006](0006-no-import-side-effects.md) | Sem efeitos colaterais em tempo de importação | Aceita |
