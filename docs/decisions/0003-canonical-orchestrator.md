@@ -1,8 +1,14 @@
 # 0003 — Orquestrador canônico
 
-- **Status:** **Pendente**
+- **Status:** **Substituída por [ADR-0004](0004-virus-hunter-as-reference.md)**
 - **Data:** 2026-08-12
-- **Decidido por:** — (em aberto)
+- **Decidido por:** Alan M
+
+> **Resolvida.** A evidência listada na seção final foi levantada e apontou para
+> `virus_hunter.py`: ele implementa literalmente a combinação `SAVaC` publicada em
+> Deng et al. 2015, `firstpage.py` importa dele, e o `virus_hunter.pyc` commitado prova
+> execução real quatro dias antes do upload. Ver [ADR-0004](0004-virus-hunter-as-reference.md).
+> O texto abaixo fica preservado como registro do estado da questão antes da decisão.
 
 ## Contexto
 

@@ -45,4 +45,6 @@ O que passa a ser verdade, incluindo o que fica pior.
 |---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Registrar decisões de arquitetura | Aceita |
 | [0002](0002-working-base-and-fork.md) | Base de trabalho e fork | Aceita |
-| [0003](0003-canonical-orchestrator.md) | Orquestrador canônico | **Pendente** |
+| [0003](0003-canonical-orchestrator.md) | Orquestrador canônico | Substituída por 0004 |
+| [0004](0004-virus-hunter-as-reference.md) | `virus_hunter.py` é a referência científica | Aceita |
+| [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | **Pendente** |
