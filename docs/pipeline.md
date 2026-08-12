@@ -4,10 +4,9 @@ Reconstruído a partir do código, não da estrutura de diretórios. A referênc
 o bloco `__main__` de [`script/virus_hunter.py:1937-2233`](../script/virus_hunter.py#L1937-L2233),
 que define simultaneamente os parâmetros **e** a ordem em que `pipeline_run.sh` é escrito.
 
-> **Escopo.** Este documento descreve o fluxo de `virus_hunter.py`, o orquestrador mais
-> abrangente. Onde `readseeds2.py` difere de forma relevante, há uma nota. A escolha de
-> qual dos dois é a referência ainda está **pendente** — ver
-> [ADR-0003](decisions/0003-canonical-orchestrator.md) e [`orchestrators.md`](orchestrators.md).
+> **Escopo.** Este documento descreve o fluxo de `virus_hunter.py`, que é **a referência
+> científica** do projeto ([ADR-0004](decisions/0004-virus-hunter-as-reference.md)). Onde
+> `readseeds2.py` — hoje legado — difere de forma relevante, há uma nota.
 
 ---
 
@@ -50,8 +49,12 @@ De [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992):
 | `thread` | `'48'` | Threads por job |
 
 **No estado commitado, o pipeline é busca viral no nível de leitura, sem montagem e sem
-trim de adaptador.** Não determinado se esse é o estado de produção ou um estado de teste
-deixado no último commit — resolver exigiria logs de execução ou um `run.log` real.
+trim de adaptador.**
+
+> **Este não é o estado de produção.** O método publicado do grupo (Deng et al.,
+> *Nucleic Acids Research* 43(7):e46, 2015) exige a montagem ensemble `SAVaC`, que só roda
+> com `doAssembly='denovo'`. A configuração de referência é `'denovo'`; o `'no'` commitado
+> é estado de teste. Ver [ADR-0004](decisions/0004-virus-hunter-as-reference.md).
 
 ---
 

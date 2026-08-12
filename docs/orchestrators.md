@@ -65,16 +65,29 @@ Eles produzem **resultados científicos materialmente distintos**:
 Escolher entre eles **é escolher qual comportamento científico será preservado**. Não é
 uma decisão de engenharia.
 
-### 2. Apenas um deles roda fora do cluster
+### 2. Nenhum dos dois roda fora do cluster
 
 `virus_hunter.py` dispara SSH para 20 servidores no momento do import
 ([linha 205](../script/virus_hunter.py#L205)). Sem o cluster original, ele nem inicia.
-`readseeds2.py` não tem essa chamada.
+`readseeds2.py` não tem essa chamada — mas **isso não o torna independente do cluster**.
 
-Isso provavelmente explica a escolha do trabalho anterior do grupo (jan/2025, no fork
-`amphybio`), que ajustou `readseeds2.py` para rodar fora do cluster. **É uma explicação de
-conveniência técnica, não necessariamente de preferência científica** — e essa distinção
-importa para a decisão.
+O pipeline gerado por `readseeds2.py` chama `firstpage.py` na etapa final de relatório
+([`readseeds2.py:993`](../script/readseeds2.py#L993)), e
+[`firstpage.py:68`](../script/firstpage.py#L68) faz, no nível do módulo:
+
+```python
+from virus_hunter import readSeeds2
+```
+
+Importar `firstpage` importa `virus_hunter`, que executa `serverInfo()` e dispara o SSH.
+`readseeds2.py` **gera** os scripts sem cluster; o pipeline gerado não **termina** sem ele.
+
+Isso explica o alcance do trabalho anterior do grupo (jan/2025, no fork `amphybio`): foi
+possível avançar na geração dos scripts, não na execução completa. É conveniência técnica,
+não preferência científica.
+
+O corolário é que remover o efeito colateral de import (K10) é pré-requisito para
+qualquer execução local, independentemente do orquestrador escolhido.
 
 ### 3. O filtro NR mais forte está no menos capaz
 
@@ -89,28 +102,35 @@ a rota mais forte está explicitamente comentada
 
 ---
 
-## O que resolveria a decisão
+---
 
-A escolha não pode ser feita apenas por leitura de código. As evidências que faltam:
+## Como a decisão foi resolvida
 
-1. **Qual foi usado nas análises publicadas do grupo?** A seção de métodos de qualquer
-   artigo produzido com este pipeline responde diretamente. É a evidência mais forte.
-2. **Existe algum `run.log` de execução real preservado?** Ele registra os parâmetros
-   efetivamente usados e permite identificar o orquestrador pelos valores (`n=140` vs
-   `n=50`, `contigLength2=300` vs `1500`).
-3. **A montagem é considerada obrigatória pelo grupo?** Se sim, o estado commitado de
-   `virus_hunter.py` (`doAssembly='no'`) é um estado de teste, não de produção — e a
-   comparação muda.
-4. **O modo é *paired-end* ou *single-end* nas amostras atuais?** Determina qual conjunto
-   de parâmetros faz sentido.
+A questão foi decidida a favor de `virus_hunter.py` — ver
+[ADR-0004](decisions/0004-virus-hunter-as-reference.md) para a evidência completa. Em
+resumo:
 
-## Alternativa: não escolher nenhum
+1. **`virus_hunter.py` implementa o método publicado.** Deng et al.,
+   *Nucleic Acids Research* 43(7):e46, 2015 (PMC4402509), do próprio autor com Delwart e
+   Chiu, estabelece `SAVaC` como a melhor combinação de assemblers. O código traz
+   `assembly_para='SAVa'` → `AddPipe('SAVaC', sf)` literalmente, além do corte de 300 bp,
+   k=31 e partições de 100K leituras — todos coincidentes. `readseeds2.py` diverge em dois
+   parâmetros e usa MIRA, que o artigo avaliou e excluiu.
+2. **`firstpage.py` importa de `virus_hunter`**, não de `readseeds2`.
+3. **`virus_hunter.pyc` está commitado e nenhum `readseeds*.pyc` está.** Python 2 só grava
+   `.pyc` ao importar; a data do fonte embutida é 2020-07-08, quatro dias antes do upload.
+4. **Doze workers substantivos são exclusivos de `virus_hunter`**, contra dois de
+   `readseeds2`.
 
-Uma terceira via é tratar ambos como legado e **definir o pipeline alvo explicitamente**,
-etapa por etapa, escolhendo para cada uma o comportamento desejado com decisão registrada.
-Mais lento, porém sem herdar acidentalmente parâmetros que ninguém escolheu — e vários dos
-parâmetros atuais (o `if zz<40` do trim de qualidade, o corte de 1500 bp, `n=50`) não têm
-justificativa registrada em lugar nenhum.
+`script/readme.txt` aponta para `readseeds2.py`, mas sua primeira linha diz
+*"next update is Jan 2013"* — o documento é de 2012 e não descreve a prática vigente.
 
-A decisão está registrada como pendente em
-[ADR-0003](decisions/0003-canonical-orchestrator.md).
+### Consequência
+
+A configuração de referência é `doAssembly='denovo'`, e não o `'no'` do estado commitado:
+**o repositório foi publicado em estado de teste**, não na configuração de produção.
+
+Permanece em aberto, como decisão separada, qual filtro contra NR adotar —
+ver [ADR-0005](decisions/0005-nr-filter-strategy.md). Vários parâmetros atuais
+(o `if zz<40` do trim de qualidade, o corte de 1500 bp, `n=50`) continuam sem
+justificativa registrada e devem ser revisados individualmente, não herdados por omissão.
