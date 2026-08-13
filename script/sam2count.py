@@ -31,7 +31,7 @@ def identity(MD):
 def processPairedSAM(filename, countfile):
 	if filename[-3:]==".gz":
 		import gzip
-		f=gzip.open(filename)
+		f=gzip.open(filename, 'rt')
 	else: f=open(filename, 'r')
 	of=open(countfile, 'w')
 	counts=defaultdict(int)

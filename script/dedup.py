@@ -110,7 +110,7 @@ def removedup(inputfq, outputfq):
 	global count, total
 	#print 'processing..', inputfq
 	if inputfq.endswith('.gz'):
-		f=gzip.sopen(inputfq, 'rb')
+		f=gzip.open(inputfq, 'rt')
 	else:
 		f=open(inputfq, 'r')
 	of=open(outputfq, 'a')
@@ -135,7 +135,7 @@ def removedup(inputfq, outputfq):
 
 def split(filename):
 	if filename.endswith('.gz'):
-		f=gzip.open(filename, 'r')
+		f=gzip.open(filename, 'rt')
 	else:
 		f=open(filename, 'r')
 	comb=itertools.product(['A','C','G','T'], repeat=4)

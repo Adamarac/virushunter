@@ -11,7 +11,7 @@ import random
 def polyA(filename, keypath, raw):
 	readlen=0
 	if filename.endswith('.gz'):
-		f=gzip.open(filename, 'r')
+		f=gzip.open(filename, 'rt')
 	else:
 		f=open(filename, 'r')
 	hist = keypath+'_'+raw+'_hist.txt'

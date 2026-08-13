@@ -2,10 +2,10 @@
 import sys, gzip
 infile = sys.argv[1]
 if infile.endswith('.gz'):
-	f=gzip.open(sys.argv[1], 'rb')
+	f=gzip.open(sys.argv[1], 'rt')
 else:
 	f=open(sys.argv[1], 'r')
-of=gzip.open(sys.argv[3],'ab')
+of=gzip.open(sys.argv[3],'at')
 id=sys.argv[2]
 
 i=0
