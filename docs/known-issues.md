@@ -151,8 +151,9 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 
 | # | Problema | Evidência | Impacto |
 |---|---|---|---|
-| K8 | Cinco forks do orquestrador; `soap_single()` duplicada | [`orchestrators.md`](orchestrators.md); `readseeds2.py:421` e `:594` | Correções não se propagam; readme aponta para um, o superset é outro |
+| ~~K8~~ | ~~Cinco forks do orquestrador~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | [`orchestrators.md`](orchestrators.md) | Os quatro legados foram removidos; recuperáveis na tag `legacy-2020` |
 | K9 | Configuração dentro do código | [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992) | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
+| ~~K24~~ | ~~Legados passam argumento errado ao filtro NR~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | — | Os arquivos afetados foram removidos |
 | ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por [`tests/check_no_import_side_effects.py`](../tests/check_no_import_side_effects.py) |
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
@@ -175,10 +176,10 @@ correção revelou [K24](#k24).
 | Orquestrador | `argv[5]` recebe |
 |---|---|
 | [`virus_hunter.py:1825`](../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
-| [`readseeds2.py:792`](../script/readseeds2.py#L792) — legado | **`hsp`** (`'NO'`) |
-| [`readseeds_denovo.py:713`](../script/readseeds_denovo.py#L713) — legado | **`hsp`** |
-| [`readseeds_cloud.py:416`](../script/readseeds_cloud.py#L416) — legado | **`hsp`** |
-| [`readseeds.py:166`](../script/readseeds.py#L166) — legado | só 3 argumentos |
+| `readseeds2.py:792` — legado | **`hsp`** (`'NO'`) |
+| `readseeds_denovo.py:713` — legado | **`hsp`** |
+| `readseeds_cloud.py:416` — legado | **`hsp`** |
+| `readseeds.py:166` — legado | só 3 argumentos |
 
 **Impacto.** Nos legados, `'NO'` era usado como limiar (comparação sempre verdadeira) e
 `hsp_only` caía no `except`, virando `'NO'`. Ambos os parâmetros estavam errados, em

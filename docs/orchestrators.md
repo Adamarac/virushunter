@@ -1,15 +1,20 @@
 # Os orquestradores concorrentes
 
-O repositório contém **cinco** variantes do mesmo orquestrador. Não são especializações —
-são cópias divergentes, editadas manualmente ao longo do tempo.
+> **Estado histórico.** Os quatro orquestradores legados foram removidos por
+> [ADR-0008](decisions/0008-repository-scope.md) e permanecem recuperáveis na tag
+> `legacy-2020` (`git show legacy-2020:script/readseeds2.py`). Este documento registra a
+> comparação que fundamentou a escolha — por isso descreve os cinco.
+
+O repositório continha **cinco** variantes do mesmo orquestrador. Não eram especializações —
+eram cópias divergentes, editadas manualmente ao longo do tempo.
 
 | Arquivo | Linhas | Observação |
 |---|---|---|
 | [`virus_hunter.py`](../script/virus_hunter.py) | 2.233 | Superset mais recente |
-| [`readseeds2.py`](../script/readseeds2.py) | 997 | Apontado pelo `script/readme.txt` |
-| [`readseeds_denovo.py`](../script/readseeds_denovo.py) | 898 | Variante focada em montagem |
-| [`readseeds_cloud.py`](../script/readseeds_cloud.py) | 541 | Variante "cloud" |
-| [`readseeds.py`](../script/readseeds.py) | 228 | Provável ancestral |
+| `readseeds2.py` | 997 | Apontado pelo `script/readme.txt` |
+| `readseeds_denovo.py` | 898 | Variante focada em montagem |
+| `readseeds_cloud.py` | 541 | Variante "cloud" |
+| `readseeds.py` | 228 | Provável ancestral |
 
 Evidência da decadência por cópia: `readseeds2.py` define `soap_single()` **duas vezes**
 (linhas 421 e 594). A segunda sobrescreve silenciosamente a primeira — um sintoma clássico
@@ -72,7 +77,7 @@ uma decisão de engenharia.
 `readseeds2.py` não tem essa chamada — mas **isso não o torna independente do cluster**.
 
 O pipeline gerado por `readseeds2.py` chama `firstpage.py` na etapa final de relatório
-([`readseeds2.py:993`](../script/readseeds2.py#L993)), e
+(`readseeds2.py:993`), e
 [`firstpage.py:68`](../script/firstpage.py#L68) faz, no nível do módulo:
 
 ```python

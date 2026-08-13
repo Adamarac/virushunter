@@ -10,6 +10,12 @@ What it enforces: no statement at column 0 may invoke a call. A module that only
 defines functions and binds literals can be imported for inspection or testing
 without reaching the network or the filesystem.
 
+Scope: this applies to modules that get imported. Most workers in script/ are
+standalone programs that are only ever executed, and doing their work at module
+level is unremarkable for those -- running this check against them reports
+findings that are not defects. The targets that matter are the orchestrator and
+anything imported from it.
+
 Limitation: it does not follow imports, so it checks each file on its own. A
 clean file that imports a dirty one still pays that file's side effects. Pass
 every module you care about, not just the entry point.

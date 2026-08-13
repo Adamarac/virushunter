@@ -1,0 +1,8 @@
+# The pipeline runs on Linux and its scripts are consumed by sh, so keep LF in
+# the repository regardless of the platform a contributor checks out on.
+* text=auto eol=lf
+
+*.gif binary
+*.png binary
+*.gz  binary
+*.pyc binary
