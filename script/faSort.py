@@ -41,13 +41,13 @@ def printFa(infile, outfile):
 	for (start, end, seqlen, nlower) in length:
 		#if nlower/float(seqlen) > 0.2: continue
 		nmys+=1
-		for i in xrange(start, end+1):
+		for i in range(start, end+1):
 			line = linecache.getline(infile, i)
 			if i==start: of.write(line.strip()+' length='+str(seqlen)+'\n')
 			else: of.write(line)
 	of.close()
 	if log=='True':
-		print outfile, 'n_mys =', nmys
+		print(outfile, 'n_mys =', nmys)
 
 if __name__ == '__main__':
 	infile, outfile= sys.argv[1], sys.argv[2]

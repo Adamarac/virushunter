@@ -14,9 +14,9 @@ for line in f1:
 f1.close()
 treads=i/4
 if treads < nreads: 
-	print 'treads', treads, 'nreads', nreads, sys.argv[1]
+	print('treads', treads, 'nreads', nreads, sys.argv[1])
 	sys.exit()
-ss = set(random.sample(xrange(treads), nreads))
+ss = set(random.sample(range(treads), nreads))
 
 f1=gzip.open(sys.argv[1], 'rb')
 i=0
@@ -37,11 +37,11 @@ for line in f1:
 		qseq=line.strip()
 		qseq2=line2.strip()
 		if i/4-1 in ss:
-			print >>of1, '\n'.join([id, seq, qid, qseq])
-			print >>of2, '\n'.join([id2, seq2, qid2, qseq2])
+			print('\n'.join([id, seq, qid, qseq]), file=of1)
+			print('\n'.join([id2, seq2, qid2, qseq2]), file=of2)
 			k+=1
 
-print 'i=', i, 'k=', k
+print('i=', i, 'k=', k)
 f1.close()
 f2.close()
 of1.close()

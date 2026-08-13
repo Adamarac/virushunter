@@ -27,7 +27,7 @@ def CacheLines(fname):
 def getSeq(cachename, cache, header):
 	seq=[]
 	start, end = cache[header]
-	for i in xrange(start, end+1):
+	for i in range(start, end+1):
 		seq.append(linecache.getline(cachename, i).strip())
 	return ''.join(seq)
 
@@ -50,7 +50,7 @@ def plotpie(countfile):
 	of3.write(Rscript)
 	of3.close()
 	cmd='R CMD BATCH --quiet --vanilla '+Rfile
-	print cmd
+	print(cmd)
 	os.system(cmd)
 
 indexf=open(sys.argv[1], 'r')
@@ -91,11 +91,11 @@ for line in f1:
 # for line in f3:
 	# category=line.strip().split(',')[-1]
 	# counts[category]+=1
-for key in counts.keys():
+for key in list(counts.keys()):
 	of.write(key+'\t'+str(int(counts[key]/3))+'\n')
 of2.write('category,class,family,count\n')
 
-x=[(key, len(snames)) for (key, snames) in counts2.items()]
+x=[(key, len(snames)) for (key, snames) in list(counts2.items())]
 sorted_x = sorted(x, key=operator.itemgetter(1), reverse=True)
 
 for key, val in sorted_x:

@@ -84,15 +84,15 @@ def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get t
 		name='@'+name
 		name2='@'+name2
 		try: seq = parts[9]
-		except: print line; seq='A'
+		except: print(line); seq='A'
 		try: seq2 = parts2[9]
-		except: print line2; seq2='A'
+		except: print(line2); seq2='A'
 		qual=parts[10]
 		qual2=parts2[10]
 		if bac1: seq='A'; qual='G'
 		if bac2: seq2='A'; qual2='G'
-		print >>of, '\n'.join([name, seq, '+',qual])
-		print >>of2, '\n'.join([name2, seq2, '+',qual2])
+		print('\n'.join([name, seq, '+',qual]), file=of)
+		print('\n'.join([name2, seq2, '+',qual2]), file=of2)
 
 	of.close()
 	of2.close()
@@ -100,8 +100,8 @@ def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get t
 		f1.close()
 		f2.close()
 
-	print filename, 'percentHuman = ', 100*float(humanCount)/count
-	print filename, 'percentBac = ', 100*float(bacCount)/count #, bacCount1, bacCount2, bacCount, count
+	print(filename, 'percentHuman = ', 100*float(humanCount)/count)
+	print(filename, 'percentBac = ', 100*float(bacCount)/count) #, bacCount1, bacCount2, bacCount, count
 	#print filename, 'filtered', filter, 'unmapped', un, 'DNA', geno, 'mRNA', ma, \
 	#	  'HumanPercent', float(ma+geno)/(un+ma+geno)*100, '%'
 
@@ -138,14 +138,14 @@ def processSingleBacSAM(samindex, start, end, outfile): # first scan to get the 
 		(name, flag, chro, sstart, mapq, cigar)=parts[0:6]
 		name='@'+name
 		try: seq = parts[9]
-		except: print line; seq='A'
+		except: print(line); seq='A'
 		qual=parts[10]
-		print >>of, '\n'.join([name, seq, '+',qual])
+		print('\n'.join([name, seq, '+',qual]), file=of)
 	for f1 in fs1:
 		f1.close()
 	of.close()
-	print filename, 'percentBac = ', 100*float(bacCount)/count
-	print filename, 'percentHuman = ', 100*float(humanCount)/count
+	print(filename, 'percentBac = ', 100*float(bacCount)/count)
+	print(filename, 'percentHuman = ', 100*float(humanCount)/count)
 
 
 if __name__ == "__main__":

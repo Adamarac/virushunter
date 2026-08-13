@@ -16,8 +16,8 @@ for line in f:
 		lineno=i/4
 		#seqid='@s'+str(lineno)+' '+pair_end
 		seqid='@s'+str(lineno)+'_'+pair_end+'_'+label
-		print >>of, seqid
+		print(seqid, file=of)
 	else:
-		print >>of, line.strip()
+		print(line.strip(), file=of)
 f.close()
 of.close()

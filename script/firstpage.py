@@ -79,14 +79,14 @@ def readstat(statfile='stats.logg'):
 		except: continue
 		if 'all_blast_filter' in line: 
 			all_virus= float(value)
-		for key in stats.keys():
+		for key in list(stats.keys()):
 			if ('/'+key+'_' in id) or (key == id):
 				try: stats[key][name].append(float(value))
-				except: print  value, line
+				except: print(value, line)
 				break
 	f.close()
-	for key in stats.keys():
-		for name in stats[key].keys():
+	for key in list(stats.keys()):
+		for name in list(stats[key].keys()):
 			sum=0
 			for value in stats[key][name]:
 				sum+=value
@@ -100,15 +100,15 @@ def readstat(statfile='stats.logg'):
 def addallFile():
 	global stats, all_virus
 	out=defaultdict(float)
-	for key in stats.keys():
-		for name in stats[key].keys():
+	for key in list(stats.keys()):
+		for name in list(stats[key].keys()):
 			out[name]+=stats[key][name]
 	nlib=len(stats)
-	for name in out.keys():
+	for name in list(out.keys()):
 		if name in sk:
 			out[name]/=nlib
 	stats['all']=defaultdict()
-	for name in out.keys():
+	for name in list(out.keys()):
 		stats['all'][name]=out[name]
 	stats['all']['num_virus'] = all_virus
 	
@@ -144,7 +144,7 @@ def firstpage():
 	head+=''.join(s)
 	f5.write(head)
 	f5.write('<tbody>')
-	libs=stats.keys()
+	libs=list(stats.keys())
 	libs = list(set(libs)-set(['all']))
 	libs.append('all')
 	for key in libs:
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 	reAssemble = sys.argv[1]
 	stats, seeds=readSeeds2(reAssemble)
 	wd = os.path.abspath(os.path.dirname('.'))
-	print wd
+	print(wd)
 	readstat()
 	addallFile()
 	firstpage()

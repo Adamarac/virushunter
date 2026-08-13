@@ -50,3 +50,7 @@ blastn/
 .ref_verify/
 .ref_diff.txt
 .ref_run*/
+
+# Fecho vivo, recalculado sob demanda por tests/live_closure.py
+.closure*.txt
+.smoke_out.txt

@@ -23,7 +23,7 @@ def ViralCount(infile, outfile, base, virname):
 			barcode =getBarcode(line, base)
 			counts[barcode]+=1
 	f.close()
-	for barcode in counts.keys():
+	for barcode in list(counts.keys()):
 		of.write(barcode+'\t'+virname+'\t'+str(counts[barcode])+'\n')
 	of.close()
 

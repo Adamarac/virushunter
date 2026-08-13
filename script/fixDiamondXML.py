@@ -21,6 +21,6 @@ while line:
 	else:
 		of.write(line+'\n')
 	line=f.readline().rstrip()
-print 'done'
+print('done')
 f.close()
 of.close()

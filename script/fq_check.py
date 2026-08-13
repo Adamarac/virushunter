@@ -8,7 +8,7 @@ def testSeq(seq):
 		assert (s in ss)
 
 f=open(sys.argv[1], 'r')
-print 'checking..', sys.argv[1]
+print('checking..', sys.argv[1])
 i=0
 for line in f:
 	i+=1
@@ -22,7 +22,7 @@ for line in f:
 		qseq=line.strip()
 		testSeq(seq)
 		try: assert len(qseq) == len(seq)
-		except: print len(seq), len(qseq), seq, qseq
+		except: print(len(seq), len(qseq), seq, qseq)
 f.close()
 assert i%4==0
-print sys.argv[1], 'done'
+print(sys.argv[1], 'done')

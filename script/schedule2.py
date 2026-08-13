@@ -44,7 +44,7 @@ def run(i):
 	running=set([])
 	donejobs=0
 	
-	for (server,info) in servers.items():
+	for (server,info) in list(servers.items()):
 		ps, lastjob=info
 		if ps is not None and ps.poll() is None:
 			running.add(lastjob)
@@ -83,7 +83,7 @@ def run(i):
 	ind, badind=0, 0
 	for kkk in badjobs:
 		if not job_done(jobs[kkk]):
-			print 'status=',badstatus[ind], 'jobno=', kkk, jobs[kkk]
+			print('status=',badstatus[ind], 'jobno=', kkk, jobs[kkk])
 			badind+=1
 		ind+=1
 	if badind==0: badjobs=[]
@@ -98,15 +98,15 @@ def run_all():
 	i=0
 	i, runy, donejobs, bad = run(i) #start from job 0 on all servers
 	while runy >0 and donejobs<len(jobs):
-		print i, 'of', len(jobs), 'jobs. running servers=', runy, 'donejobs=', donejobs, 'badjobs=', bad, jobs[0].split()[0]
+		print(i, 'of', len(jobs), 'jobs. running servers=', runy, 'donejobs=', donejobs, 'badjobs=', bad, jobs[0].split()[0])
 		time.sleep(20)
 		i, runy, donejobs, bad= run(i)
-	print i, 'of', len(jobs), 'jobs. running servers=', runy, 'donejobs=', donejobs, 'badjobs=', bad, jobs[0].split()[0]
+	print(i, 'of', len(jobs), 'jobs. running servers=', runy, 'donejobs=', donejobs, 'badjobs=', bad, jobs[0].split()[0])
 	time.sleep(20)
 	
 
 if __name__ == "__main__":
-	print 'running...'
+	print('running...')
 	badjobs=[]
 	badstatus=[]
 	jobs = readdata(sys.argv[1])
@@ -116,9 +116,9 @@ if __name__ == "__main__":
 	except: serverload=1
 	servers={}
 	for server in serverslist:
-		for i in xrange(serverload):
+		for i in range(serverload):
 			servers[server+'_'+str(i)]=(None, -1)
-	servernames=servers.keys()
+	servernames=list(servers.keys())
 	initiate()
 	run_all()
 	run_all() #make up the failed runs

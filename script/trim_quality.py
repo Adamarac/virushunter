@@ -32,25 +32,25 @@ def trimfqTailB(label, seqFile, f, of):
 			read=line.strip()
 			s,t=0, len(read)
 			if read.startswith('GGGG'):
-				for r in xrange(len(read)):
+				for r in range(len(read)):
 					if read[r]!='G':
 						s=r+1
 						Gcount+=1
 						break
 			elif read.startswith('CCCC'):
-				for r in xrange(len(read)):
+				for r in range(len(read)):
 					if read[r]!='C':
 						s=r+1
 						Ccount+=1
 						break
 			if read.endswith('GGGG'):
-				for r in xrange(len(read)-1,-1,-1):
+				for r in range(len(read)-1,-1,-1):
 					if read[r]!='G':
 						t=r
 						Gcount+=1
 						break
 			elif read.endswith('CCCC'):
-				for r in xrange(len(read)-1,-1,-1):
+				for r in range(len(read)-1,-1,-1):
 					if read[r]!='C':
 						t=r
 						Ccount+=1
@@ -63,11 +63,11 @@ def trimfqTailB(label, seqFile, f, of):
 			except: index=len(qseq)
 			if t<index: index=t
 			x=len(qseq)
-			print >>of, '\n'.join([id, read[s:index],qid,qseq[s:index]])
+			print('\n'.join([id, read[s:index],qid,qseq[s:index]]), file=of)
 			counter+=1
 			rlen+=(len(qseq)-index)
-	print seqFile, 'polyC = ', Ccount
-	print seqFile, 'polyG = ', Gcount
+	print(seqFile, 'polyC = ', Ccount)
+	print(seqFile, 'polyG = ', Gcount)
 	#print '\n average tail removed:', float(rlen)/counter, 'nline', i
 
 def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
@@ -131,19 +131,19 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 			#if t<index: index=t
 			if index!=0 and index>s:
 				x=len(qseq)
-				print >>of, '\n'.join([id, read[s:index],qid,qseq[s:index]])
+				print('\n'.join([id, read[s:index],qid,qseq[s:index]]), file=of)
 				counter+=1
 				rlen+=(len(qseq)-index)
 			else:
-				print >>of, '\n'.join([id, read, qid, qseq])
+				print('\n'.join([id, read, qid, qseq]), file=of)
 	# print label, 'polyC = ', Ccount
 	# print label, 'polyG = ', Gcount
-	print label, 'num_tail_removed = ', counter
+	print(label, 'num_tail_removed = ', counter)
 	if counter==0: 
 		out=0
 	else:
 		out=float(rlen)/counter
-	print label, 'tail_removed_average = ', out
+	print(label, 'tail_removed_average = ', out)
 
 if __name__ == '__main__':
 	seqFile = sys.argv[1] #'s_combine_2_sequence.txt'

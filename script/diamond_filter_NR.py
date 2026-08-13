@@ -39,7 +39,7 @@ def readVirusGI():
 def getSeq(cachename, cache, header):
 	seq=[]
 	start, end = cache[header]
-	for i in xrange(start, end+1):
+	for i in range(start, end+1):
 		seq.append(linecache.getline(cachename, i).strip())
 	return ''.join(seq)
 
@@ -67,7 +67,7 @@ def readVirusXML1(fname):
 			for alignment in blast_record.alignments:
 				subject = alignment.title.upper()
 				for hsp in alignment.hsps:
-					if not virusE.has_key(query):
+					if query not in virusE:
 						virusE[query]=float(hsp.expect)
 						virusID[query]=subject # lowest subject
 					elif float(hsp.expect) < virusE[query]:
@@ -118,10 +118,10 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 						of.write ( str(hsp.query_start).ljust(11)+' '+ hsp.query+'\n')
 						of.write ( ' '.ljust(11)+' '+ hsp.match+'\n')
 						of.write ( str(hsp.sbjct_start).ljust(11)+' '+ hsp.sbjct+'\n')
-	except: print 'XML format bad' 
+	except: print('XML format bad') 
 	result_handle.close()
 	of.close()
-	print fname, ' n_hits = ', str(nalign)
+	print(fname, ' n_hits = ', str(nalign))
 	#print fname, ' n_filter = ', str(filter)
 
 if __name__ == '__main__': 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 	E_VALUE_THRESH = float(sys.argv[5])
 	try: hsp_only = sys.argv[6]
 	except: hsp_only = 'NO'
-	print 'hsp_only', hsp_only
+	print('hsp_only', hsp_only)
 	cache={}
 	cache = CacheLines(cachename)
 	#sys.stderr.write(cachename+'\n')
@@ -142,5 +142,5 @@ if __name__ == '__main__':
 	#sys.stderr.write('len(cache)'+str(len(cache)))
 	virusE, virusID = readVirusXML1(virusxml)
 	try: nrE = readDiamondNR(nrDiamond)
-	except: nrE=set([]); print 'no diamond'
+	except: nrE=set([]); print('no diamond')
 	OutputVirus(virusxml, filtertxt, hsp_only, E_VALUE_THRESH)
