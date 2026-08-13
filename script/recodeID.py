@@ -13,7 +13,7 @@ i=0 #this is to be consistent with fq2faID.py
 for line in f:
 	i+=1
 	if i%4==1:
-		lineno=i/4
+		lineno=i//4
 		#seqid='@s'+str(lineno)+' '+pair_end
 		seqid='@s'+str(lineno)+'_'+pair_end+'_'+label
 		print(seqid, file=of)

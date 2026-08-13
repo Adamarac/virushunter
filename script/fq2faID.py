@@ -17,7 +17,7 @@ for line in f:
 	if i%4==2:
 		seq=line.strip()
 		if len(seq)>=10:
-			of.write('>'+fileID+'_'+str(i/4)+'\n')
+			of.write('>'+fileID+'_'+str(i//4)+'\n')
 			of.write(seq+'\n')
 f.close()
 of.close()
