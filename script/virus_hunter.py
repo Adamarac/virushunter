@@ -202,8 +202,6 @@ def serverInfo():
 		server, CPU, RAM = line.strip().split()
 		SI[server]=(CPU, RAM)
 	return SI
-SI=serverInfo()
-print SI
 
 superservers=['bsidna35']
 
@@ -1935,6 +1933,11 @@ def blastVirus(n, hsp):
 
 
 if __name__ == "__main__":
+	# serverInfo() used to run at module level, so merely importing this file
+	# opened SSH connections to every node. It runs here instead, first thing,
+	# which keeps the original execution order. See docs/decisions/0006.
+	SI=serverInfo()
+	print SI
 	wd = os.path.abspath(os.path.dirname('.')).replace('san2', 'cluster2')
 	stats=defaultdict()
 	tcga=False

@@ -149,19 +149,20 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 |---|---|---|---|
 | K8 | Cinco forks do orquestrador; `soap_single()` duplicada | [`orchestrators.md`](orchestrators.md); `readseeds2.py:421` e `:594` | Correções não se propagam; readme aponta para um, o superset é outro |
 | K9 | Configuração dentro do código | [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992) | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
-| K10 | `serverInfo()` em tempo de import ⭐ | [`virus_hunter.py:205`](../script/virus_hunter.py#L205) | Nada é importável, testável ou analisável estaticamente |
+| ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por [`tests/check_no_import_side_effects.py`](../tests/check_no_import_side_effects.py) |
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
 | K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |
 | K14 | `argv[4]` usado duas vezes | [`blast_output_sort.py:427-428`](../script/blast_output_sort.py#L427-L428) | `cwd` recebe o valor de `base`; afeta rótulos na tabela final |
 | K15 | Duplicação de `CacheLines()` e `Node` | 5 cópias de `CacheLines`; `Node` divergente entre `acc_tax.py:16` e `nr_virus3.py:42` | Correção precisa ser aplicada N vezes |
 
-⭐ **K10 é o próximo passo de código sugerido.** Com `virus_hunter.py` fixado como
-referência ([ADR-0004](decisions/0004-virus-hunter-as-reference.md)), o efeito colateral de
-import bloqueia toda validação local — inclusive a dos Níveis 1 e 2 propostos adiante.
-Movê-lo para dentro de `main()` não altera comportamento científico e destrava o resto.
-Note que o problema alcança também `readseeds2.py`, cujo pipeline chama `firstpage.py`,
-que importa `virus_hunter` no nível do módulo.
+**Progresso.** K10 foi resolvido — era o bloqueador de toda validação local, porque
+alcançava também `readseeds2.py` através do `firstpage.py`. Com ele fora do caminho, o
+Nível 1 da estratégia de validação (adiante) passa a ser executável.
+
+**Próximo passo sugerido: K1**, agora demonstrável. Um teste de unidade do
+`diamond_filter_NR.py` com dois hits de e-values distintos e um limiar entre eles falha no
+código atual e passa após a correção — exatamente o padrão de verificação usado em K10.
 
 ## Médias
 
