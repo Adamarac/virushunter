@@ -50,3 +50,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | **Pendente** |
 | [0006](0006-no-import-side-effects.md) | Sem efeitos colaterais em tempo de importação | Aceita |
 | [0007](0007-inert-evalue-threshold.md) | Limiar de e-value inerte nos filtros | Aceita |
+| [0008](0008-repository-scope.md) | Escopo do repositório | Aceita |
