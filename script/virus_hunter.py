@@ -194,8 +194,8 @@ def serverInfo():
 		ps.append(p)
 	exit_codes = [p.wait() for p in ps]
 	for code in exit_codes:
-		if code !=0: print 'server error', code; sys.exit()
-	print 'exit_codes', exit_codes
+		if code !=0: print('server error', code); sys.exit()
+	print('exit_codes', exit_codes)
 	SI={}
 	f=open('server.info', 'r')
 	for line in f:
@@ -344,7 +344,7 @@ def Clark():
 	f = open('clark.sh', 'w')
 	f2 = open('clark_process.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+superservers[job%nsuperservers]
 		serverTag2 = 'ssh '+servers[job%nservers]
 		# fq = [wd+'/fastq/'+fqfile for fqfile in fqfiles]
@@ -361,14 +361,14 @@ def Clark():
 	#f2.write(dirscr+'clark_result.py '+indexfile+' '+wd+'/clark_out/all.csvvv '+wd+'/'+base+'/clark/all.count '+wd+'/fastq/all.fa '+wd+'/'+base+'\n')
 	#f2.write(dirscr+'clark_html.py '+wd+'/'+base+'/clark/'+key+'.count '+wd+'/'+base+'/clark/'+key+'.count.csv '+wd+'/'+base+'/clark/'+key+'.html \n')
 
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+superservers[job%nsuperservers]
 		# fq = [wd+'/fastq/'+fqfile for fqfile in fqfiles]
 		# for fqq in fq:
 		f.write(serverTag+' /mnt/cluster/tools/CLARKSCV1.2.3.2/exe/CLARK -k 20 -n 48 -T /mnt/cluster/xdeng/taxon/target2.txt -D /mnt/cluster/xdeng/taxon/CLARK_DB2/ -O '+wd+'/fastq/'+key+'.fa -R '+wd+'/clark_out/'+key+'_clark2 &\n')
 		job+=1
 		if job%nsuperservers==0:  f.write('wait\n') 
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+superservers[job%nsuperservers]
 		# fq = [wd+'/fastq/'+fqfile for fqfile in fqfiles]
 		# for fqq in fq:
@@ -476,7 +476,7 @@ def mergeAB(reAssemble='no'):
 	of=open('merge.sh', 'w')
 	for line in f:
 		key2=line.strip().split('-', 1)[0]
-		print key2
+		print(key2)
 		key1=line.strip().rsplit('_',4)[0]
 		if len(key1)<len(key2):
 			key=key1
@@ -490,7 +490,7 @@ def mergeAB(reAssemble='no'):
 
 		seeds[key].append(ss)
 		stats[key]=defaultdict(list)
-	for key in seeds.keys():
+	for key in list(seeds.keys()):
 		file=seeds[key][0]
 		k0=file.strip().split('-', 1)[0]
 		f2=file.strip().split('/', 1)[1]
@@ -524,7 +524,7 @@ def readSeeds2(reAssemble='no'):
 		key2=line.strip().rsplit('.', 1)[0]
 		#key1=line.strip().rsplit('_',4)[0]
 		key1=line.strip().rsplit('_',2)[0]
-		print key1
+		print(key1)
 		if len(key1)<len(key2):
 			key=key1
 		else:
@@ -561,7 +561,7 @@ def mergePairFq():
 	global seeds, pair
 	f = open('mergePairFq.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		fq = [wd+'/fastq/'+fqfile for fqfile in fqfiles]
 		f.write(serverTag+' /mnt/cluster/xdeng/tools/FLASH-1.2.11/flash -M 250 -o '+key+' -d '+wd+'/fastq/ '+' '.join(fq)+' &\n')
@@ -570,7 +570,7 @@ def mergePairFq():
 	f.write('wait\n')
 	job=0
 	seeds2={}
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		f.write(serverTag+' cat '+wd+'/fastq/'+key+'.notCombined_1.fastq '+ wd+'/fastq/'+key+'.notCombined_2.fastq '+wd+'/fastq/'+key+'.extendedFrags.fastq > '+wd+'/fastq/'+key+'_flash.fq &\n')
 		seeds2[key]=[key+'_flash.fq']
@@ -578,7 +578,7 @@ def mergePairFq():
 		if job%nservers==0:  f.write('wait\n')
 	seeds=seeds2
 	for key in seeds:
-		print key, seeds[key]
+		print(key, seeds[key])
 	pair=False
 	f.close()
 	#return (seeds, pair)
@@ -586,7 +586,7 @@ def mergePairFq():
 def skipbowtie():
 	f = open('skipbowtie.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		for fqfile in fqfiles:
 			serverTag = 'ssh '+servers[job%nservers]
@@ -602,7 +602,7 @@ def skipbowtie():
 
 def fa2fq():
 	f = open('fa2fq.sh', 'w')
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		for fqfile in fqfiles:
 			fafile = fqfile.replace('fastq', 'fasta')
 			f.write(dirscr+'fa2fq2.py '+wd+'/fastq/'+fafile+' '+wd+'/fastq/'+fqfile+'\n') #quality trimming
@@ -611,7 +611,7 @@ def fa2fq():
 def bam2fq():
 	f = open('bam2fq.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		for fqfile in fqfiles:
 			serverTag = 'ssh '+servers[job%nservers]
 			bamfile = fqfile.replace('fastq', 'bam')
@@ -623,7 +623,7 @@ def bam2fq():
 
 def zip2fq():
 	f = open('zip2fq.sh', 'w')
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		for fqfile in fqfiles:
 			zip2fq = 'unzip '+wd+'/fastq/'+fqfile
 			f.write(zip2fq+'\n')
@@ -632,7 +632,7 @@ def zip2fq():
 def skip_adaptor():
 	f = open('skipadaptor.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		for fqfile in fqfiles:
 			serverTag = 'ssh '+servers[job%nservers]
@@ -648,7 +648,7 @@ def skip_adaptor():
 
 def sampleFastq():
 	f = open('sampleFastq.sh', 'w')
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		fqs=[]
 		for fqfile in fqfiles:
@@ -668,7 +668,7 @@ def prepBlastFile():
 	job=0
 	alldb=[]
 	
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		job+=1
 		f.write(serverTag+' "cd '+wd+'/fastq/ &&')
@@ -694,7 +694,7 @@ def prepBlastFile_adaptor(): #for adaptor filtering
 	directory = os.path.basename(wd)
 	alldb=[]
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		job+=1
 		i=1
@@ -726,7 +726,7 @@ def trim():
 	adaptors = dirscr+'adaptor.fa'
 	bpath=wd+'/blast_filter_out/blast2/'
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		trimfiles=[]
 		seqfiles=[]
@@ -772,7 +772,7 @@ def trim():
 def check_pair_overlap():
 	f = open('check_pair.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		job+=1
 		f.write(serverTag + ' '+dirscr+'check_pair.py '+wd+'/fastq/' + key+'_1_sequence.txt '+wd+'/fastq/' + key+'_2_sequence.txt '+' &\n') #quality trimming
@@ -783,7 +783,7 @@ def check_pair_overlap():
 def fq_check():
 	f = open('fq_check.sh', 'w')
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		for fqfile in fqfiles:
 			serverTag = 'ssh '+servers[job%nservers]
 			job+=1
@@ -803,7 +803,7 @@ def polyA():
 	f = open('polyA_raw.sh', 'w')
 	f2 = open('polyA_clean.sh', 'w')
 	f3= open('plot_poly.sh', 'w')
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		for fqfile in fqfiles:
 			serverTag = 'ssh '+servers[job%nservers]
@@ -835,7 +835,7 @@ def prepPriceFile():
 	path=wd+'/'+base+'/price/'
 	f = open('prepPriceFile.sh', 'w')
 	directory = os.path.basename(wd)
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i=1
 		infq=[]
 		outfq=[]
@@ -863,10 +863,10 @@ def bowtieNT():
 	job=0
 	job2=0
 	bowindex=bowtieNTIndex
-	print bowindex
+	print(bowindex)
 	csvfiles=[]
 	countfiles=[]
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		fafile=wd+'/fastq/'+key+'.fa'
 		i=0
 		for bowtieind in bowindex:
@@ -896,7 +896,7 @@ def bowtieNT():
 def sam2fq(pair, keep_human):
 	f2 = open('bowtiesam2fq.sh', 'w')
 	job2=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		fqfils=[]
 		i=1
 		for fqfile in fqfiles:
@@ -951,10 +951,10 @@ def bowtieBac(pair, keep_human, keep_bac):
 	if keep_human and not keep_bac: bowindex=bowtiebacs
 	elif not keep_human and keep_bac: bowindex= [bowtieindexpath]
 	elif not keep_human and not keep_bac: bowindex= [bowtieindexpath]; bowindex.extend(bowtiebacs)
-	print '===================================================='
-	print bowindex
-	print '===================================================='
-	for (key, fqfiles) in seeds.items():
+	print('====================================================')
+	print(bowindex)
+	print('====================================================')
+	for (key, fqfiles) in list(seeds.items()):
 		if keep_human: bj=1 #start with bacteria 1,2,3,4
 		else: bj=0 #remove human start with 0
 		for bowtieind in bowindex:
@@ -978,7 +978,7 @@ def prep_sra():
 	f = open('sra.sh', 'w')
 	f2 = open('sra.table', 'w')
 	i=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		i+=1
 		sams=[]
 		fqfils=[]
@@ -996,7 +996,7 @@ def prep_sra():
 def prep_reads(n, length, pair): #filter length fq file and contig, and then combine
 	f = open(wd+'/prep_reads.sh', 'w')
 	job=0 #rename for Spade
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		f.write(serverTag+' cat '+wd+'/fastq/'+key+'_1_sequence.txt  > '+wd+'/fastq/'+key+'.1.fq &\n')
 		if pair: f.write(serverTag+' cat '+wd+'/fastq/'+key+'_2_sequence.txt  > '+wd+'/fastq/'+key+'.2.fq &\n')
@@ -1004,7 +1004,7 @@ def prep_reads(n, length, pair): #filter length fq file and contig, and then com
 		if job%nservers==0: f.write('wait\n')
 	job=0	
 	#merge .fq
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		f.write(serverTag+' cat '+wd+'/fastq/'+key+'_1_sequence.txt ')
 		if pair: f.write(wd+'/fastq/'+key+'_2_sequence.txt ')
@@ -1021,7 +1021,7 @@ def prep_reads(n, length, pair): #filter length fq file and contig, and then com
 	# f.write('wait\n')
 	#prep .fa
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		f.write(serverTag+' '+dirscr+'fq2fa.py ')
 		f.write(wd+'/fastq/'+key+'.fq '+wd+'/fastq/'+key+'.fa '+str(length)+' &\n')
@@ -1031,7 +1031,7 @@ def prep_reads(n, length, pair): #filter length fq file and contig, and then com
 	#below prep abyss
 	job=0
 	fk=open('prep_extend.sh', 'w')
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		f.write(serverTag+' '+dirscr+'fqLenFilter.py '+ wd+'/fastq/'+key+'.fq '+' '+wd+'/fastq/'+key+'abyss.fq 35 &\n')
 		fk.write(serverTag+' '+dirscr+'fqLenFilter.py '+ wd+'/fastq/'+key+'.fq '+' '+wd+'/fastq/'+key+'.extend.fq 80 &\n')
@@ -1076,7 +1076,7 @@ def meta_velvet():
 	# meta-velvetg out-dir -ins_length 260 | tee logfile
 	rval=[]
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		outdir = wd+'/velvet_'+key+'/'
 		#try: os.mkdir(outdir)
 		#except: pass
@@ -1108,7 +1108,7 @@ def soap_single():
 	except: pass
 	job=0
 	rval=[]
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = '{ time ssh '+servers[job%nservers]
 		ff = open(wd+'/soap_config/'+key+'_soap.config', 'w')
 		f.write(serverTag+' "'+soappath+' all -K '+ soapkmer)
@@ -1134,7 +1134,7 @@ def soap_pair():
 	except: pass
 	job=0
 	rval=[]
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = '{ time ssh '+servers[job%nservers]
 		ff = open(wd+'/soap_config/'+key+'_soap.config', 'w')
 		f.write(serverTag+' "'+soappath+' all -K '+soapkmer)
@@ -1155,7 +1155,7 @@ def abyss(): #filter length fq file and contig, and then combine
 	f = open(wd+'/abyss.sh', 'w')
 	rval=[]
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		try: os.mkdir(wd+'/abyss_'+key)
 		except: pass
 		serverTag = '{ time ssh '+servers[job%nservers]
@@ -1178,7 +1178,7 @@ def abyss(): #filter length fq file and contig, and then combine
 
 def partition(): #filter length fq file and contig, and then combine
 	f = open(wd+'/partition.sh', 'w')
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		f.write(dirscr+'partition.py '+wd+'/fastq/'+key+'abyss.fq  100000\n')
 	f.close()
 
@@ -1187,9 +1187,9 @@ def abyss_partition(): #filter length fq file and contig, and then combine
 	f1 = open(wd+'/abyss_combine.sh', 'w')
 	rval=[]
 	job =0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		rv=[]
-		for j in xrange(20): #assume 100 chunks, unknown file size but some may not exist
+		for j in range(20): #assume 100 chunks, unknown file size but some may not exist
 			try: os.mkdir(wd+'/abyss_'+key+'_chunk'+str(j))
 			except: pass
 			serverTag = 'ssh '+servers[job%nservers]
@@ -1216,9 +1216,9 @@ def soap_partition(): #single end soap partition
 	f = open(wd+'/soap_partition.sh', 'w')
 	f1 = open(wd+'/soap_combine.sh', 'w')
 	rval=[]
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		rv=[]
-		for j in xrange(20): #assume 100 chunks, unknown file size but some may not exist
+		for j in range(20): #assume 100 chunks, unknown file size but some may not exist
 			serverTag = 'ssh '+servers[job%nservers]
 			f.write(serverTag+' "'+soappath+' all -K '+ soapkmer)
 			f.write(' -s '+ wd+'/soap_partition_config/'+key+'_'+str(j)+'_soap.config ')
@@ -1244,9 +1244,9 @@ def velvet_partition(): #single end soap partition
 	f = open(wd+'/velvet_partition.sh', 'w')
 	f1 = open(wd+'/velvet_combine.sh', 'w')
 	rval=[]
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		rv=[]
-		for j in xrange(20): #assume 100 chunks, unknown file size but some may not exist
+		for j in range(20): #assume 100 chunks, unknown file size but some may not exist
 			outdir = wd+'/velvet_'+key+'_'+str(j)+'/'
 			serverTag = 'ssh '+servers[job%nservers]
 			f.write(serverTag+' "'+velveth+' '+outdir+' '+metakmer)
@@ -1267,7 +1267,7 @@ def mira4(mira_local):
 	f = open('mira.sh', 'w')
 	job=0
 	rval=[]
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = '{ time ssh '+servers[job%nservers]
 		ff = open(wd+'/'+key+'.conf', 'w')
 		f.write(serverTag+' "cd '+wd+' && mira  -t 8 '+wd+'/'+key+'.conf" ; } 2> '+wd+'/'+key+'_mira.time &\n')
@@ -1301,7 +1301,7 @@ def combineContig(contigLength1,r1,r2,r3,r4,r5,r6,r7):
 # /mnt/cluster/xdeng/script/faLenFilter.py /mnt/san2/xdeng/Vhunt/131210_TN_CDC5/fastq/Phan491DNA_contig /mnt/san2/xdeng/Vhunt/131210_TN_CDC5/fastq/Phan491DNA_contig2 150
 	f = open(wd+'/combineContig.sh', 'w')
 	i=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		combfile=r1[i]+' '+r2[i]+' '+r3[i]+' '+r4[i]+' '+r5[i]+' '+r6[i]+' '+r7[i]
 		f.write('cat '+combfile+ ' > '+wd+'/fastq/'+key+'_contig\n')
 		f.write(dirscr+'faLenFilter.py '+wd+'/fastq/'+key+'_contig '+wd+'/fastq/'+key+'_contig2 '+str(contigLength1) +'\n')
@@ -1312,7 +1312,7 @@ def combineContig2(contigLength1,assembly_para):
 	f = open(wd+'/combineContig2.sh', 'w')
 	combfile=[]
 	contig_out = wd+'/contig_individual/'
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		if 'S' in assembly_para: combfile.append(contig_out+key+'_S.contig') #soap
 		if 'V' in assembly_para: combfile.append(contig_out+key+'_V.contig') #velvet
 		if 'A' in assembly_para: combfile.append(contig_out+key+'_A.contig') 
@@ -1335,7 +1335,7 @@ def moveContig1(assembly_para, r1,r2,r3,r4, r5,r6,r7,r10):
 	f2 = open(wd+'/blastContig.sh', 'w')
 	f1.write('echo program label key top1 top2 top3 N50 ncontigs n500 n1000 n2000 n5000\n')
 	i = 0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		if 'S' in assembly_para: f.write('mv '+r1[i]+' '+contig_out+key+'_S.contig\n') #soap
 		if 'V' in assembly_para:  f.write('mv '+r2[i]+' '+contig_out+key+'_V.contig\n') #velvet
 		if 'T' in assembly_para:  f.write('mv '+r10[i]+' '+contig_out+key+'_T.contig\n') #velvet
@@ -1370,7 +1370,7 @@ def moveContig2(assembly_para):
 	f2 = open(contig_out+'blastContig.sh', 'w')
 	f1.write('echo program label key top1 top2 top3 N50 ncontigs n500 n1000 n2000 n5000\n')
 	i = 0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		if 'C' in assembly_para: f.write('mv '+wd+'/fastq/'+key+'_contig3 '+contig_out+key+'_C.contig\n')
 		if 'O' in assembly_para: f.write('mv '+wd+'/fastq/'+key+'_contig2-contigs.fa '+contig_out+key+'_O.contig\n')
 		# if 'C' in assembly_para: f1.write(dirscr+'statContigs.py '+contig_out+key+'_C.contig cap3 '+key+' '+assembly_para+'\n')
@@ -1391,7 +1391,7 @@ def cap3():
 #ssh bsidna3 cap3 /mnt/san2/xdeng/Vhunt/131210_TN_CDC5/fastq/Phan491DNA_contig2 &
 	f = open('cap3.sh', 'w')
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = '{ time ssh '+servers[job%nservers]
 		#f.write(serverTag+' "'+cap3path+' '+wd+'/fastq/'+key+'_contig2" ; } 2> '+wd+'/'+key+'_cap3.time &\n')
 		  # -o  N  specify overlap length cutoff > 15 (40)
@@ -1405,7 +1405,7 @@ def minimo():
 #ssh bsidna3 cap3 /mnt/san2/xdeng/Vhunt/131210_TN_CDC5/fastq/Phan491DNA_contig2 &
 	f = open('minimo.sh', 'w')
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		serverTag = '{ time ssh '+servers[job%nservers]
 		f.write(serverTag+' "'+Minimo+' '+wd+'/fastq/'+key+'_contig2 -D FASTA_EXP=1" ; } 2> '+wd+'/'+key+'_minimo.time &\n')
 		job+=1
@@ -1415,7 +1415,7 @@ def minimo():
 def minimoFilter(contigLength2):
 	f = open('minimoFilter.sh', 'w')
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		#serverTag = 'ssh '+servers[job%nservers]
 		serverTag=''
 		f.write(serverTag+' '+dirscr+'faLenFilter.py '+wd+'/fastq/'+key+'_contig2-contigs.fa '+wd+'/fastq/'+key+'_contig4 '+str(contigLength2)+' '+base+'_'+key+'\n')
@@ -1426,7 +1426,7 @@ def minimoFilter(contigLength2):
 def cap3MergeSinglet(contigLength2):
 	f = open('cap3MergeSinglet.sh', 'w')
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		#serverTag = 'ssh '+servers[job%nservers]
 		serverTag=''
 		f.write(serverTag+' cat '+wd+'/fastq/'+key+'_contig2.cap.singlets '+wd+'/fastq/'+key+'_contig2.cap.contigs > '+ wd+'/fastq/'+key+'_contig3\n')
@@ -1437,7 +1437,7 @@ def cap3MergeSinglet(contigLength2):
 def moveTrinity(contigLength2):
 	f = open('moveTrinity.sh', 'w')
 	job=0
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		#serverTag = 'ssh '+servers[job%nservers]
 		serverTag=''
 		#f.write(serverTag+' cat '+wd+'/fastq/'+key+'_contig2.cap.singlets '+wd+'/fastq/'+key+'_contig2.cap.contigs > '+ wd+'/fastq/'+key+'_contig3\n')
@@ -1461,7 +1461,7 @@ def reBlastn():
 	os.system('makeblastdb -in ref_prot.fasta -dbtype prot -parse_seqids -out reference')
 	job=0
 	outs, outs2, outs3=[], [], []
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		serverTag = 'ssh '+servers[job%nservers]
 		fastqfile1=wd+'/fastq/'+fqfiles[0]
 		fastqfile2=wd+'/fastq/'+fqfiles[1]
@@ -1512,7 +1512,7 @@ def reAssemble(fafile):
 	except: pass
 	if fafile=='': 
 		f.write('cat ')
-		for (key, vdict) in seeds.items():
+		for (key, vdict) in list(seeds.items()):
 			f.write( wd+'/fastq/'+key+'_contig4 ')
 		f.write(' > '+wd+'/bowtieContig/all.cap3\n')
 		f.write(cap3path+' '+wd+'/bowtieContig/all.cap3 -o 25 -p 85 -h 40\n')
@@ -1524,7 +1524,7 @@ def reAssemble(fafile):
 
 	job=0
 	bowindex= wd+'/bowtieContig/allbow'
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		fastqfile1=wd+'/fastq/'+fqfiles[0]
 		fastqfile2=wd+'/fastq/'+fqfiles[1]
 		sam=wd+'/bowtieContig/'+ key+'.sam'
@@ -1536,7 +1536,7 @@ def reAssemble(fafile):
 	f2 = open('sam2count.sh', 'w')
 	job=0
 	countfiles=[]
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		sam=wd+'/bowtieContig/'+ key+'.sam'
 		count=wd+'/bowtieContig/'+ key+'.count'
 		serverTag = 'ssh '+servers[job%nservers]
@@ -1646,7 +1646,7 @@ def combineContig_reads(n, skipread): #filter length fq file and contig, and the
 	if doreAssemb: 
 		f.write(dirscr+'splitQuery.py '+wd+'/fastq/reAssemble_c '+' '+str(n)+'\n')
 	else:
-		for (key, vdict) in seeds.items():
+		for (key, vdict) in list(seeds.items()):
 			contig = wd+'/fastq/'+key+'_contig4 ' #contig combined with reads
 			combine = wd+'/fastq/'+key+'_c ' #contig combined with reads
 			if skipread: f.write('cat '+contig+' > '+combine +'\n')
@@ -1656,7 +1656,7 @@ def combineContig_reads(n, skipread): #filter length fq file and contig, and the
 	
 def justBlast(n): #filter length fq file and contig, and then combine
 	f = open(wd+'/justBlast.sh', 'w')
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		combine = wd+'/fastq/'+key+'_c ' #contig combined with reads
 		f.write('cat '+wd+'/fastq/'+fqfiles[0].replace('fastq', 'fasta')+' > '+combine +'\n')
 		f.write(dirscr+'splitQuery.py '+combine+' '+str(n)+'\n')
@@ -1667,7 +1667,7 @@ def trinity(RAM): #This is actually spade
 	rval=[]
 	
 	job=0
-	for (key, fqfiles) in seeds.items():
+	for (key, fqfiles) in list(seeds.items()):
 		fq = [wd+'/fastq/'+fqfile for fqfile in fqfiles]
 		outdir = wd+'/trinity_'+key+'/'
 		serverTag = '{ time ssh '+servers[job%nservers]
@@ -1752,7 +1752,7 @@ def blastVirus(n, hsp):
 	allcombine='cat '
 	jj=0
 	outtable=' '+wd+'/blast_filter_out/table/all_blast_filter.txt '
-	for (key, vdict) in seeds.items():
+	for (key, vdict) in list(seeds.items()):
 		jj+=1
 		queryname = wd+'/fastq/'+key+'_c'
 		sigfa=wd+'/fastq/'+key+'_sig'
@@ -1774,7 +1774,7 @@ def blastVirus(n, hsp):
 		mysout='cat '
 		mergeSig='cat '
 		serverTag2 = 'ssh '+servers[jj%nservers]
-		for i in xrange(n):
+		for i in range(n):
 			serverTag = 'ssh '+servers[job%nservers]
 
 			subquery=queryname+'_'+str(i)
@@ -1937,7 +1937,7 @@ if __name__ == "__main__":
 	# opened SSH connections to every node. It runs here instead, first thing,
 	# which keeps the original execution order. See docs/decisions/0006.
 	SI=serverInfo()
-	print SI
+	print(SI)
 	wd = os.path.abspath(os.path.dirname('.')).replace('san2', 'cluster2')
 	stats=defaultdict()
 	tcga=False
@@ -2003,55 +2003,55 @@ if __name__ == "__main__":
 		# seeds=readSeeds1()
 	if not wd.startswith('/mnt/'): wd='/mnt'+wd
 	base = os.path.basename(wd)
-	print 'path',wd
-	print 'thread', thread
-	print 'base', base
-	print 'numBarcodes', len(seeds)
-	for key in seeds.keys():
-		print len(seeds[key]), '--', key, seeds[key]
-	print 'bam', bam
-	print 'dedup', dedup
-	print 'fasta', fasta
-	print 'keep_human', keep_human
-	print 'keep_bac', keep_bac
-	print 'pairend', pair
-	print 'rm_adaptor', rm_adaptor
-	print 'skipread', skipread
-	print 'hsp', hsp
-	print 'metakmer', metakmer
-	print 'soapkmer', soapkmer
-	print 'abysskmer', abysskmer
-	print 'servers', servers
-	print 'EVALUE', EVALUE
-	print 'doMyth', doMyth
-	print 'doAssembly', doAssembly
-	print 'doHmmer', doHmmer
-	print 'read threshold', length
-	print 'contig before cap3', contigLength1
-	print 'contig after cap3', contigLength2
-	print 'mys threshold', myslen
-	print 'internal', internal
-	print 'phage', phage
-	print 'rapsearch', dorapsearch
-	print 'nrfilter', donrfilter
-	print 'n=', n
-	print 'length', length
-	print 'bowtiebacs', bowtiebacs
-	print 'doreAssemb', doreAssemb
-	print 'password', password
-	print 'genBlast', genBlast
-	print 'genBowtie', genBowtie
-	print 'doDiamondOnly', doDiamondOnly
-	print 'pair=', pair
-	print 'clark=',doClark
-	print 'doDNA=', doDNA
+	print('path',wd)
+	print('thread', thread)
+	print('base', base)
+	print('numBarcodes', len(seeds))
+	for key in list(seeds.keys()):
+		print(len(seeds[key]), '--', key, seeds[key])
+	print('bam', bam)
+	print('dedup', dedup)
+	print('fasta', fasta)
+	print('keep_human', keep_human)
+	print('keep_bac', keep_bac)
+	print('pairend', pair)
+	print('rm_adaptor', rm_adaptor)
+	print('skipread', skipread)
+	print('hsp', hsp)
+	print('metakmer', metakmer)
+	print('soapkmer', soapkmer)
+	print('abysskmer', abysskmer)
+	print('servers', servers)
+	print('EVALUE', EVALUE)
+	print('doMyth', doMyth)
+	print('doAssembly', doAssembly)
+	print('doHmmer', doHmmer)
+	print('read threshold', length)
+	print('contig before cap3', contigLength1)
+	print('contig after cap3', contigLength2)
+	print('mys threshold', myslen)
+	print('internal', internal)
+	print('phage', phage)
+	print('rapsearch', dorapsearch)
+	print('nrfilter', donrfilter)
+	print('n=', n)
+	print('length', length)
+	print('bowtiebacs', bowtiebacs)
+	print('doreAssemb', doreAssemb)
+	print('password', password)
+	print('genBlast', genBlast)
+	print('genBowtie', genBowtie)
+	print('doDiamondOnly', doDiamondOnly)
+	print('pair=', pair)
+	print('clark=',doClark)
+	print('doDNA=', doDNA)
 	if phage=='True': #virusdbpath=phan_phagedbpath 
 		virusdbpath=phagedbpath
 	elif phage=='False': #virusdbpath=phan_phagedbpath 
 		virusdbpath=virusdbpath
 	elif phage=='Both':
 		virusdbpath=virusphagedbpath
-	print 'virusdbpath', virusdbpath
+	print('virusdbpath', virusdbpath)
 
 	#zip2fq()
 	# sys.exit()
@@ -2061,29 +2061,29 @@ if __name__ == "__main__":
 		fff.write(s+'\n')
 	fff.close()
 	oof=open(wd+'/run.log', 'w')
-	for key in seeds.keys():
-		print >> oof, key, seeds[key]
-	print >>oof, 'bam', bam
-	print >>oof, 'dedup', dedup
-	print >>oof, 'keep_human', keep_human
-	print >>oof, 'keep_bac', keep_bac
-	print >>oof,'pairend', pair
-	print >>oof,'rm_adaptor', rm_adaptor
-	print >>oof,'skipread', skipread
-	print >>oof,'hsp', hsp
-	print >>oof, 'metakmer', metakmer
-	print >>oof, 'soapkmer', soapkmer
-	print >>oof, 'abysskmer', abysskmer
-	print >>oof, 'servers', servers
-	print >>oof, 'EVALUE', EVALUE
-	print >>oof, 'doMyth', doMyth
-	print >>oof, 'doAssembly', doAssembly
-	print >>oof, 'read threshold', length
-	print >>oof, 'contig before cap3', contigLength1
-	print >>oof, 'contig after cap3', contigLength2
-	print >>oof, 'mys threshold', myslen
-	print >>oof, 'virusdbpath', virusdbpath
-	print >>oof, 'numSplit=', n
+	for key in list(seeds.keys()):
+		print(key, seeds[key], file=oof)
+	print('bam', bam, file=oof)
+	print('dedup', dedup, file=oof)
+	print('keep_human', keep_human, file=oof)
+	print('keep_bac', keep_bac, file=oof)
+	print('pairend', pair, file=oof)
+	print('rm_adaptor', rm_adaptor, file=oof)
+	print('skipread', skipread, file=oof)
+	print('hsp', hsp, file=oof)
+	print('metakmer', metakmer, file=oof)
+	print('soapkmer', soapkmer, file=oof)
+	print('abysskmer', abysskmer, file=oof)
+	print('servers', servers, file=oof)
+	print('EVALUE', EVALUE, file=oof)
+	print('doMyth', doMyth, file=oof)
+	print('doAssembly', doAssembly, file=oof)
+	print('read threshold', length, file=oof)
+	print('contig before cap3', contigLength1, file=oof)
+	print('contig after cap3', contigLength2, file=oof)
+	print('mys threshold', myslen, file=oof)
+	print('virusdbpath', virusdbpath, file=oof)
+	print('numSplit=', n, file=oof)
 	oof.close()
 	# sampleFastq()
 	# sys.exit()
@@ -2231,5 +2231,5 @@ if __name__ == "__main__":
 	#if internal==False: sf.write('rsync -rP '+wd+'/'+base+' xdeng@dnasrv01dmzdr:/opt/aspera/shares/www/public/viral/\n')
 	sf.close()
 	cmd='echo '+password+' |find . "*" -print0 | sudo xargs -0 chmod 777'
-	print cmd
+	print(cmd)
 	os.system(cmd)
