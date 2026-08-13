@@ -45,3 +45,8 @@ blastn/
 # Editors / OS
 .DS_Store
 *.swp
+
+# Artefatos temporarios da verificacao de referencia
+.ref_verify/
+.ref_diff.txt
+.ref_run*/

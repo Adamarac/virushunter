@@ -1,0 +1,1 @@
+/mnt/cluster/xdeng/script/mergeTable.py  /mnt/work/blast_filter_out/table/all_blast_filter.txt  /mnt/work/blast_filter_out/table/S2_blast_filter.txt /mnt/work/blast_filter_out/table/S1_blast_filter.txt /mnt/work/work/hitTable
