@@ -105,10 +105,10 @@ de referência passa o e-value nessa posição:
 | Orquestrador | `argv[5]` recebe |
 |---|---|
 | [`virus_hunter.py:1825`](../../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
-| [`readseeds2.py:792`](../../script/readseeds2.py#L792) — legado | **`hsp`** (`'NO'`) |
-| [`readseeds_denovo.py:713`](../../script/readseeds_denovo.py#L713) — legado | **`hsp`** |
-| [`readseeds_cloud.py:416`](../../script/readseeds_cloud.py#L416) — legado | **`hsp`** |
-| [`readseeds.py:166`](../../script/readseeds.py#L166) — legado | só 3 argumentos |
+| `readseeds2.py:792` — legado | **`hsp`** (`'NO'`) |
+| `readseeds_denovo.py:713` — legado | **`hsp`** |
+| `readseeds_cloud.py:416` — legado | **`hsp`** |
+| `readseeds.py:166` — legado | só 3 argumentos |
 
 Nos legados, `'NO'` era usado como limiar — comparação sempre verdadeira, filtro inerte,
 sem erro. E como `argv[6]` não existia, `hsp_only` caía no `except` e virava `'NO'`. Os

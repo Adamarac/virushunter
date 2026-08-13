@@ -53,8 +53,10 @@ Remover por classificação de domínio, com trava de alcançabilidade. **80 arq
 | Artefato de build (`virus_hunter.pyc`) | 1 |
 | Órfãos remanescentes (`bowtie2svg.py`, `testKmer.py`) | 2 |
 
-Restam **110 arquivos `.py`** — os 46 do fecho de código vivo mais scripts de construção de
-banco e utilitários virais que, na dúvida, foram mantidos.
+Restam **110 arquivos `.py`** no nível principal de `script/` — os 46 do fecho de código
+vivo mais scripts de construção de banco e utilitários virais que, na dúvida, foram
+mantidos. Em contagem recursiva versionada (incluindo `ensembleAssembly_1/`): 216 → 136
+arquivos, 80 removidos.
 
 Acrescentados `.gitignore` (artefatos gerados em tempo de execução) e `.gitattributes`
 (normalização de fim de linha para LF — o pipeline roda em Linux e os scripts são

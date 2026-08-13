@@ -13,7 +13,7 @@
 ## Contexto
 
 O repositório contém cinco variantes do mesmo orquestrador. Duas são candidatas reais a
-referência: [`readseeds2.py`](../../script/readseeds2.py) (997 linhas) e
+referência: `readseeds2.py` (997 linhas) e
 [`virus_hunter.py`](../../script/virus_hunter.py) (2.233 linhas).
 
 A comparação completa está em [`docs/orchestrators.md`](../orchestrators.md). O ponto
