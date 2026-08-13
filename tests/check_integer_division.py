@@ -78,15 +78,15 @@ def main(argv):
     checked = 0
     for path in targets:
         if not path.is_file():
-            print("ERRO: arquivo nao encontrado: %s" % path, file=sys.stderr)
+            print(f"ERRO: arquivo nao encontrado: {path}", file=sys.stderr)
             return 2
         checked += 1
         findings = check(path)
         if findings:
             failed = True
-            print("FALHOU  %s" % path.name)
+            print(f"FALHOU  {path.name}")
             for lineno, text in findings:
-                print("        linha %d: %s" % (lineno, text))
+                print(f"        linha {lineno}: {text}")
                 print("        divisao por literal inteiro sem '//' nem float()")
 
     if not checked:
@@ -94,7 +94,7 @@ def main(argv):
         return 2
 
     if not failed:
-        print("OK      %d arquivos -- nenhuma divisao ambigua" % checked)
+        print(f"OK      {checked} arquivos -- nenhuma divisao ambigua")
     return 1 if failed else 0
 
 

@@ -56,3 +56,9 @@ blastn/
 .smoke_out.txt
 .identity_out.txt
 .gzip_out.txt
+
+# Build / empacotamento
+build/
+dist/
+*.egg-info/
+.pytest_cache/

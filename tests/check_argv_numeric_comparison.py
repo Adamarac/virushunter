@@ -83,7 +83,7 @@ def converted_elsewhere(text, name):
     on an int. That is correct code and must not be reported.
     """
     return re.search(
-        r"\b(?:int|float|long|Decimal)[ \t]*\([ \t]*\b%s\b" % re.escape(name), text
+        rf"\b(?:int|float|long|Decimal)[ \t]*\([ \t]*\b{re.escape(name)}\b", text
     ) is not None
 
 
@@ -102,8 +102,7 @@ def unconverted_argv_names(text):
 def ordering_comparisons(text, name):
     """Yield (lineno, text) where `name` takes part in an ordering comparison."""
     pattern = re.compile(
-        r"(?:\b%s\b[ \t]*(?:<=|>=|<|>))|(?:(?:<=|>=|<|>)[ \t]*\b%s\b)"
-        % (re.escape(name), re.escape(name))
+        rf"(?:\b{re.escape(name)}\b[ \t]*(?:<=|>=|<|>))|(?:(?:<=|>=|<|>)[ \t]*\b{re.escape(name)}\b)"
     )
     for lineno, line in enumerate(text.splitlines(), start=1):
         code = strip_noise(line)
@@ -135,19 +134,19 @@ def main(argv):
     for name in targets:
         path = root / name if not Path(name).is_absolute() else Path(name)
         if not path.is_file():
-            print("ERRO: arquivo nao encontrado: %s" % path, file=sys.stderr)
+            print(f"ERRO: arquivo nao encontrado: {path}", file=sys.stderr)
             return 2
 
         findings = check(path)
         if findings:
             failed = True
-            print("FALHOU  %s" % name)
+            print(f"FALHOU  {name}")
             for var, lineno, line in findings:
-                print("        linha %d: %s" % (lineno, line))
-                print("        '%s' vem de sys.argv (string) e nunca e convertido;" % var)
+                print(f"        linha {lineno}: {line}")
+                print(f"        '{var}' vem de sys.argv (string) e nunca e convertido;")
                 print("        sob Python 2 esta comparacao e sempre verdadeira")
         else:
-            print("OK      %s -- nenhum argumento comparado sem conversao" % name)
+            print(f"OK      {name} -- nenhum argumento comparado sem conversao")
 
     return 1 if failed else 0
 

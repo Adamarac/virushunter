@@ -80,7 +80,7 @@ def top_level_statements(lines):
 def check(path):
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines(True)
     defined = set(DEF_RE.findall("".join(lines)))
-    patterns = list(DANGEROUS) + [r"\b%s\s*\(" % re.escape(n) for n in sorted(defined)]
+    patterns = list(DANGEROUS) + [rf"\b{re.escape(n)}\s*\(" for n in sorted(defined)]
 
     findings = []
     for lineno, text in top_level_statements(lines):
@@ -103,18 +103,18 @@ def main(argv):
     for name in targets:
         path = root / name if not Path(name).is_absolute() else Path(name)
         if not path.is_file():
-            print("ERRO: arquivo nao encontrado: %s" % path, file=sys.stderr)
+            print(f"ERRO: arquivo nao encontrado: {path}", file=sys.stderr)
             return 2
 
         findings = check(path)
         if findings:
             failed = True
-            print("FALHOU  %s" % name)
+            print(f"FALHOU  {name}")
             for lineno, text, pat in findings:
-                print("        linha %d: %s" % (lineno, text))
-                print("        efeito colateral em nivel de modulo (padrao: %s)" % pat)
+                print(f"        linha {lineno}: {text}")
+                print(f"        efeito colateral em nivel de modulo (padrao: {pat})")
         else:
-            print("OK      %s -- nenhum efeito colateral em nivel de modulo" % name)
+            print(f"OK      {name} -- nenhum efeito colateral em nivel de modulo")
 
     return 1 if failed else 0
 
