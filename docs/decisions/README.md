@@ -53,3 +53,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0008](0008-repository-scope.md) | Escopo do repositório | Aceita |
 | [0009](0009-no-execution-environment.md) | Não há ambiente de execução | **Pendente** |
 | [0010](0010-dict-ordering-behaviour-change.md) | Mudança forçada: ordem de iteração de dicionário | Aceita |
+| [0011](0011-explicit-division.md) | Divisão explícita | Aceita |

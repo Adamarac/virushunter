@@ -88,7 +88,7 @@ num_adaptors, left, right= 0,0,0
 for line in f:
 	i+=1
 	if i%4==1:
-		lineno=i/4
+		lineno=i//4
 		seqid='@s'+str(lineno)+'_'+pair_end+'_'+label
 		print(seqid, file=of)
 	elif i%2==0:
@@ -119,8 +119,8 @@ for line in f:
 		print(seq, file=of)
 	else:
 		print(line.strip(), file=of)
-print(label, '3prime_adaptors = ', right/2) #counted on seq and qseq, so need halfing
-print(label, '5prime_adaptors = ', left/2) #counted on seq and qseq, so need halfing
+print(label, '3prime_adaptors = ', right//2) #counted on seq and qseq, so need halfing
+print(label, '5prime_adaptors = ', left//2) #counted on seq and qseq, so need halfing
 
 f.close()
 of.close()

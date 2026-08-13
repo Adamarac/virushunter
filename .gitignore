@@ -54,3 +54,4 @@ blastn/
 # Fecho vivo, recalculado sob demanda por tests/live_closure.py
 .closure*.txt
 .smoke_out.txt
+.identity_out.txt

@@ -100,7 +100,7 @@ sorted_x = sorted(x, key=operator.itemgetter(1), reverse=True)
 
 for key, val in sorted_x:
 	seqnames=counts2[key]
-	of2.write(key+','+str(int(val/3)+1)+'\n')
+	of2.write(key+','+str(int(val//3)+1)+'\n')
 	key2=key.replace(',', '_')
 	outfa=path+'/clark/fasta/'+os.path.basename(countfile)+'.csv.'+key2+'.fa'
 	fa=open(outfa, 'w')

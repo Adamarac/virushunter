@@ -12,7 +12,7 @@ i=0
 for line in f1:
 	i+=1
 f1.close()
-treads=i/4
+treads=i//4
 if treads < nreads: 
 	print('treads', treads, 'nreads', nreads, sys.argv[1])
 	sys.exit()
@@ -36,7 +36,7 @@ for line in f1:
 	elif i%4==0:
 		qseq=line.strip()
 		qseq2=line2.strip()
-		if i/4-1 in ss:
+		if i//4-1 in ss:
 			print('\n'.join([id, seq, qid, qseq]), file=of1)
 			print('\n'.join([id2, seq2, qid2, qseq2]), file=of2)
 			k+=1
