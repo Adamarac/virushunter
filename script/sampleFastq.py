@@ -3,8 +3,8 @@ import sys
 import random
 import gzip
 
-f1=gzip.open(sys.argv[1], 'rb')
-f2=gzip.open(sys.argv[2], 'rb')
+f1=gzip.open(sys.argv[1], 'rt')
+f2=gzip.open(sys.argv[2], 'rt')
 of1=open(sys.argv[3], 'w')
 of2=open(sys.argv[4],'w')
 nreads=int(sys.argv[5])
@@ -18,7 +18,7 @@ if treads < nreads:
 	sys.exit()
 ss = set(random.sample(range(treads), nreads))
 
-f1=gzip.open(sys.argv[1], 'rb')
+f1=gzip.open(sys.argv[1], 'rt')
 i=0
 k=0
 for line in f1:

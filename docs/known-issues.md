@@ -198,7 +198,7 @@ próprio. Registrado para que a falha, quando ocorrer, seja reconhecível.
 | K17 | Nenhuma dependência declarada | Biopython, R e ~17 ferramentas externas sem manifesto |
 | K18 | Nenhum teste ou dado de exemplo | Repositório inteiro |
 | K19 | `readVirusGI()` lê o FASTA viral e o resultado é descartado | [`diamond_filter_NR.py:139`](../script/diamond_filter_NR.py#L139) |
-| K20 | `gzip.sopen` — método inexistente | [`dedup.py:113`](../script/dedup.py#L113); mascarado pelo `except` nu |
+| ~~K20~~ | ~~`gzip.sopen` — método inexistente~~ — **resolvido** ([ADR-0012](decisions/0012-gzip-text-mode.md)) | era `dedup.py:113`; a deduplicação silenciosamente não ocorria com entrada `.gz` |
 | K21 | `clean_dir()` apaga todo arquivo não-`.gz` | [`virus_hunter.py:797-801`](../script/virus_hunter.py#L797-L801) |
 | K22 | Constante mágica `if zz<40` no trim de qualidade | [`trim_quality.py:127`](../script/trim_quality.py#L127) |
 | K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | [`virus_hunter.py:1667`](../script/virus_hunter.py#L1667) |

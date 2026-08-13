@@ -3,7 +3,7 @@ import sys
 import gzip
 
 if sys.argv[1].endswith('.gz'):
-	f = gzip.open(sys.argv[1], 'rb')
+	f = gzip.open(sys.argv[1], 'rt')
 else:
 	f=open(sys.argv[1], 'r')
 of=open(sys.argv[2],'w')

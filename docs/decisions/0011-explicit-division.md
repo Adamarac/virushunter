@@ -75,8 +75,5 @@ aqui.
 
 ## Pendente nesta frente
 
-O problema de texto vs. bytes segue aberto: sete arquivos do fecho vivo abrem `gzip` em
-modo binário (`fq2fa.py`, `fq2faID.py`, `sampleFastq.py`, `sra.py`, `dedup.py`, `polyA.py`,
-`sam2count.py`). Em Python 2, `gzip.open(f,'rb')` devolve `str`; em Python 3, `bytes`.
-Diferente das divisões, esse falha alto na maioria dos casos — mas é bloqueador e vem em
-seguida.
+O problema de texto vs. bytes no `gzip` foi resolvido em seguida — ver
+[ADR-0012](0012-gzip-text-mode.md).

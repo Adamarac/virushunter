@@ -4,7 +4,7 @@ import os, os.path
 import gzip
 filename=sys.argv[1]
 print(filename)
-if filename.endswith('.gz'):f = gzip.open(filename, 'rb')
+if filename.endswith('.gz'):f = gzip.open(filename, 'rt')
 else: f=open(filename, 'r')
 fileID = sys.argv[2]
 #of=gzip.open(sys.argv[3],'ab')

@@ -55,3 +55,4 @@ blastn/
 .closure*.txt
 .smoke_out.txt
 .identity_out.txt
+.gzip_out.txt
