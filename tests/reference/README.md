@@ -45,12 +45,33 @@ sequenciador (`A_S1_L001_R1_001.fastq.gz`), que `readSeeds2()` agrupa em duas am
 `_stderr.txt` fica fora da comparação: carrega ruído do ambiente que varia entre execuções
 enquanto todo artefato gerado permanece idêntico.
 
+## Versão do Python
+
+A referência foi congelada inicialmente com `python:2.7-slim` e **re-congelada** com
+`python:3.12-slim` após a Fase 1 da migração — ver
+[ADR-0010](../../docs/decisions/0010-dict-ordering-behaviour-change.md) para por quê e para
+a prova de que o conjunto de trabalho não mudou. A captura Python 2 continua acessível:
+
+```sh
+git show 2705fa7:tests/reference/expected/clonetrim.sh
+```
+
+Para re-congelar com outro interpretador:
+
+```sh
+VH_PY_IMAGE=python:2.7-slim sh tests/reference/capture.sh
+```
+
 ## Garantias verificadas
 
 - **Determinística.** Duas capturas consecutivas produzem artefatos idênticos.
 - **Detecta desvio.** Alterar `EVALUE` de `0.01` para `0.001` — um caractere — faz a
   verificação falhar e aponta os arquivos afetados. Confirmado antes de aceitar a
   referência; um teste que nunca falhou não valida nada.
+- **A própria verificação já falhou de forma silenciosa uma vez.** Um erro de aspas em
+  `capture.sh` fazia a captura produzir zero artefatos, e comparar dois diretórios vazios
+  dava "idêntico". Por isso `verify.sh` e as comparações passaram a conferir também a
+  contagem de artefatos, e não apenas o diff.
 
 ## Limites
 

@@ -52,3 +52,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0007](0007-inert-evalue-threshold.md) | Limiar de e-value inerte nos filtros | Aceita |
 | [0008](0008-repository-scope.md) | Escopo do repositório | Aceita |
 | [0009](0009-no-execution-environment.md) | Não há ambiente de execução | **Pendente** |
+| [0010](0010-dict-ordering-behaviour-change.md) | Mudança forçada: ordem de iteração de dicionário | Aceita |

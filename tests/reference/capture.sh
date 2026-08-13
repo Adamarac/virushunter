@@ -21,7 +21,11 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${1:-"$ROOT/tests/reference/expected"}
-IMAGE=python:2.7-slim
+# The frozen reference in expected/ was captured with python:2.7-slim. Once the
+# source is migrated the runner must be Python 3, while the reference stays as it
+# was -- that comparison is the whole point. Override to re-freeze the reference:
+#   VH_PY_IMAGE=python:2.7-slim sh tests/reference/capture.sh
+IMAGE=${VH_PY_IMAGE:-python:3.12-slim}
 
 command -v docker >/dev/null 2>&1 || { echo "docker nao encontrado" >&2; exit 2; }
 
@@ -64,9 +68,17 @@ cp /src/virus_hunter.py /work/
 mkdir -p /mnt
 ln -sfn /work /mnt/work
 
-python virus_hunter.py > /out/_stdout.txt 2>/out/_stderr.txt || {
+python virus_hunter.py > /out/_stdout.raw 2>/out/_stderr.txt || {
   echo "generator exit=$?" >> /out/_stderr.txt
 }
+
+# serverInfo() launches one ssh per node, all appending to server.info in
+# parallel, so the order lines land in that file is a race and the SI dict is
+# built in a different order every run. SI is only ever read by key, so this
+# affects nothing but the diagnostic line that prints it -- drop that line so the
+# capture is reproducible. Pre-existing behaviour, not introduced by the migration.
+grep -v "^{.bsidna" /out/_stdout.raw > /out/_stdout.txt
+rm -f /out/_stdout.raw
 
 # collect every artefact the generator produced, minus the inputs we supplied
 cd /work

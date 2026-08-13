@@ -26,6 +26,17 @@ sh "$ROOT/tests/reference/capture.sh" "$ACTUAL" >/dev/null || {
 
 rm -f "$EXPECTED/_stderr.txt" "$ACTUAL/_stderr.txt" 2>/dev/null || true
 
+# A capture that produced nothing must not read as "identical". This happened
+# once: a quoting error made capture.sh emit zero artefacts, and diffing two
+# empty directories reported success.
+n_exp=$(find "$EXPECTED" -type f | wc -l)
+n_act=$(find "$ACTUAL" -type f | wc -l)
+if [ "$n_act" -lt 2 ] || [ "$n_exp" -lt 2 ]; then
+  echo "FALHOU  captura vazia ou quase vazia (esperado=$n_exp atual=$n_act)" >&2
+  echo "        a captura provavelmente nao rodou; ver .ref_verify/_stderr.txt" >&2
+  exit 2
+fi
+
 if diff -r "$EXPECTED" "$ACTUAL" > "$ROOT/.ref_diff.txt" 2>&1; then
   n=$(find "$EXPECTED" -type f | wc -l)
   echo "OK      saida do gerador identica a referencia ($n artefatos)"
