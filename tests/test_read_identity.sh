@@ -32,7 +32,10 @@ export MSYS_NO_PATHCONV MSYS2_ARG_CONV_EXCL
 OUT="$ROOT/.identity_out.txt"
 status=0
 
-docker run --rm -v "$ROOT/script:/src:ro" "$IMAGE" /bin/sh -c '
+# Workers now import virushunter (ADR-0014), so the package has to be on
+# PYTHONPATH. Mounted read-only rather than installed: the test then runs
+# against the working tree, not against whatever was last pip-installed.
+docker run --rm -v "$ROOT/script:/src:ro" -v "$ROOT/src:/pkg:ro" -e PYTHONPATH=/pkg "$IMAGE" /bin/sh -c '
 set -eu
 cd /tmp
 

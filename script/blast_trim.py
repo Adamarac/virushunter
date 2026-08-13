@@ -1,7 +1,13 @@
 #!/usr/bin/env python
+"""Trim adaptor hits and recode each read by its position in the file.
+
+The identity format is shared with recodeID.py and fq2faID.py through
+virushunter.domain. See invariant I1.
+"""
 import sys
 from collections import defaultdict
-from operator import itemgetter, attrgetter
+
+from virushunter.domain import LINES_PER_RECORD, ReadId
 
 f=open(sys.argv[1], 'r')#fq file
 f2=open(sys.argv[2],'r') #blast table
@@ -83,14 +89,16 @@ def readBlastTab(f):
 trim_index = readBlastTab(f2)
 f2.close()
 
-i=0 #this is to be consistent with fq2faID.py
+i=0
 num_adaptors, left, right= 0,0,0
 for line in f:
 	i+=1
-	if i%4==1:
-		lineno=i//4
-		seqid='@s'+str(lineno)+'_'+pair_end+'_'+label
-		print(seqid, file=of)
+	if i%LINES_PER_RECORD==1:
+		read_id = ReadId.at_line(i, pair_end, label)
+		# The adaptor hit table is keyed by the same ordinal, and the sequence
+		# line below looks it up, so it has to survive past this branch.
+		lineno = read_id.ordinal
+		print(read_id, file=of)
 	elif i%2==0:
 		seq=line.strip()
 		n=len(seq)

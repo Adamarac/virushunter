@@ -51,7 +51,9 @@ OUTFILE="$ROOT/.smoke_out.txt"
 status=0
 docker run --rm \
   -v "$ROOT/script:/src:ro" \
+  -v "$ROOT/src:/pkg:ro" \
   -v "$CLOSURE:/closure.txt:ro" \
+  -e PYTHONPATH=/pkg \
   "$IMAGE" /bin/sh -c '
 pip install --quiet biopython 2>/dev/null
 mkdir -p /tmp/sandbox && cd /tmp/sandbox
