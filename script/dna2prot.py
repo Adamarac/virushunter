@@ -55,7 +55,7 @@ def dna2prot(fafile, protfile, longest):
 def revcomp(dna):
 	rval=[]
 	n=len(dna)
-	for i in xrange(len(dna)):
+	for i in range(len(dna)):
 		nuc = dna[n-i-1]
 		if nuc=='A': rval.append('T')
 		elif nuc=='C': rval.append('G')
@@ -66,7 +66,7 @@ def revcomp(dna):
 def translate(dna):
 	n=len(dna)/3
 	prot=[]
-	for i in xrange(n):
+	for i in range(n):
 		codon=dna[(i*3):(i*3+3)]
 		try: aa=codontable[codon]
 		except: return ''

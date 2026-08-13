@@ -13,21 +13,21 @@ def mergeTable(infiles, outfile, index):
 		of.write('\t'+file)
 	of.write('\n')
 	for infile in infiles:
-		print 'reading...', infile
+		print('reading...', infile)
 		file=os.path.basename(infile).split('/')[-1][0:(-17)]
 		f=open(infile, 'r')
 		for line in f:
 			parts=line.strip().split()
 			key='\t'.join(parts[0:4])
-			if not dic.has_key(key):
+			if key not in dic:
 				dic[key]={}
 			dic[key][file]=parts[index]
 		f.close()
-	for key in dic.keys():
+	for key in list(dic.keys()):
 		of.write(key)
 		for infile in infiles:
 			file=os.path.basename(infile).split('/')[-1][0:(-17)]
-			if dic[key].has_key(file):
+			if file in dic[key]:
 				of.write('\t'+dic[key][file])
 			else:
 				of.write('\t0')

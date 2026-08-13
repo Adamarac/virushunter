@@ -10,18 +10,18 @@ for line in f:
 		id='@seq'+str(i)
 		seq1=''.join(seq)
 		if seq1!='':
-			print >>of, id
-			print >>of, seq1
-			print >>of, '+'
-			print >>of, ''.join(len(seq1)*['I'])
+			print(id, file=of)
+			print(seq1, file=of)
+			print('+', file=of)
+			print(''.join(len(seq1)*['I']), file=of)
 			seq=[]
 	else:
 		seq.append(line.strip())
 
-print >>of, id
-print >>of, seq1
-print >>of, '+'
-print >>of, ''.join(len(seq1)*['I'])
+print(id, file=of)
+print(seq1, file=of)
+print('+', file=of)
+print(''.join(len(seq1)*['I']), file=of)
 
 f.close()
 of.close()

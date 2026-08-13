@@ -39,7 +39,7 @@ def readVirusGI():
 def getSeq(cachename, cache, header):
 	seq=[]
 	start, end = cache[header]
-	for i in xrange(start, end+1):
+	for i in range(start, end+1):
 		seq.append(linecache.getline(cachename, i).strip())
 	return ''.join(seq)
 def readNRXML(fname, virusGIs):
@@ -61,7 +61,7 @@ def readNRXML(fname, virusGIs):
 			if v: count+=1; continue
 			if ('VIRUS' in subject) or ('VIRAL' in subject): continue
 			for hsp in alignment.hsps:
-				if not nrE.has_key(query):
+				if query not in nrE:
 					nrE[query]=float(hsp.expect)
 					nrID[query]=subject
 				elif float(hsp.expect) < float(nrE[query]):
@@ -81,7 +81,7 @@ def readVirusXML1(fname):
 		for alignment in blast_record.alignments:
 			subject = alignment.title.upper()
 			for hsp in alignment.hsps:
-				if not virusE.has_key(query):
+				if query not in virusE:
 					virusE[query]=float(hsp.expect)
 					virusID[query]=subject # lowest subject
 				elif float(hsp.expect) < virusE[query]:
@@ -135,7 +135,7 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 						#sys.stderr.write('nrID: '+str(nrID[query])+'\n')
 						#sys.stderr.write('virus: '+alignment.title+'\n')
 					#except: pass
-					if nrE.has_key(query) and virusE.has_key(query) and float(hsp.expect) >= nrE[query]: 
+					if query in nrE and query in virusE and float(hsp.expect) >= nrE[query]: 
 						filter+=1; continue # filter out
 					nalign+=1
 					of.write ('****Alignment****\n')
@@ -158,7 +158,7 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 					of.write ( str(hsp.sbjct_start).ljust(11)+' '+ hsp.sbjct+'\n')
 	result_handle.close()
 	of.close()
-	print fname, ' n_hits = ', str(nalign)
+	print(fname, ' n_hits = ', str(nalign))
 	#print fname, ' n_filter = ', str(filter)
 
 if __name__ == '__main__': 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 	E_VALUE_THRESH = float(sys.argv[5])
 	try: hsp_only = sys.argv[6]
 	except: hsp_only = 'NO'
-	print 'hsp_only', hsp_only
+	print('hsp_only', hsp_only)
 	cache={}
 	cache = CacheLines(cachename)
 	#sys.stderr.write(cachename+'\n')

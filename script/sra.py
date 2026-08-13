@@ -17,7 +17,7 @@ for line in f:
 	else:
 		of.write(line.strip()+'\n')
 if i%4!=0:
-	print 'invalid fastq', i%4, infile
+	print('invalid fastq', i%4, infile)
 f.close()
 of.close()
 

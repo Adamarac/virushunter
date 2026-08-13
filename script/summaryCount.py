@@ -22,11 +22,11 @@ def process(countfiles, outfile):
 				key, count = line.strip().rsplit(',', 1)
 			else:
 				try:key, count = line.strip().split()
-				except: print 'line', line; sys.exit()
+				except: print('line', line); sys.exit()
 			count= int(count)
 			a[key]+=count
 		f.close()
-	for key in a.keys():
+	for key in list(a.keys()):
 		if csv: of.write(key+','+str(a[key])+'\n')
 		else: of.write(key+'\t'+str(a[key])+'\n')
 	of.close()

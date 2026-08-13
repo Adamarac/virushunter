@@ -12,7 +12,7 @@ def countFasta(filename):
 def splitFasta(filename, nfiles, nseqs):
     # chunksize = int(float(nseqs)/nfiles+1)
     fs= []
-    for i in xrange(nfiles):
+    for i in range(nfiles):
         fname=filename+'_'+str(i)
         f = open(fname, 'w')
         fs.append(f)
@@ -24,7 +24,7 @@ def splitFasta(filename, nfiles, nseqs):
             j+=1
         fs[j%nfiles].write(line)
 
-    for i in xrange(nfiles):
+    for i in range(nfiles):
         fs[i].close()
     f.close()
     
@@ -32,6 +32,6 @@ def splitFasta(filename, nfiles, nseqs):
 infile=sys.argv[1]
 n=int(sys.argv[2])
 nseqs=countFasta(infile)
-print infile, 'num_seqs_to_blast = ', nseqs
+print(infile, 'num_seqs_to_blast = ', nseqs)
 splitFasta(infile, n, nseqs)
 

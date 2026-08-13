@@ -65,8 +65,8 @@ def processPairedSAM(filename, countfile):
 		counts[chro]+=1
 		total+=1
 	f.close()
-	print 'total hits (paired count as 1)=', total,  'total paired hits =',totalPair, 'mapped=', mapped
-	for chro, count in counts.items():
+	print('total hits (paired count as 1)=', total,  'total paired hits =',totalPair, 'mapped=', mapped)
+	for chro, count in list(counts.items()):
 		of.write(chro+'\t'+str(count)+'\n')
 	of.close()
 

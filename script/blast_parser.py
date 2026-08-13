@@ -28,14 +28,14 @@ def CacheLines(fname):
 def getSeq(cachename, cache, header):
 	seq=[]
 	start, end = cache[header]
-	for i in xrange(start, end+1):
+	for i in range(start, end+1):
 		seq.append(linecache.getline(cachename, i).strip())
 	return ''.join(seq)
 
 def print_mysterious(cachename, cache, queryset, outfile, length):
 	nmys=0
 	of=open(outfile, 'w')
-	for header in cache.keys():
+	for header in list(cache.keys()):
 		if header in queryset: #hits
 			continue
 		seq=getSeq(cachename, cache, header)
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 						# print ' '.ljust(11), hsp.match
 						# print str(hsp.sbjct_start).ljust(11), hsp.sbjct
 	except:
-		print 'bad xml', fsigname
+		print('bad xml', fsigname)
 		pass
 	result_handle.close()
 	f.close()

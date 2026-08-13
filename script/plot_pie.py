@@ -28,7 +28,7 @@ def plotpie(input):
 	of3.write(Rscript)
 	of3.close()
 	cmd='R CMD BATCH --quiet --vanilla '+os.path.dirname(input)+'/'+base+'.R'
-	print cmd
+	print(cmd)
 	os.system(cmd)
 
 if __name__ == '__main__': 

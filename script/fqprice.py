@@ -26,14 +26,14 @@ for line1 in f1:
 			#if len(seq1)<20: seq1='N'; qseq1='B'
 			#if len(seq2)<20: seq2='N'; qseq2='B'
 			#kept=min(len(seq1), len(seq2))
-			print >>of1, id1
-			print >>of1, seq1#[0:kept]
-			print >>of1, qid1
-			print >>of1, qseq1#[0:kept]
-			print >>of2, id2
-			print >>of2, seq2#[0:kept]
-			print >>of2, qid2
-			print >>of2, qseq2#[0:kept]
+			print(id1, file=of1)
+			print(seq1, file=of1)#[0:kept]
+			print(qid1, file=of1)
+			print(qseq1, file=of1)#[0:kept]
+			print(id2, file=of2)
+			print(seq2, file=of2)#[0:kept]
+			print(qid2, file=of2)
+			print(qseq2, file=of2)#[0:kept]
 f1.close()
 of1.close()
 f2.close()

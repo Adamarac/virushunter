@@ -47,14 +47,14 @@ def trimAdaptorEnd(infile, outfile, ada): #input fq file and output fq file
 			else: of.write(line.strip()[(rval+1):]+'\n')
 		else:
 			of.write(line.strip()+'\n')
-	print infile, 'num_partial =', partial
+	print(infile, 'num_partial =', partial)
 
 def checkEnd(seq, ada):
 	n=len(ada)#last position on adaptor
 	head=seq[:n]
 	end=ada[n-1]
 	rval = -1
-	for i in xrange(len(head)):
+	for i in range(len(head)):
 		if end==head[i] and ada[(n-i-1):n] == head[0:(i+1)]:
 			rval=i
 	return rval	
@@ -66,7 +66,7 @@ def readBlastTab(f):
 		parts=line.strip().split()
 		try: q, sub, e, qs, qe, ss, se=parts #using fasta
 		#try: sub, q, e, ss, se, qs, qe =parts #using blastdb
-		except: print 'error', line; sys.exit(1)
+		except: print('error', line); sys.exit(1)
 		sub, q, ss, se, qs, qe = q, sub, qs, qe, ss, se #use subject db as trim
 		try: e = float(e)
 		except: e=1
@@ -90,7 +90,7 @@ for line in f:
 	if i%4==1:
 		lineno=i/4
 		seqid='@s'+str(lineno)+'_'+pair_end+'_'+label
-		print >>of, seqid
+		print(seqid, file=of)
 	elif i%2==0:
 		seq=line.strip()
 		n=len(seq)
@@ -116,11 +116,11 @@ for line in f:
 		if minright < n: right+=1
 		if maxleft  > 0: left+=1
 		#if len(hits)>1: print hits, line.strip(); print seq
-		print >> of, seq
+		print(seq, file=of)
 	else:
-		print >>of, line.strip()
-print label, '3prime_adaptors = ', right/2 #counted on seq and qseq, so need halfing
-print label, '5prime_adaptors = ', left/2 #counted on seq and qseq, so need halfing
+		print(line.strip(), file=of)
+print(label, '3prime_adaptors = ', right/2) #counted on seq and qseq, so need halfing
+print(label, '5prime_adaptors = ', left/2) #counted on seq and qseq, so need halfing
 
 f.close()
 of.close()

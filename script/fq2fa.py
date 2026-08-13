@@ -22,9 +22,9 @@ for line in f:
 	elif i%4==0:
 		qseq=line.strip()
 		if len(seq) >= length:
-			print >>of, '>'+id.strip()
+			print('>'+id.strip(), file=of)
 			#print >>of, '>',id,qid,qseq
-			print >>of, seq
+			print(seq, file=of)
 			#print 'length', length
 			#print seq
 f.close()

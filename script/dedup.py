@@ -56,7 +56,7 @@ def RestoreOrder(tmpfq, outfq):
 	order = []
 	i=0
 	for line in f:
-		if i%1000000==0: print i
+		if i%1000000==0: print(i)
 		#if i>10000000: break
 		lineNo = int(line.strip().split()[0])
 		#print lineNo, line
@@ -128,7 +128,7 @@ def removedup(inputfq, outputfq):
 			total+=1
 			qualNo, qual = line.strip().split()
 			if read[0:50] in keyset: read='A'; qual='A'; count+=1
-			print >>of, '\n'.join([id,readNo+' '+read,id2,qualNo+' '+qual])
+			print('\n'.join([id,readNo+' '+read,id2,qualNo+' '+qual]), file=of)
 			keyset.add(read[0:50])
 	f.close()
 	of.close()
@@ -156,10 +156,10 @@ def split(filename):
 			id2 = line.strip()
 		elif i%4==0:
 			qual = line.strip()
-			if keydict.has_key(readstart): print >>keydict[readstart], '\n'.join([str(i-3)+' '+id,str(i-2)+' '+read,str(i-1)+' '+id2,str(i)+' '+qual])
-			else: print >>keydict['unknown'], '\n'.join([str(i-3)+' '+id,str(i-2)+' '+read,str(i-1)+' '+id2,str(i)+' '+qual])
+			if readstart in keydict: print('\n'.join([str(i-3)+' '+id,str(i-2)+' '+read,str(i-1)+' '+id2,str(i)+' '+qual]), file=keydict[readstart])
+			else: print('\n'.join([str(i-3)+' '+id,str(i-2)+' '+read,str(i-1)+' '+id2,str(i)+' '+qual]), file=keydict['unknown'])
 	f.close()
-	for key in keydict.keys():
+	for key in list(keydict.keys()):
 		keydict[key].close()
 
 def cleanTempFiles():
@@ -191,8 +191,8 @@ if __name__ == '__main__':
 	except (KeyboardInterrupt, SystemExit):
 		cleanTempFiles()
 	except:
-		print 'usage: dedup.py input.fastq output.deduped.fastq'
+		print('usage: dedup.py input.fastq output.deduped.fastq')
 		sys.exit()
-	print filename, 'num_dup_reads =', count
-	print filename, 'percent_dup =', round(count/float(total)*100, 2) 
+	print(filename, 'num_dup_reads =', count)
+	print(filename, 'percent_dup =', round(count/float(total)*100, 2)) 
 	#print filename, 'total', total, 'dup', count, 'percentDup', round(count/float(total)*100, 2) 

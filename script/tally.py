@@ -29,8 +29,8 @@ def tally(infiles, outfile, fas):
 		f = open(infile, 'r')
 		for line in f:
 			try: contig, count = line.strip().split()
-			except: print infile; print 'error'; print line; sys.exit()
-			if counts.has_key(contig):
+			except: print(infile); print('error'); print(line); sys.exit()
+			if contig in counts:
 				counts[contig][infile]=count
 			else:
 				counts[contig]={infile:count}
@@ -39,7 +39,7 @@ def tally(infiles, outfile, fas):
 	for infile in infiles:
 		out.append(infile.split('/')[-1].split('.')[0])
 	of.write('\t'.join(out)+'\n')
-	print 'common', len(set(counts.keys()).intersection(set(fas)))
+	print('common', len(set(counts.keys()).intersection(set(fas))))
 	for contig in fas: #counts.keys():
 		#print contig
 		out=[contig]

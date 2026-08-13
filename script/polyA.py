@@ -44,12 +44,12 @@ def polyA(filename, keypath, raw):
 		f2.write(str(ss)+'\n')
 	f2.close()
 	if raw!='raw':
-		print filename, 'uni_reads =', uniRead
-		print filename, 'clean_read_length =', float(readlen)/uniRead
-		print filename, 'num_polyA_reads =', polya
+		print(filename, 'uni_reads =', uniRead)
+		print(filename, 'clean_read_length =', float(readlen)/uniRead)
+		print(filename, 'num_polyA_reads =', polya)
 	else:
-		print filename,  'total_reads = ', totalRead
-		print filename, 'raw_read_length =', maxRead
+		print(filename,  'total_reads = ', totalRead)
+		print(filename, 'raw_read_length =', maxRead)
 	of3=open(histR, 'w')
 	Rscript =' a<-read.table("'+hist+'", header=F,  stringsAsFactors=F)\n'+ \
 			'family <- as.numeric(a[[1]])\n' +\
@@ -60,7 +60,7 @@ def polyA(filename, keypath, raw):
 	of3.write(Rscript)
 	of3.close()
 	cmd='R CMD BATCH --quiet --vanilla '+histR+' '+outfile
-	print cmd
+	print(cmd)
 	os.system(cmd)
 
 if __name__ == '__main__':

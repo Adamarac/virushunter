@@ -85,10 +85,10 @@ def CacheFASTA(fname, hit_pairs): #for retrieving pair sequences
 	i=0
 	start, end = 0,0
 	header= None
-	print 'caching fasta'
+	print('caching fasta')
 	for line in f:
 		i+=1
-		if i%10000000==0: print 'caching fasta line', i
+		if i%10000000==0: print('caching fasta line', i)
 		if line.strip().startswith('>'):
 			end=i-1
 			if header!=None and (header in hit_pairs): 
@@ -100,14 +100,14 @@ def CacheFASTA(fname, hit_pairs): #for retrieving pair sequences
 			else: header='' #contig, ignore
 			start=i+1
 	if header!=None and (header in hit_pairs): cachecombine[header] = (start, i)
-	print 'cacheFASTA done'
+	print('cacheFASTA done')
 	return cachecombine
 
 def getPairSeq(header, combine, cachecombine):
 	seq=[]
 	try: start, end = cachecombine[header]
 	except: return ''
-	for i in xrange(start, end+1):
+	for i in range(start, end+1):
 		seq.append(linecache.getline(combine, i).strip())
 	return ''.join(seq)
 
@@ -132,17 +132,17 @@ def CacheLines(input):
 		if i%11 == 3:
 			try: query = line.strip().split()[1]
 			except: 
-				print i, line
+				print(i, line)
 				sys.exit(1)
 		if i%11 == 4:
 			taxonomy=line.strip().split()[-1]
 			try: virus=taxonomy.split(':')[0].split('$')[1]
-			except: print i, line; sys.exit()
+			except: print(i, line); sys.exit()
 			cache[virus].append(i-3)
 			tax[virus]=taxonomy
-			if not qlen.has_key(virus):
+			if virus not in qlen:
 				qlen[virus]=len(query)
-			elif qlen.has_key(virus) and qlen[virus]<len(query):
+			elif virus in qlen and qlen[virus]<len(query):
 				qlen[virus]=len(query)
 		elif i%11==6: #veval
 			ve=float(line.split()[-1])
@@ -152,17 +152,17 @@ def CacheLines(input):
 				c5[virus]+=1
 			if ve<=1E-10: 
 				c10[virus]+=1
-			if VE.has_key(virus) and ve<VE[virus]:
+			if virus in VE and ve<VE[virus]:
 				VE[virus]=ve
-			elif not VE.has_key(virus):
+			elif virus not in VE:
 				VE[virus]=ve
 		elif i%11==7: #nr eval, LVNE
 			ne=line.split()[-1]
 			try: ne=float(ne)
 			except: ne=1
-			if NE.has_key(virus) and ne<NE[virus]:
+			if virus in NE and ne<NE[virus]:
 				NE[virus]=ne
-			elif not NE.has_key(virus):
+			elif virus not in NE:
 				NE[virus]=ne
 	f.close()
 	#print 'cache line done'
@@ -237,11 +237,11 @@ def printVirusSummary(cache, VE, NE, tax, input, qlen, c2, c5, c10, vcounts, bar
 	of.write('</tbody></table></html>\n')
 	of.close()
 	os.system('cp ' +os.path.splitext(input)[0]+'.html '+f4)
-	for (family, count) in pie.items():
+	for (family, count) in list(pie.items()):
 		of2.write(family+' '+str(count)+'\n')
 	of2.close()
 	of3.close()
-	print input, 'num_virus =', numvirus
+	print(input, 'num_virus =', numvirus)
 
 
 # def plotpie(input):
@@ -329,7 +329,7 @@ def OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd):
 			query_nt=''
 			pair_nt=''
 			outrow=['<tr><td>'+virus+'<td>']
-			for i in xrange(11):
+			for i in range(11):
 				if i ==0: 
 					continue
 				out=linecache.getline(input, index+i).rstrip()
@@ -357,11 +357,11 @@ def OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd):
 					if paired==2: outrow.append('Y<td>')
 					else: outrow.append('-<td>')
 					#if id in ids: continue
-					print >>of2, '>'+id+' '+virname
+					print('>'+id+' '+virname, file=of2)
 				elif i==2:
 					query_nt =out.strip().split()[1]
 					#if id in ids: continue
-					print >>of2, linecache.getline(input, index+i).strip().split()[1]
+					print(linecache.getline(input, index+i).strip().split()[1], file=of2)
 					#ids.add(id)
 				elif i==3 or i==4:
 					pass #outrow.append(' '.join(out.split()[1:])+'<td>')
@@ -408,7 +408,7 @@ def readCount(countfile):
 	for line in f:
 		parts=line.strip().split()
 		barcode, virname, count=parts
-		if not vcounts.has_key(virname):
+		if virname not in vcounts:
 			vcounts[virname]={}
 		vcounts[virname][barcode]=count
 		barcodes.add(barcode)

@@ -38,7 +38,7 @@ for line1 in f1:
 		totalOverlap+=r
 		totalLength+=max(len(seq1), len(seq2))
 		nr+=1
-print sys.argv[1], 'ave_bp_Overlap =', totalOverlap/nr
-print sys.argv[1], 'nreads_Overlap =', nr
+print(sys.argv[1], 'ave_bp_Overlap =', totalOverlap/nr)
+print(sys.argv[1], 'nreads_Overlap =', nr)
 f1.close()
 f2.close()

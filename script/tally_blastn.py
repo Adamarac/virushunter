@@ -29,8 +29,8 @@ def tally(map, infiles, outfile):
 				parts = line.strip().split()
 				contig=parts[1]
 				Evalue=float(parts[-2])
-			except: print infile; sys.exit()
-			if not counts.has_key(contig):
+			except: print(infile); sys.exit()
+			if contig not in counts:
 				counts[contig]=defaultdict(int)
 				counts5[contig]=defaultdict(int)
 				counts10[contig]=defaultdict(int)
@@ -47,7 +47,7 @@ def tally(map, infiles, outfile):
 	of.write('\t'.join(out)+'\n')
 	of5.write('\t'.join(out5)+'\n')
 	of10.write('\t'.join(out10)+'\n')
-	for contig in counts.keys():
+	for contig in list(counts.keys()):
 		out=[map[contig]]
 		out5=[map[contig]]
 		out10=[map[contig]]

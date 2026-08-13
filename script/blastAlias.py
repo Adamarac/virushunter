@@ -16,5 +16,5 @@ if __name__ == '__main__':
 	gooddb = gooddb1+gooddb2
 	os.chdir(wd)
 	cmd ='blastdb_aliastool -dblist '+'\"'+' '.join(gooddb)+'\" -dbtype nucl -out '+directory+'_blastdb -title \"'+directory+'_blastdb\"'
-	print cmd
+	print(cmd)
 	os.system(cmd)

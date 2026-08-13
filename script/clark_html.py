@@ -25,7 +25,7 @@ def plotpie(countfile):
 	of3.write(Rscript)
 	of3.close()
 	cmd='R CMD BATCH --quiet --vanilla '+Rfile
-	print cmd
+	print(cmd)
 	os.system(cmd)
 
 def outputHeader(of):
@@ -58,7 +58,7 @@ def printClark(countfile, htmlfile):
 		#print line.strip()
 		try: order, clas, fam, count= parts
 		except: 
-			print parts
+			print(parts)
 			sys.exit()
 		fafile='fasta/'+os.path.basename(countfile)+'.'+key2+'.fa'
 		of.write('<tr><td>'+order+'</td><td>'+clas+'</td><td>'+fam+'</td><td>'+count+'</td>')
