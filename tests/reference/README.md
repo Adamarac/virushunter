@@ -73,13 +73,24 @@ VH_PY_IMAGE=python:2.7-slim sh tests/reference/capture.sh
   dava "idêntico". Por isso `verify.sh` e as comparações passaram a conferir também a
   contagem de artefatos, e não apenas o diff.
 
+## Referencias capturadas
+
+| Diretorio | Configuracao |
+|---|---|
+| `expected/` | padrao: sem montagem, single-end |
+| `expected-denovo/` | montagem ensemble SAVaC (ADR-0004) |
+
+Capturar outra rota:
+
+```sh
+sh tests/reference/capture.sh tests/reference/expected-X configs/X.yaml
+```
+
 ## Limites
 
 - Cobre o **gerador**, não os ~45 scripts worker. Estes precisam de testes próprios.
-- Cobre uma única configuração: a commitada (`doAssembly='no'`, `pair=False`, e demais
-  valores de [`virus_hunter.py`](../../script/virus_hunter.py)). Caminhos como `denovo`,
-  CLARK, NT e HMMER **não** são exercidos. Ampliar exige capturar referências adicionais
-  com outras configurações — recomendado antes de mexer nas etapas correspondentes.
+- Cobre duas configuracoes: a padrao e a `denovo`. CLARK, NT, HMMER, reAssemble,
+  remocao de adaptador e paired-end **nao** sao exercidos.
 - Prova que os **comandos** são os mesmos, não que produzem o mesmo resultado científico.
   Para isso só executando o pipeline de verdade.
 

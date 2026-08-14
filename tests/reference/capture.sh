@@ -12,6 +12,8 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${1:-"$ROOT/tests/reference/expected"}
+# Sobreposicao opcional de configuracao, para capturar rotas alternativas.
+OVERLAY=${2:-}
 # The frozen reference in expected/ was captured with python:2.7-slim. Once the
 # source is migrated the runner must be Python 3, while the reference stays as it
 # was -- that comparison is the whole point. Override to re-freeze the reference:
@@ -35,6 +37,8 @@ docker run --rm \
   -v "$ROOT/script:/src:ro" \
   -v "$ROOT/src:/pkg:ro" \
   -v "$ROOT/config:/config:ro" \
+  ${OVERLAY:+-v "$OVERLAY:/overlay.yaml:ro"} \
+  ${OVERLAY:+-e VIRUSHUNTER_CONFIG_OVERLAY=/overlay.yaml} \
   -v "$ROOT/tests/reference/fixture:/fixture:ro" \
   -v "$OUT:/out" \
   -w /work \
@@ -91,6 +95,9 @@ for f in *.sh *.txt *.conf *.log; do
 done
 rm -f /out/samples.txt
 [ -d soap_config ] && cp -r soap_config /out/ || true
+# A montagem escreve seus proprios scripts em contig_*/; sem isto a referencia
+# da rota denovo fica sem o passo de consenso (CAP3).
+for d in contig_*; do [ -d "$d" ] && cp -r "$d" /out/ || true; done
 '
 
 # server.info holds the fake node table; it is an input to the run, not output

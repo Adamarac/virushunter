@@ -20,6 +20,11 @@ class ConfigError(ValueError):
 #: Environment variable that overrides discovery entirely.
 CONFIG_ENV_VAR = "VIRUSHUNTER_CONFIG"
 
+#: Overlay merged over the default. Lets a caller that takes no arguments -- the
+#: legacy generator -- still be run under an alternative configuration, which is
+#: how alternative reference captures are made.
+CONFIG_OVERLAY_ENV_VAR = "VIRUSHUNTER_CONFIG_OVERLAY"
+
 
 def default_config_path() -> Path:
     """Locate config/default.yaml.
@@ -182,6 +187,16 @@ def load(path: str | Path | None = None, overrides: dict[str, Any] | None = None
         if not isinstance(overlay, dict):
             raise ConfigError(f"{path} nao contem um mapeamento YAML")
         data = _deep_merge(data, overlay)
+
+    from os import environ
+
+    overlay_path = environ.get(CONFIG_OVERLAY_ENV_VAR)
+    if overlay_path:
+        with open(overlay_path, encoding="utf-8") as handle:
+            env_overlay = yaml.safe_load(handle) or {}
+        if not isinstance(env_overlay, dict):
+            raise ConfigError(f"{overlay_path} nao contem um mapeamento YAML")
+        data = _deep_merge(data, env_overlay)
 
     if overrides:
         data = _deep_merge(data, overrides)

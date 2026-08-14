@@ -1,0 +1,2 @@
+{ time ssh bsidna4 "/mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer all -K 31 -s /mnt/work/soap_config/S1_soap.config  -R -o /mnt/work/soap_out/S1_soap"  ; } 2> /mnt/work/S1_soap.time &
+{ time ssh bsidna5 "/mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer all -K 31 -s /mnt/work/soap_config/S2_soap.config  -R -o /mnt/work/soap_out/S2_soap"  ; } 2> /mnt/work/S2_soap.time &

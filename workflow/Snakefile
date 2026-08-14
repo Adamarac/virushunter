@@ -140,9 +140,17 @@ rule reads_to_fasta:
 
 
 # Query do BLAST
+def query_parts(wildcards):
+    """Contigs entram na query so quando ha montagem."""
+    parts = [f"fastq/{wildcards.sample}.fa"]
+    if cfg["steps.assembly.mode"] != "no":
+        parts.insert(0, f"fastq/{wildcards.sample}_contig4")
+    return parts
+
+
 rule build_query:
     input:
-        "fastq/{sample}.fa",
+        query_parts,
     output:
         "fastq/{sample}_c",
     shell:
@@ -392,3 +400,193 @@ rule index_page:
         "logs/index.log",
     shell:
         "python {params.script} no > {log} 2>&1 && mv index.html {output}"
+
+
+# ---------------------------------------------------------------------------
+# Montagem ensemble SAVaC -- SOAPdenovo2, ABySS, MetaVelvet, ABySS particionado,
+# consenso por CAP3. E a combinacao publicada em Deng et al. 2015 e a unica
+# configuracao que o metodo exige. So entra no DAG com assembly.mode == "denovo".
+# ---------------------------------------------------------------------------
+ASSEMBLY = cfg["steps.assembly.mode"]
+
+
+rule prepare_abyss_reads:
+    input:
+        "fastq/{sample}.fq",
+    output:
+        "fastq/{sample}abyss.fq",
+    params:
+        script=SCRIPTS + "fqLenFilter.py",
+        min_length=35,
+    shell:
+        "python {params.script} {input} {output} {params.min_length}"
+
+
+# O numero de fatias depende do tamanho da amostra, e so e conhecido depois de
+# rodar. checkpoint e o mecanismo do Snakemake para isso; o gerador legado
+# assumia 20 e deixava as inexistentes falharem em silencio.
+checkpoint partition_reads:
+    input:
+        "fastq/{sample}abyss.fq",
+    output:
+        directory("partitions/{sample}"),
+    params:
+        script=SCRIPTS + "partition.py",
+        chunk_size=100000,
+    shell:
+        "python {params.script} {input} {params.chunk_size} && "
+        "mkdir -p {output} && mv {input}_* {output}/ 2>/dev/null || mkdir -p {output}"
+
+
+def abyss_chunks(wildcards):
+    directory = checkpoints.partition_reads.get(**wildcards).output[0]
+    chunks = glob_wildcards(Path(directory) / "{sample}abyss.fq_{chunk}").chunk
+    return expand(
+        "abyss_chunks/{sample}_chunk{chunk}/{sample}_chunk{chunk}-unitigs.fa",
+        sample=wildcards.sample, chunk=sorted(chunks, key=int),
+    )
+
+
+rule assemble_soap:
+    input:
+        reads="fastq/{sample}_1_sequence.txt",
+    output:
+        contig="soap_out/{sample}_soap.contig",
+        config="soap_config/{sample}_soap.config",
+    params:
+        soap=TOOLS["soapdenovo"],
+        kmer=cfg["params.kmers.soap"],
+        prefix=lambda w: f"soap_out/{w.sample}_soap",
+    log:
+        "logs/soap_{sample}.log",
+    shell:
+        "mkdir -p soap_config soap_out && "
+        "printf 'max_rd_len=500\n[LIB]\nnreverse_seq=0\nasm_flags=3\nrank=1\nq=%s\n' "
+        "$(realpath {input.reads}) > {output.config} && "
+        "{params.soap} all -K {params.kmer} -s {output.config} -R -o {params.prefix} "
+        "> {log} 2>&1"
+
+
+rule assemble_metavelvet:
+    input:
+        reads="fastq/{sample}_1_sequence.txt",
+    output:
+        "velvet_{sample}/contigs.fa",
+    params:
+        velveth=TOOLS["velveth"],
+        velvetg=TOOLS["velvetg"],
+        meta_velvetg=TOOLS["meta_velvetg"],
+        kmer=cfg["params.kmers.metavelvet"],
+        outdir=lambda w: f"velvet_{w.sample}/",
+    log:
+        "logs/metavelvet_{sample}.log",
+    shell:
+        "({params.velveth} {params.outdir} {params.kmer} -short -fastq {input.reads} && "
+        "{params.velvetg} {params.outdir} -exp_cov auto && "
+        "{params.meta_velvetg} {params.outdir}) > {log} 2>&1"
+
+
+rule assemble_abyss:
+    input:
+        "fastq/{sample}abyss.fq",
+    output:
+        "abyss_{sample}/{sample}-unitigs.fa",
+    params:
+        abyss=TOOLS["abyss_pe"],
+        kmer=cfg["params.kmers.abyss"],
+        outdir=lambda w: f"abyss_{w.sample}",
+    log:
+        "logs/abyss_{sample}.log",
+    shell:
+        "{params.abyss} -C {params.outdir} name={wildcards.sample} k={params.kmer} "
+        "se=$(realpath {input}) > {log} 2>&1"
+
+
+rule assemble_abyss_chunk:
+    input:
+        "partitions/{sample}/{sample}abyss.fq_{chunk}",
+    output:
+        "abyss_chunks/{sample}_chunk{chunk}/{sample}_chunk{chunk}-unitigs.fa",
+    params:
+        abyss=TOOLS["abyss_pe"],
+        kmer=cfg["params.kmers.abyss"],
+        outdir=lambda w: f"abyss_chunks/{w.sample}_chunk{w.chunk}",
+    log:
+        "logs/abyss_{sample}_chunk{chunk}.log",
+    shell:
+        "{params.abyss} -C {params.outdir} name={wildcards.sample}_chunk{wildcards.chunk} "
+        "k={params.kmer} se=$(realpath {input}) > {log} 2>&1"
+
+
+rule combine_abyss_chunks:
+    input:
+        abyss_chunks,
+    output:
+        "contig_individual/{sample}_a.contig",
+    shell:
+        "cat {input} > {output}"
+
+
+rule collect_contigs:
+    input:
+        soap="soap_out/{sample}_soap.contig",
+        velvet="velvet_{sample}/contigs.fa",
+        abyss="abyss_{sample}/{sample}-unitigs.fa",
+    output:
+        soap="contig_individual/{sample}_S.contig",
+        velvet="contig_individual/{sample}_V.contig",
+        abyss="contig_individual/{sample}_A.contig",
+    shell:
+        "cp {input.soap} {output.soap} && cp {input.velvet} {output.velvet} && "
+        "cp --dereference {input.abyss} {output.abyss}"
+
+
+# Ordem S, V, A, a preservada: a concatenacao decide qual contig o CAP3 encontra
+# primeiro, e trocar a ordem muda o consenso.
+rule combine_contigs:
+    input:
+        soap="contig_individual/{sample}_S.contig",
+        velvet="contig_individual/{sample}_V.contig",
+        abyss="contig_individual/{sample}_A.contig",
+        partitioned="contig_individual/{sample}_a.contig",
+    output:
+        "fastq/{sample}_contig2",
+    params:
+        script=SCRIPTS + "faLenFilter.py",
+        min_length=cfg["params.contig_length_pre_cap3"],
+        merged=lambda w: f"fastq/{w.sample}_contig",
+    shell:
+        "cat {input.soap} {input.velvet} {input.abyss} {input.partitioned} > {params.merged} && "
+        "python {params.script} {params.merged} {output} {params.min_length}"
+
+
+rule cap3_consensus:
+    input:
+        "fastq/{sample}_contig2",
+    output:
+        contigs="fastq/{sample}_contig2.cap.contigs",
+        singlets="fastq/{sample}_contig2.cap.singlets",
+    params:
+        cap3=TOOLS["cap3"],
+        overlap=25,
+        identity=80,
+    log:
+        "logs/cap3_{sample}.log",
+    shell:
+        "{params.cap3} {input} -o {params.overlap} -p {params.identity} > {log} 2>&1"
+
+
+rule assembled_contigs:
+    input:
+        contigs="fastq/{sample}_contig2.cap.contigs",
+        singlets="fastq/{sample}_contig2.cap.singlets",
+    output:
+        "fastq/{sample}_contig4",
+    params:
+        script=SCRIPTS + "faLenFilter.py",
+        min_length=cfg["params.contig_length_post_cap3"],
+        merged=lambda w: f"fastq/{w.sample}_contig3",
+        label=lambda w: f"{LIB}_{w.sample}",
+    shell:
+        "cat {input.singlets} {input.contigs} > {params.merged} && "
+        "python {params.script} {params.merged} {output} {params.min_length} {params.label}"

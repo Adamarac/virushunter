@@ -29,6 +29,7 @@ mkdir -p /work/fastq && cd /work
 cp -r /repo/src /work/src
 cp -r /repo/config /work/config
 cp -r /repo/workflow /work/workflow
+cp /repo/tests/reference/configs/denovo.yaml /work/
 
 # The fixture is the same one the reference capture uses: two samples, paired
 # files, Illumina naming. Compressed here because the workflow expects .gz.
@@ -73,7 +74,36 @@ if [ "$total" != "337" ]; then
   fail=1
 fi
 
-[ "$fail" -eq 0 ] && echo "OK      DAG resolve: $total jobs, 2 amostras x 50 fatias, relatorio incluso"
+# A rota denovo -- montagem ensemble SAVaC -- e a configuracao que o metodo
+# publicado exige, e nao entra no DAG padrao. Precisa de validacao propria.
+snakemake -n -s workflow/Snakefile --configfile denovo.yaml --cores 1 > dag_denovo.txt 2>&1 || {
+  echo "FALHA: snakemake -n com denovo retornou erro"
+  tail -15 dag_denovo.txt
+  exit 1
+}
+
+check_denovo() {
+  rule=$1; expected=$2
+  actual=$(awk -v r="$rule" "\$1 == r { print \$2 }" dag_denovo.txt | head -1)
+  if [ "$actual" != "$expected" ]; then
+    echo "FALHA: [denovo] regra $rule tem $actual jobs, esperado $expected"
+    fail=1
+  fi
+}
+
+for r in assemble_soap assemble_metavelvet assemble_abyss partition_reads          combine_abyss_chunks collect_contigs combine_contigs cap3_consensus          assembled_contigs; do
+  check_denovo "$r" 2
+done
+
+# Sem montagem estas regras nao podem aparecer no DAG padrao.
+for r in assemble_soap cap3_consensus; do
+  if awk -v r="$r" "\$1 == r { print \$2 }" dag.txt | grep -q .; then
+    echo "FALHA: regra $r aparece no DAG padrao, onde nao ha montagem"
+    fail=1
+  fi
+done
+
+[ "$fail" -eq 0 ] && echo "OK      DAG resolve nas duas rotas: padrao $total jobs, denovo com SAVaC"
 exit "$fail"
 ' > "$OUT" 2>&1 || status=$?
 

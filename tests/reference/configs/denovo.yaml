@@ -1,0 +1,5 @@
+# Sobreposicao para capturar a referencia da montagem ensemble SAVaC, que e a
+# configuracao que o metodo publicado exige (ADR-0004) e que default.yaml nao usa.
+steps:
+  assembly:
+    mode: denovo
