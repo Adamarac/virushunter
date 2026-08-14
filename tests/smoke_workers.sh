@@ -1,25 +1,11 @@
 #!/bin/sh
-# Start every worker in the live closure under Python 3 and check how it fails.
+# Inicia cada worker do fecho vivo sob Python 3 e classifica como ele falha.
 #
-# The reference harness (tests/reference/) covers the generator only. The ~45
-# worker scripts have no behavioural coverage, so this is the cheapest check that
-# still says something real: run each one with no arguments and look at the
-# exception.
+# Morrer por argumento ausente prova que o modulo importou e executou seu codigo
+# de nivel de modulo. Qualquer outra falha indica API nao migrada.
+# Nao verifica se a saida esta correta -- isso exigiria BLAST (ADR-0009).
 #
-# A worker that reaches its argument handling and dies on IndexError has imported
-# cleanly, resolved its names and executed its module-level code under Python 3.
-# A NameError, AttributeError, SyntaxError or ImportError instead means an
-# unmigrated API is still in a path that runs -- exactly what a syntax-only
-# migration can miss.
-#
-# It does NOT check that a worker produces correct output. It cannot: that needs
-# BLAST, bowtie2 and the databases (ADR-0009).
-#
-# Runs inside a container against a throwaway working directory, because several
-# workers do file I/O at module level and some of the wider codebase shells out.
-#
-# Usage:  sh tests/smoke_workers.sh
-# Exit:   0 all clean, 1 suspicious files found, 2 cannot run
+# Uso:  sh tests/smoke_workers.sh    Exit: 0 limpo, 1 suspeitos, 2 nao rodou
 
 set -eu
 

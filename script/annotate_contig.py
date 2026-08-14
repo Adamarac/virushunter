@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-from collections import defaultdict
-import operator
 import sys
-import os
-import re
 
 def readFa(input, output, mode):
 	f=open(input, 'r')

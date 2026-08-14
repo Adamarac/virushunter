@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import sys
-import gzip
 from collections import defaultdict
 import os
 import operator
 import linecache
-import re
 import os.path
 
 def CacheLines(fname): 

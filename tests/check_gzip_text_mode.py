@@ -1,35 +1,8 @@
 #!/usr/bin/env python3
-"""Require gzip streams to declare text mode explicitly.
+"""Exige modo texto em todo `gzip.open` do fecho vivo.
 
-Under Python 2, gzip.open returned byte strings, and byte strings were str, so
-every line could be stripped, split, compared against literals and concatenated
-into output without a thought.
-
-Under Python 3 that is no longer true, and the trap is that the obvious modes do
-not help: 'r', 'rb' and no mode at all all yield bytes. Only 'rt' yields str.
-
-    gzip.open(f)          -> bytes
-    gzip.open(f, 'r')     -> bytes
-    gzip.open(f, 'rb')    -> bytes
-    gzip.open(f, 'rt')    -> str
-
-The workers here read FASTQ from .gz and immediately do string work on it:
-line.strip(), comparisons with '>' or '@', concatenation into text output files.
-With bytes that raises TypeError -- loud, unlike the division change, but a hard
-blocker all the same.
-
-The rule enforced: every gzip.open in the live closure uses a text mode ('rt',
-'wt', 'at'). Every compressed stream this pipeline touches is a text format --
-FASTQ, FASTA, SAM -- and every consumer does string work on it, so binary is
-never what is wanted here. A genuinely binary use would need this rule revisited
-rather than silently exempted.
-
-Note that 'rb' is not an acceptable answer either: it is explicit, but it is
-explicitly the wrong thing, and it reads as intentional to a reviewer.
-
-Usage:  python3 tests/check_gzip_text_mode.py [file ...]
-        with no arguments, checks the live closure
-Exit:   0 clean, 1 finding, 2 bad usage
+Em Python 3, 'r', 'rb' e modo omitido devolvem bytes; so 'rt' devolve str. Todo
+dado comprimido aqui e texto (FASTQ, FASTA, SAM). Ver ADR-0012.
 """
 
 import re

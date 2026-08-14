@@ -63,3 +63,8 @@ dist/
 *.egg-info/
 .pytest_cache/
 .dag_out.txt
+
+# A referencia congelada usa os mesmos nomes dos artefatos de execucao acima.
+# Sem esta excecao um clone novo teria referencia incompleta -- incluindo o
+# pipeline_run.sh, que descreve a ordem de execucao.
+!tests/reference/expected/**

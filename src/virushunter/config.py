@@ -1,18 +1,7 @@
-"""Loading and validation of the pipeline configuration.
+"""Carga e validacao da configuracao do pipeline.
 
-Every parameter used to live as a literal inside the `__main__` block of
-`script/virus_hunter.py`, so running an analysis with a different threshold meant
-editing the source. That is issue K9, and it is why no run's parameters could be
-versioned alongside its results.
-
-This module reads them from YAML instead. `config/default.yaml` holds exactly the
-values that were hard-coded, so extraction changes nothing on its own -- proven
-by tests/reference/verify.sh, which compares the generated scripts byte for byte.
-
-Validation is deliberately shallow: required keys must exist and have the right
-shape. It does not check that a threshold is scientifically sensible, because
-nothing here knows what sensible means -- that judgement belongs to whoever sets
-the value, and pretending otherwise would just hide it behind a schema.
+Os parametros eram literais dentro de virus_hunter.py (K9). A validacao confere
+forma -- chaves, tipos, modos validos --, nao merito cientifico. Ver ADR-0015.
 """
 
 from __future__ import annotations

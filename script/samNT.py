@@ -3,13 +3,9 @@
 import sys
 import os
 import os.path
-from optparse import OptionParser
-from collections import defaultdict, deque
-from bisect import bisect_left
-import re
+from collections import defaultdict
 from operator import itemgetter
 import linecache
-import re
 import os.path
 
 

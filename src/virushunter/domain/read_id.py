@@ -1,23 +1,8 @@
-"""Read identity — the pipeline's most load-bearing and least documented rule.
+"""Identidade de leitura: a posicao no arquivo, nao o cabecalho do sequenciador.
 
-A read is identified by *where it sits in its FASTQ file*, not by the identifier
-the sequencer gave it. `recodeID.py` discards the original header and writes
-`@s<ordinal>_<pair>_<library>`, where the ordinal is the read's zero-based
-position in the file. See docs/invariants.md, invariant I1.
-
-Two consequences fall out of that, and both used to live only in people's heads:
-
-1. **No stage upstream of recoding may delete a record.** Removing one read
-   shifts every read after it and silently reassigns identities. This is why the
-   filters mask reads -- writing a single 'A' base -- instead of dropping them.
-
-2. **The ordinal is integer division.** Under Python 2, `i/4` gave an int. Under
-   Python 3 it gives a float, and `@s0_1_lib` becomes `@s0.25_1_lib`, which
-   nothing rejects and nothing matches. See ADR-0011.
-
-Three scripts build this identity and each says in its own source that it must
-agree with the others: recodeID.py, blast_trim.py and fq2faID.py. This module is
-where that agreement now lives.
+Consequencias, detalhadas em docs/invariants.md (I1): nenhuma etapa anterior a
+recodificacao pode remover registros -- por isso os filtros mascaram --, e o
+ordinal e divisao inteira (ADR-0011).
 """
 
 from __future__ import annotations

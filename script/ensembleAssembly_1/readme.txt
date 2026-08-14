@@ -1,3 +1,8 @@
+NOTA (limpeza 2026-08): bin/ e example_data/ foram removidos deste repositorio.
+Os binarios eram compilados para x86 Linux de 2014 e este mesmo readme instrui a
+obter os assemblers das fontes originais. Os dados de exemplo somavam 28 MB e nao
+sao usados pelo pipeline. Recuperaveis na tag legacy-2020.
+
 EnsembleAssembler-1.0.0 Quick Start Guide
 Blood Systems Research Institute & UCSF
 

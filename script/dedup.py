@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from collections import defaultdict
 import sys
 import os
 import os.path

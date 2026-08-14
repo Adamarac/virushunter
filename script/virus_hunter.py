@@ -2,7 +2,6 @@
 from collections import defaultdict
 import os.path
 import os
-import string
 import sys
 import itertools
 import subprocess

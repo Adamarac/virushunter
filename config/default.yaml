@@ -1,28 +1,16 @@
-# VirusHunter — configuração padrão
+# VirusHunter -- configuracao padrao.
 #
-# Os valores aqui reproduzem exatamente o que estava embutido no bloco __main__
-# de script/virus_hunter.py. Isso é deliberado: a extração não pode mudar o que o
-# pipeline faz, e tests/reference/verify.sh prova isso comparando os scripts
-# gerados byte a byte.
+# Os valores reproduzem exatamente os literais que estavam em virus_hunter.py.
+# Onde um valor e suspeito mas foi preservado, ha uma nota. Ver ADR-0015.
 #
-# Onde um valor é suspeito mas foi preservado, há uma nota. Corrigi-los é decisão
-# científica separada, não efeito colateral de mover configuração de lugar.
-#
-# Sobrescreva com --config caminho.yaml em vez de editar este arquivo.
+# Sobrescreva com --configfile em vez de editar este arquivo.
 
-# ---------------------------------------------------------------------------
-# Recursos da máquina
-#
-# Dimensionados para um nó do cluster original (48 núcleos, 64 GB). A execução
-# passou a ser local, então quase certamente precisam cair -- ver ADR-0015.
-# ---------------------------------------------------------------------------
+# Dimensionados para um no do cluster original. A execucao e local: quase
+# certamente precisam cair.
 compute:
   threads: 48          # passado a bowtie2, BLAST, SPAdes, HMMER
   query_splits: 50     # fatias da query para o BLAST viral; era 1 por nó, 50 no total
 
-# ---------------------------------------------------------------------------
-# Parâmetros científicos
-# ---------------------------------------------------------------------------
 params:
   evalue: "0.01"           # limiar do BLAST viral e do filtro NR
   min_read_length: 50      # comprimento mínimo para uma leitura ir ao BLAST
@@ -36,13 +24,8 @@ params:
     soap: "31"
     metavelvet: "31"
 
-# ---------------------------------------------------------------------------
-# Etapas: o que roda
-#
-# ATENÇÃO: assembly.mode 'no' é o estado commitado, e NÃO é a configuração de
-# produção -- o método publicado exige a montagem ensemble SAVaC, que só roda com
-# 'denovo'. Ver ADR-0004.
-# ---------------------------------------------------------------------------
+# ATENCAO: assembly.mode 'no' e o estado commitado e NAO e a configuracao de
+# producao -- o metodo publicado exige a montagem SAVaC ('denovo'). Ver ADR-0004.
 steps:
   paired_end: false
   dedup: true
@@ -78,12 +61,8 @@ steps:
     blast_databases: true    # genBlast
     copy_fastq: true         # genBowtie
 
-# ---------------------------------------------------------------------------
-# Ferramentas externas
-#
-# Caminhos do cluster original. Em execução local, aponte para os binários
-# instalados -- ou deixe o nome puro para resolver via PATH.
-# ---------------------------------------------------------------------------
+# Caminhos do cluster original. Local: aponte para os binarios instalados, ou
+# deixe o nome puro para resolver via PATH.
 tools:
   scripts_dir: "/mnt/cluster/xdeng/script/"
   blastn: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn"
@@ -105,12 +84,8 @@ tools:
   prerapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch"
   ray: "/mnt/cluster2/xdeng/tools/Ray2.3/Ray"
 
-# ---------------------------------------------------------------------------
-# Bancos de dados
-#
-# Sem versionamento -- ver K6. Os caminhos não carregam data nem checksum, então
-# não há como saber contra qual versão um resultado antigo foi gerado.
-# ---------------------------------------------------------------------------
+# Sem versionamento: os caminhos nao carregam data nem checksum, entao nao ha
+# como saber contra qual versao um resultado antigo foi gerado (K6).
 databases:
   virus_protein: "/mnt/cluster/xdeng/blastdb/virus_mask"
   virus_dna: "/mnt/cluster/xdeng/blastdb/virus_DNA_mask"
@@ -130,13 +105,8 @@ databases:
   nt_bowtie_prefix: "/mnt/cluster/xdeng/taxon/nt_"
   nt_index_count: 14
 
-# ---------------------------------------------------------------------------
-# Execução distribuída — LEGADO
-#
-# A execução passou a ser local. Estes campos existem apenas para reproduzir a
-# saída do gerador atual e serão descartados na migração para Snakemake, que
-# resolve paralelismo local com --cores. Ver ADR-0015.
-# ---------------------------------------------------------------------------
+# LEGADO: existe so para reproduzir a saida do gerador. O workflow Snakemake nao
+# usa nada disto.
 cluster:
   enabled: true
   nodes:

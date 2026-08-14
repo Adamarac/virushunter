@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-from collections import defaultdict
-import operator
 import sys
-from multiprocessing import Pool
-import os
 
 def revcomp(tag):
 	rval = []

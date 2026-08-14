@@ -1,9 +1,7 @@
-"""Helpers the Snakefile needs: sample discovery and configuration resolution.
+"""Descoberta de amostras e resolucao de configuracao para o Snakefile.
 
-Kept out of the Snakefile so they can be unit-tested. Snakemake files are hard to
-test directly, and sample discovery is exactly the kind of thing that fails
-quietly -- the legacy version derived a sample name by positional splitting and
-would mis-group anything not matching the sequencer's naming convention.
+Fora do Snakefile para poder ser testado: a descoberta de amostras e exatamente
+o tipo de coisa que falha em silencio. Ver ADR-0016.
 """
 
 from __future__ import annotations

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import sys, os
 import os.path
-from operator import itemgetter, attrgetter
-from collections import defaultdict
 
 def mergeTable(infiles, outfile, index):
 	dic={}

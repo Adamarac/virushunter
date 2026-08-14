@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 from collections import defaultdict
-import operator
 import sys
 import os
 import os.path
 import linecache
-import re, string
 def outputHeader(of):
 	head ='''
 <html>

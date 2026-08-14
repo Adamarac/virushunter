@@ -1,20 +1,11 @@
 #!/bin/sh
-# Validate the Snakemake DAG without running any bioinformatics tool.
+# Valida o DAG do Snakemake sem executar ferramenta alguma.
 #
-# `snakemake -n` resolves the whole dependency graph -- every wildcard, every
-# input/output match, every expand() -- and reports what it would run. It needs
-# no BLAST, no bowtie2 and no databases, which is the only reason this is
-# testable at all (ADR-0009).
+# `snakemake -n` resolve wildcards, entradas e saidas; e a unica validacao do
+# workflow possivel sem BLAST e bancos (ADR-0009). Confere cardinalidade exata,
+# que e o que quebra em silencio ao editar uma regra.
 #
-# What it catches: a rule whose input no other rule produces, a wildcard that
-# does not match, a fan-out with the wrong cardinality. What it does not catch:
-# whether a command is scientifically correct. For that the reference capture in
-# tests/reference/ is the specification.
-#
-# Slow: installs Snakemake into a throwaway container each run.
-#
-# Usage:  sh tests/test_workflow_dag.sh
-# Exit:   0 DAG resolves with the expected job counts, 1 mismatch, 2 cannot run
+# Uso:  sh tests/test_workflow_dag.sh
 
 set -eu
 

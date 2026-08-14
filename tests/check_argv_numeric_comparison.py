@@ -1,29 +1,8 @@
 #!/usr/bin/env python3
-"""Find command-line arguments compared as numbers but never converted.
+"""Encontra argumentos de linha de comando comparados como numero sem conversao.
 
-sys.argv values are always strings. Under Python 2, comparing a number with a
-string does not raise -- the language falls back to an artificial ordering in
-which every numeric value sorts before every string. So
-
-    threshold = sys.argv[5]          # '0.01', a string
-    if float(hsp.expect) < threshold:  # always True
-
-silently accepts everything. The comparison looks like a filter, reads like a
-filter in review, and filters nothing. Under Python 3 the same code raises
-TypeError, which is why this survived unnoticed for years.
-
-This check is lexical and never imports its target, so it runs under Python 3
-against Python 2 sources. It reports a name bound directly from sys.argv, with
-no int()/float() conversion, that later appears in an ordering comparison
-(< > <= >=) in the same file. Equality comparisons are ignored: comparing a
-string argument with == is normal and correct.
-
-Known finding: E_VALUE_THRESH in blast_filter_NR.py and diamond_filter_NR.py.
-This is issue K1 in docs/known-issues.md. The check is expected to FAIL until
-that is fixed -- see docs/decisions/0007-inert-evalue-threshold.md.
-
-Usage:  python3 tests/check_argv_numeric_comparison.py [file ...]
-Exit:   0 clean, 1 finding, 2 bad usage
+`sys.argv` entrega strings e, em Python 2, numero sempre ordena antes de string.
+A comparacao parece um filtro e nao filtra nada. Ver ADR-0007 (K1).
 """
 
 import re

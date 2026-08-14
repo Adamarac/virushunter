@@ -1,0 +1,2 @@
+/mnt/cluster/xdeng/tools/diamond/diamond blastx --quiet --max-target-seqs 1 --outfmt 6 -d /mnt/cluster/xdeng/blastdb/diamond.dmnd -q /mnt/work/fastq/S1_sig -o /mnt/work/diamond_nr_out/S1.m8
+/mnt/cluster/xdeng/tools/diamond/diamond blastx --quiet --max-target-seqs 1 --outfmt 6 -d /mnt/cluster/xdeng/blastdb/diamond.dmnd -q /mnt/work/fastq/S2_sig -o /mnt/work/diamond_nr_out/S2.m8

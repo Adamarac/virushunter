@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 import linecache
 
 def filterSort(infile):

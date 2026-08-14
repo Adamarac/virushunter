@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-from collections import defaultdict
-import operator
 import sys
-import os
-import re
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 
 def tally(infiles, outfile, fas): 
 	of =open(outfile, 'w')
