@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "virushunter"
+version = "0.1.0"
+description = "In-house metagenomics virus discovery pipeline"
+requires-python = ">=3.11"
+license = { text = "UNLICENSED" }   # upstream has no licence; see ADR-0002
+
+# Biopython is the only third-party runtime dependency on the live path: five
+# workers parse BLAST XML through Bio.Blast.NCBIXML.
+dependencies = [
+    "biopython>=1.81",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Deliberately narrow to start. The legacy scripts under script/ are not linted
+# yet -- turning on a broad rule set against 46 unmigrated-in-style files would
+# produce thousands of findings and teach nobody anything. New code in src/ is
+# held to this, and the set grows as the migration moves code across.
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]

@@ -61,7 +61,7 @@ def main(argv):
     root = Path(__file__).resolve().parent.parent
     script_dir = Path(argv[1]) if len(argv) > 1 else root / "script"
     if not script_dir.is_dir():
-        print("diretorio inexistente: %s" % script_dir, file=sys.stderr)
+        print(f"diretorio inexistente: {script_dir}", file=sys.stderr)
         return 2
 
     names = closure(script_dir)

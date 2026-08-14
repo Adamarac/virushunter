@@ -55,7 +55,7 @@ def check(path):
 
             if func != "open":
                 findings.append((lineno, raw.strip(),
-                                 "gzip.%s nao existe" % func))
+                                 f"gzip.{func} nao existe"))
                 continue
 
             mode = MODE_RE.search(args)
@@ -65,8 +65,8 @@ def check(path):
             elif not mode.group(1).endswith("t"):
                 m = mode.group(1)
                 findings.append((lineno, raw.strip(),
-                                 "modo '%s' devolve bytes; use '%st' (todo dado "
-                                 "comprimido aqui e texto)" % (m, m.rstrip("b"))))
+                                 "modo '{}' devolve bytes; use '{}t' (todo dado "
+                                 "comprimido aqui e texto)".format(m, m.rstrip("b"))))
     return findings
 
 
@@ -94,23 +94,23 @@ def main(argv):
     checked = 0
     for path in targets:
         if not path.is_file():
-            print("ERRO: arquivo nao encontrado: %s" % path, file=sys.stderr)
+            print(f"ERRO: arquivo nao encontrado: {path}", file=sys.stderr)
             return 2
         checked += 1
         findings = check(path)
         if findings:
             failed = True
-            print("FALHOU  %s" % path.name)
+            print(f"FALHOU  {path.name}")
             for lineno, text, why in findings:
-                print("        linha %d: %s" % (lineno, text))
-                print("        %s" % why)
+                print(f"        linha {lineno}: {text}")
+                print(f"        {why}")
 
     if not checked:
         print("ERRO: nenhum arquivo verificado", file=sys.stderr)
         return 2
 
     if not failed:
-        print("OK      %d arquivos -- todo gzip.open usa modo texto" % checked)
+        print(f"OK      {checked} arquivos -- todo gzip.open usa modo texto")
     return 1 if failed else 0
 
 

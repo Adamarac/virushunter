@@ -1,7 +1,13 @@
 #!/usr/bin/env python
-import sys
-import os, os.path
+"""FASTQ -> FASTA, naming each record by its position in the file.
+
+The ordinal must match what recodeID.py and blast_trim.py compute for the same
+read; that shared arithmetic lives in virushunter.domain. See invariant I1.
+"""
 import gzip
+import sys
+
+from virushunter.domain import LINES_PER_RECORD, fasta_ordinal
 filename=sys.argv[1]
 print(filename)
 if filename.endswith('.gz'):f = gzip.open(filename, 'rt')

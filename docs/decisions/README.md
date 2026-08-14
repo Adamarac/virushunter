@@ -55,3 +55,5 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0010](0010-dict-ordering-behaviour-change.md) | Mudança forçada: ordem de iteração de dicionário | Aceita |
 | [0011](0011-explicit-division.md) | Divisão explícita | Aceita |
 | [0012](0012-gzip-text-mode.md) | Modo texto no gzip | Aceita |
+| [0013](0013-package-foundation.md) | Fundação do pacote e primeira extração | Aceita |
+| [0014](0014-workers-import-the-package.md) | Workers passam a importar o pacote | Aceita |
