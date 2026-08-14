@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os, os.path
+import sys
 def countFasta(filename):
     count=0
     f = open(filename, 'r')

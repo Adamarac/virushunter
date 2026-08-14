@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import os
-import os.path
-from optparse import OptionParser
-from collections import defaultdict, deque
-from bisect import bisect_left
-import re
-from operator import itemgetter
 
 # def checkBacSAM(samindex, start, end): # first scan to get the mutation positions
 	# fs1, fs2=[],[]

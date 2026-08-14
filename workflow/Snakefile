@@ -1,28 +1,18 @@
-# VirusHunter — workflow Snakemake
+# VirusHunter -- workflow Snakemake.
 #
-# Substitui o gerador de scripts shell (script/virus_hunter.py), que compilava a
-# configuração em ~50 arquivos .sh e os despachava por SSH para 20 nós de cluster.
-# A execução passou a ser local, então esse envelope de distribuição não é
-# traduzido: ele desaparece. O Snakemake resolve paralelismo com --cores, e
-# dependências pelo grafo de arquivos. Ver ADR-0016.
+# Substitui o gerador de scripts shell. A execucao e local, entao o envelope de
+# distribuicao por SSH nao foi traduzido: desapareceu. Ver ADR-0016.
 #
-# A especificação do que cada regra precisa executar é a referência capturada em
-# tests/reference/expected/ -- os comandos reais do pipeline original, com seus
-# parâmetros. Onde uma regra diverge dela, há um comentário dizendo por quê.
+# Cobre a configuracao de referencia: single-end, sem montagem, sem remocao de
+# adaptador, filtro NR por DIAMOND. Rotas opcionais ainda nao migradas.
 #
-# Uso:
-#   snakemake -n                    # dry-run: valida o DAG sem executar nada
-#   snakemake --cores 8             # execução local
-#   snakemake --configfile meu.yaml # sobrepõe config/default.yaml
-#
-# Cobre a configuração de referência: single-end, sem montagem, sem remoção de
-# adaptador, filtro NR por DIAMOND. Rotas opcionais (denovo, CLARK, NT, HMMER,
-# reAssemble) ainda não foram migradas.
+#   snakemake -n                     valida o DAG sem executar
+#   snakemake --cores 8              execucao local
+#   snakemake --configfile meu.yaml  sobrepoe config/default.yaml
 
 import sys
 from pathlib import Path
 
-# O pacote vive em src/; workflow/ é irmão dele.
 sys.path.insert(0, str(Path(workflow.basedir).parent / "src"))
 
 from virushunter.config import load as load_config
@@ -44,22 +34,14 @@ wildcard_constraints:
     split=r"\d+",
 
 
-# ---------------------------------------------------------------------------
 # Alvo final
-# ---------------------------------------------------------------------------
 rule all:
     input:
         expand("blast_filter_out/{sample}_blast_filter.txt", sample=SAMPLES),
         "blast_filter_out/all_blast_filter.txt",
 
 
-# ---------------------------------------------------------------------------
 # Depleção de hospedeiro
-#
-# Na configuração de referência keep_human=false e keep_bacteria=true, então só o
-# índice humano é usado -- sam2fq_bac.py recebe start=end=0. Os 27 índices
-# bacterianos existem na config mas não entram nesta rota.
-# ---------------------------------------------------------------------------
 rule host_align:
     input:
         # Resolved from what is on disk: sample S1 lives in a file called
@@ -73,8 +55,8 @@ rule host_align:
         bowtie2=TOOLS["bowtie2"],
     threads: cfg["compute.threads"]
     shell:
-        # --reorder é obrigatório: os consumidores leem os SAMs em lockstep
-        # posicional (invariante I2). --no-hd mantém contagem de linhas == leituras.
+        # --reorder e --no-hd sao obrigatorios: os SAMs sao lidos em lockstep
+        # posicional e a contagem de linhas precisa igualar a de leituras (I2).
         "{params.bowtie2} --quiet --local --very-fast-local --no-hd --reorder "
         "-p {threads} -x {params.index} -U {input.fastq} -S {output.sam}"
 
@@ -88,14 +70,11 @@ rule host_filter:
         script=SCRIPTS + "sam2fq_bac.py",
         prefix=lambda w: f"fastq/{w.sample}",
     shell:
-        # Leituras alinhadas são MASCARADAS, não removidas: a identidade de uma
-        # leitura é sua posição no arquivo (invariante I1).
+        # Mascara, nao remove: a identidade e a posicao no arquivo (I1).
         "python {params.script} {params.prefix} 0 0 {output.filtered}"
 
 
-# ---------------------------------------------------------------------------
 # Deduplicação clonal
-# ---------------------------------------------------------------------------
 rule dedup:
     input:
         "fastq/{sample}_1.fil",
@@ -107,12 +86,7 @@ rule dedup:
         "python {params.script} {input} {output}"
 
 
-# ---------------------------------------------------------------------------
 # Recodificação de identidade
-#
-# remove_adaptor=false na referência, então não há blastn de adaptador nem trim
-# de qualidade -- apenas a recodificação. Ver config/default.yaml.
-# ---------------------------------------------------------------------------
 rule recode_ids:
     input:
         "fastq/{sample}_1.dup",
@@ -137,9 +111,7 @@ rule length_filter:
         "python {params.script} {input} {output} {params.min_length}"
 
 
-# ---------------------------------------------------------------------------
 # Preparo das leituras
-# ---------------------------------------------------------------------------
 rule reads_to_fastq:
     input:
         "fastq/{sample}_1_sequence.txt",
@@ -161,13 +133,7 @@ rule reads_to_fasta:
         "python {params.script} {input} {output} {params.min_length}"
 
 
-# ---------------------------------------------------------------------------
 # Query do BLAST
-#
-# Sem montagem (assembly.mode == "no"), a query é só as leituras. No original o
-# `cat` incluía <sample>_contig4, que nunca é criado nesse modo, e o comando
-# seguia adiante por tolerância do cat. Aqui a dependência é explícita.
-# ---------------------------------------------------------------------------
 rule build_query:
     input:
         "fastq/{sample}.fa",
@@ -189,9 +155,7 @@ rule split_query:
         "python {params.script} {input} {params.n}"
 
 
-# ---------------------------------------------------------------------------
 # Triagem viral
-# ---------------------------------------------------------------------------
 rule blast_virus:
     input:
         "fastq/{sample}_c_{split}",
@@ -235,12 +199,7 @@ rule merge_significant:
         "cat {input} > {output}"
 
 
-# ---------------------------------------------------------------------------
 # Filtro contra NR
-#
-# ADR-0007 deixou pendente passar --evalue explícito ao DIAMOND. Reproduzido como
-# está: sem --evalue, o limiar efetivo é o padrão da ferramenta, não params.evalue.
-# ---------------------------------------------------------------------------
 rule diamond_nr:
     input:
         "fastq/{sample}_sig",
@@ -277,8 +236,8 @@ rule merge_filtered:
     output:
         "blast_filter_out/{sample}_blast_filter.txt",
     shell:
-        # Blocos posicionais de 11 linhas (invariante I4): a concatenação só
-        # funciona porque todo bloco tem o mesmo tamanho.
+        # Blocos posicionais de 11 linhas; a concatenacao so vale porque todos
+        # tem o mesmo tamanho (I4).
         "cat {input} > {output}"
 
 

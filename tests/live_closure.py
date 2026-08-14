@@ -1,18 +1,9 @@
 #!/usr/bin/env python3
-"""Print the live closure: the .py files virus_hunter.py actually reaches.
+"""Imprime o fecho vivo: os .py que virus_hunter.py realmente alcanca.
 
-Starts from the reference orchestrator (ADR-0004) plus get_CPU.py, which is
-invoked over ssh from serverInfo() rather than by name in the source, and follows
-script references and local imports transitively.
-
-Commented-out references are ignored on purpose. The orchestrator carries a large
-amount of dead commented code naming scripts that nothing invokes; counting those
-inflates the closure and would drag legacy files back in.
-
-The result is deliberately not committed: computing it on demand means it cannot
-drift away from the source.
-
-Usage:  python3 tests/live_closure.py [script_dir]
+Referencias em codigo comentado sao ignoradas -- o orquestrador carrega muito
+codigo morto que nomeia scripts que ninguem invoca. Calculado sob demanda para
+nao divergir do fonte.
 """
 
 import re

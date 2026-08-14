@@ -1,18 +1,10 @@
 #!/bin/sh
-# Check that workers can still read gzipped FASTQ under Python 3.
+# Verifica que os workers leem FASTQ comprimido sob Python 3.
 #
-# Sequencing data arrives compressed -- virus_hunter.py passes .fastq.gz straight
-# to these workers -- so this is the normal path, not an edge case.
+# Caminho normal, nao borda: os dados chegam em .gz. Em Python 3 os modos 'r',
+# 'rb' e omitido devolvem bytes; so 'rt' devolve str. Ver ADR-0012.
 #
-# Under Python 2, gzip.open returned byte strings and byte strings were str, so
-# the string work that follows just worked. Under Python 3 the same call returns
-# bytes, and the trap is that the obvious modes do not help: 'r', 'rb' and an
-# omitted mode all yield bytes. Only 'rt' yields str.
-#
-# Needs only Python: no BLAST, no bowtie2, no databases.
-#
-# Usage:  sh tests/test_gzip_input.sh
-# Exit:   0 pass, 1 fail, 2 cannot run
+# Uso:  sh tests/test_gzip_input.sh
 
 set -eu
 

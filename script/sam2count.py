@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import os
-import os.path
-from optparse import OptionParser
-from collections import defaultdict, deque
-from bisect import bisect_left
-from operator import itemgetter
+from collections import defaultdict
 
 # def maxMat(MD):
 	# MD=MD.replace('A', ' ').replace('C', ' ').replace('G', ' ').replace('T', ' ').replace('^', ' ').replace('N', ' ')

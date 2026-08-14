@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
 from Bio.Blast import NCBIXML
-from collections import defaultdict
-import operator
 import sys
-import os
-import os.path
 
 if __name__ == '__main__': 
 	fname=sys.argv[1]

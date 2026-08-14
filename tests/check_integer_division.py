@@ -1,27 +1,9 @@
 #!/usr/bin/env python3
-"""Find divisions by an integer literal that were integer division under Python 2.
+"""Rejeita divisao por literal inteiro sem `//` ou `float()` no fecho vivo.
 
-In Python 2 `7/4` is 1. In Python 3 it is 1.75. The operator did not change
-spelling, so a migration that only fixes syntax leaves every one of these
-silently returning a different value.
-
-This codebase cannot absorb that. Read identity is the read's position in the
-file (invariant I1): recodeID.py computes `lineno = i/4` and emits
-`@s<lineno>_<pair>_<library>`. Under Python 3 that becomes `@s1.0_1_lib`, and
-every downstream consumer -- pair lookup, virus grouping, linecache retrieval --
-silently fails to match. fq2faID.py builds the FASTA side of the same identifier
-and has to agree with it exactly.
-
-The rule enforced: in the live closure, a division involving an integer literal
-must say what it means -- `//` for integer division, or `float()` on an operand
-for real division. A bare `/` is rejected.
-
-Deliberately strict. Being explicit costs one character and removes a whole class
-of defect that produces plausible wrong output rather than an error.
-
-Usage:  python3 tests/check_integer_division.py [file ...]
-        with no arguments, checks the live closure
-Exit:   0 clean, 1 finding, 2 bad usage
+Em Python 2, `7/4` e 1; em Python 3, 1.75. O operador nao mudou de grafia, entao
+migrar so a sintaxe deixa cada uma devolvendo outro valor em silencio -- e uma
+delas gera a identidade das leituras. Ver ADR-0011.
 """
 
 import re

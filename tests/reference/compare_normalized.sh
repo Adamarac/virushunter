@@ -1,18 +1,10 @@
 #!/bin/sh
-# Compare two generator captures ignoring node assignment and line order.
+# Compara duas capturas ignorando atribuicao de no e ordem de linha.
 #
-# Python 2 and Python 3 iterate dicts differently, so the migrated generator
-# assigns samples to cluster nodes in a different order and emits script lines in
-# a different sequence. Neither changes what work gets done. This tool exists to
-# prove that: it strips the "ssh <node>" prefix and sorts the lines, so what
-# remains is the set of commands each capture would run.
+# Existe para provar que a mudanca de ordem de iteracao entre Python 2 e 3 nao
+# altera o conjunto de trabalho. Ver ADR-0010.
 #
-# Used to justify re-freezing the reference after the Python 3 migration
-# (ADR-0010). Keep it: the same question comes back on any change that touches
-# scheduling or iteration order.
-#
-# Usage:  sh tests/reference/compare_normalized.sh <dirA> <dirB>
-# Exit:   0 same work set, 1 differs, 2 bad usage
+# Uso:  sh tests/reference/compare_normalized.sh <dirA> <dirB>
 
 set -eu
 

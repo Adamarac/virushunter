@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import sys
-from operator import itemgetter, attrgetter
-import linecache
 from collections import defaultdict
 
 def getBarcode(line, cwd):

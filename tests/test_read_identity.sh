@@ -1,22 +1,11 @@
 #!/bin/sh
-# Check invariant I1 end to end: a read's identity is its position in the file.
+# Verifica o invariante I1: recodeID.py, fq2faID.py e blast_trim.py precisam
+# emitir o mesmo ordinal para a mesma leitura.
 #
-# Three scripts build that identity and must agree on the ordinal:
+# Sem a correcao do ADR-0011 o ordinal vira float e o identificador sai como
+# @s0.25_1_lib, sem erro e sem casar com nada.
 #
-#   recodeID.py    @s<n>_<pair>_<library>   "consistent with fq2faID.py"
-#   fq2faID.py     ><fileID>_<n>            "consistent with blast_trim.py"
-#   blast_trim.py  @s<n>_<pair>_<library>   "consistent with fq2faID.py"
-#
-# The ordinal is i/4 over the line counter. Under Python 2 that is integer
-# division; under Python 3 it is real division, so without the fix these emit
-# @s0.0_1_lib and >lib_0.0. Nothing raises. The pipeline runs to completion and
-# silently stops matching reads to their pairs.
-#
-# First behavioural test of a worker in this repository. Needs only Python -- no
-# BLAST, no bowtie2, no databases.
-#
-# Usage:  sh tests/test_read_identity.sh
-# Exit:   0 pass, 1 fail, 2 cannot run
+# Uso:  sh tests/test_read_identity.sh
 
 set -eu
 

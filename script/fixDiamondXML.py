@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-from collections import defaultdict
-import operator
 import sys
-import os
-import os.path
 
 f = open(sys.argv[1], 'r')
 of = open(sys.argv[2], 'w')

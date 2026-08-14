@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 from Bio.Blast import NCBIXML
-from collections import defaultdict
-import operator
 import sys
-import os
-import os.path
 import linecache
-import re
 
 def CacheLines(fname): 
 	cache={}

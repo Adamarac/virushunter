@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import os
 
 def fq_pair_clean(f1, f2, of1, of2, length=1):
 	i=1

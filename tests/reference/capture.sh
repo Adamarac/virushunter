@@ -1,21 +1,12 @@
 #!/bin/sh
-# Capture the reference output of the Python 2 generator.
+# Captura a saida do gerador Python 2 como referencia congelada.
 #
-# virus_hunter.py does not run the pipeline -- it writes ~40 shell scripts plus
-# pipeline_run.sh. Those scripts are the real, complete description of every
-# command the pipeline would execute. Capturing them gives us an executable
-# specification to hold the migration against, without needing BLAST, bowtie2 or
-# any database.
+# O fonte roda sem modificacao: um `ssh` falso no PATH responde a serverInfo() com
+# valores fixos, e /mnt/work vira symlink para /work porque o gerador escreve por
+# caminho absoluto e relativo. Ver tests/reference/README.md e ADR-0010.
 #
-# The source is run UNMODIFIED. The only thing the generator needs that we do not
-# have is the cluster: serverInfo() shells out to `ssh <node> get_CPU.py <node>`
-# to read each node's CPU and RAM. We satisfy that with a fake `ssh` earlier on
-# PATH that reports fixed values, so the capture is deterministic. Fixing those
-# values also removes the K7 non-determinism (SPAdes memory derived from whichever
-# node picked up the job) from the reference.
-#
-# Usage:  sh tests/reference/capture.sh [outdir]
-# Default outdir: tests/reference/expected
+# Uso:  sh tests/reference/capture.sh [outdir]
+#       VH_PY_IMAGE=python:2.7-slim ... para re-congelar com Python 2
 
 set -eu
 

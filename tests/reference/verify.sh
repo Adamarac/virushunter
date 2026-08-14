@@ -1,17 +1,11 @@
 #!/bin/sh
-# Re-capture the generator output and compare it against the committed reference.
+# Compara a saida atual do gerador com a referencia congelada.
 #
-# This is the strongest behavioural check available for the migration. The
-# generator's entire job is to emit the shell scripts that describe every command
-# the pipeline runs; if the migrated code emits byte-identical scripts, behaviour
-# was preserved. It needs no BLAST, no bowtie2 and no databases -- only Docker.
+# _stderr.txt fica fora da comparacao: carrega ruido do ambiente que varia entre
+# execucoes. A contagem de artefatos e conferida porque uma captura vazia ja
+# passou por "identica" uma vez.
 #
-# _stderr.txt is excluded from the comparison: it carries environment noise (a
-# "find: write error" from the host filesystem, a harmless `rm` complaint) that
-# varies between runs while every generated artefact stays identical.
-#
-# Usage:  sh tests/reference/verify.sh
-# Exit:   0 identical, 1 drift, 2 cannot run
+# Uso:  sh tests/reference/verify.sh    Exit: 0 identico, 1 divergiu, 2 nao rodou
 
 set -eu
 

@@ -1,33 +1,9 @@
 #!/usr/bin/env python3
-"""Guard against side effects at module level.
+"""Rejeita efeito colateral em nivel de modulo.
 
-The pipeline is written in Python 2, which is not installed on most machines
-today, so this check is deliberately lexical: it reads the source as text and
-never imports or parses it. That is the point -- importing the file is the very
-thing we are trying to keep safe.
-
-What it enforces: no statement at column 0 may invoke a call. A module that only
-defines functions and binds literals can be imported for inspection or testing
-without reaching the network or the filesystem.
-
-Scope: this applies to modules that get imported. Most workers in script/ are
-standalone programs that are only ever executed, and doing their work at module
-level is unremarkable for those -- running this check against them reports
-findings that are not defects. The targets that matter are the orchestrator and
-anything imported from it.
-
-Limitation: it does not follow imports, so it checks each file on its own. A
-clean file that imports a dirty one still pays that file's side effects. Pass
-every module you care about, not just the entry point.
-
-Background: virus_hunter.py used to run `SI=serverInfo()` at module level, which
-opened SSH connections to twenty nodes on import. firstpage.py imports that
-module, so the final reporting step of every run inherited the behaviour, and no
-part of the codebase could be imported or tested off-cluster.
-See docs/decisions/0006-no-import-side-effects.md.
-
-Usage:  python3 tests/check_no_import_side_effects.py [file ...]
-Exit:   0 clean, 1 side effect found, 2 bad usage
+Verificacao lexica: nunca importa o alvo, que e justamente o que se quer manter
+seguro. Vale para modulos importados; workers autonomos fazem trabalho em nivel
+de modulo por natureza. Ver ADR-0006.
 """
 
 import re

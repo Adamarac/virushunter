@@ -1,19 +1,8 @@
-"""Random access into a FASTA file by record header.
+"""Acesso aleatorio a FASTA por cabecalho de registro.
 
-Six workers in the live closure carry a byte-identical copy of this: a
-`CacheLines` that maps each header to the span of lines holding its sequence,
-and a `getSeq` that stitches those lines back together through `linecache`.
-blast_filter_NR.py, blast_output_sort.py, blast_parser.py, clark_result.py,
-diamond_filter_NR.py and samNT.py.
-
-Copy number six is what makes it worth extracting: a fix applied to one copy is
-a fix missing from five.
-
-The original design is kept -- an index of line spans plus `linecache` -- rather
-than replaced with something that holds sequences in memory. These files run to
-tens of gigabytes, and the whole point of the line-span approach is to avoid
-loading them. What changes is that the index is now an object with a defined
-contract instead of a bare dict passed between functions.
+Substitui uma copia byte a byte de CacheLines/getSeq presente em seis workers.
+Mantem o desenho por intervalos de linha + linecache: esses arquivos chegam a
+dezenas de gigabytes e carrega-los em memoria e justamente o que se evita.
 """
 
 from __future__ import annotations
