@@ -190,6 +190,28 @@ resultado desejado, mas é mudança de comportamento para eles.
 [ADR-0004](decisions/0004-virus-hunter-as-reference.md) e serão removidos em incremento
 próprio. Registrado para que a falha, quando ocorrer, seja reconhecível.
 
+### K25 — A configuração commitada não roda até o fim
+
+**Evidência.** Na referência capturada, `bowtiesam2fq.sh` produz apenas `S1_1.fil`, porque
+`sam2fq_bac.py` recebe 4 argumentos (modo single-end). Mas `clonetrim.sh` deduplica
+`S1_1.fil` **e** `S1_2.fil`, e `skipbowtie.sh` — único produtor de `_2.fil` — não entra
+neste caminho, já que `keep_human=false` desvia para o `bowtieBac`.
+
+A cadeia quebra em seguida: sem `_2.fil` não há `_2.dup`, sem `_2.dup` não há `_2.trim`, e
+`fq_pair_clean.py` é chamado em modo par exigindo os dois.
+
+**Causa.** `pair=false` faz `sam2fq()` emitir a forma de arquivo único, mas `trim()` e
+`skip_adaptor()` iteram sobre **todos** os arquivos da amostra, ignorando o flag.
+
+**Impacto.** Reforça o que [ADR-0004](decisions/0004-virus-hunter-as-reference.md) já
+concluíra por outro caminho: o estado commitado é de teste, não de produção. Também explica
+por que o efeito é invisível — o `except` nu do `dedup.py` imprime *"usage"* e sai com
+sucesso quando o arquivo não existe.
+
+**Recomendação.** Nenhuma correção no gerador legado. O workflow Snakemake trata apenas
+`_1` de ponta a ponta, que é internamente consistente e corresponde ao que de fato é
+produzido. Divergência deliberada, registrada aqui.
+
 ## Médias
 
 | # | Problema | Evidência |

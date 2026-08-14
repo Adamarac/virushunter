@@ -45,6 +45,7 @@ rule all:
         "report/hitTable",
         "report/index.html",
         expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
+        "report/.published",
 
 
 # Depleção de hospedeiro
@@ -590,3 +591,105 @@ rule assembled_contigs:
     shell:
         "cat {input.singlets} {input.contigs} > {params.merged} && "
         "python {params.script} {params.merged} {output} {params.min_length} {params.label}"
+
+
+# ---------------------------------------------------------------------------
+# QC de composicao: histogramas de polyA/polyC/polyG antes e depois da limpeza.
+# polyA.py escreve os dados e o script R que os plota; o R roda em seguida.
+# ---------------------------------------------------------------------------
+rule polya_raw:
+    input:
+        lambda w: FASTQ[(w.sample, w.pair)],
+    output:
+        data="report/hist/{sample}_{pair}_raw_hist.txt",
+        rscript="report/hist/{sample}_{pair}_raw_hist.R",
+    params:
+        script=SCRIPTS + "polyA.py",
+        prefix=lambda w: f"report/hist/{w.sample}_{w.pair}",
+    log:
+        "logs/polya_raw_{sample}_{pair}.log",
+    shell:
+        "python {params.script} {input} {params.prefix} raw > {log} 2>&1"
+
+
+rule polya_clean:
+    input:
+        "fastq/{sample}_{pair}_sequence.txt",
+    output:
+        data="report/hist/{sample}_{pair}_clean_hist.txt",
+        rscript="report/hist/{sample}_{pair}_clean_hist.R",
+    params:
+        script=SCRIPTS + "polyA.py",
+        prefix=lambda w: f"report/hist/{w.sample}_{w.pair}",
+    log:
+        "logs/polya_clean_{sample}_{pair}.log",
+    shell:
+        "python {params.script} {input} {params.prefix} clean > {log} 2>&1"
+
+
+rule plot_histogram:
+    input:
+        "report/hist/{sample}_{pair}_{stage}_hist.R",
+    output:
+        "report/hist/{sample}_{pair}_{stage}_hist.png",
+    params:
+        rout=lambda w: f"report/hist/{w.sample}_{w.pair}_{w.stage}_hist.Rout",
+    shell:
+        "R CMD BATCH --quiet --vanilla {input} {params.rout}"
+
+
+# ---------------------------------------------------------------------------
+# Banco BLAST por amostra, para consulta interativa pela camada PHP.
+# ---------------------------------------------------------------------------
+rule sample_blastdb:
+    input:
+        "fastq/{sample}.fa",
+    output:
+        multiext("report/blast/{sample}_blastdb", ".nhr", ".nin", ".nsq"),
+    params:
+        prefix=lambda w: f"report/blast/{w.sample}_blastdb",
+    log:
+        "logs/blastdb_{sample}.log",
+    shell:
+        "mkdir -p report/blast && "
+        "makeblastdb -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
+        "> {log} 2>&1"
+
+
+rule blastdb_alias:
+    input:
+        expand("report/blast/{sample}_blastdb.nhr", sample=SAMPLES),
+    output:
+        "report/blast/report_blastdb.nal",
+    params:
+        script=SCRIPTS + "blastAlias.py",
+    log:
+        "logs/blastdb_alias.log",
+    shell:
+        "python {params.script} report report/blast/ > {log} 2>&1"
+
+
+# ---------------------------------------------------------------------------
+# Publicacao: reune o que a camada web serve. No original era movetowww.sh, uma
+# sequencia de `cp -r` sem dependencia declarada; aqui as entradas sao explicitas.
+# ---------------------------------------------------------------------------
+rule publish:
+    input:
+        summaries=expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
+        all_summary="blast_filter_out/all_blast_filter.html",
+        index="report/index.html",
+        table="report/hitTable",
+        alias="report/blast/report_blastdb.nal",
+        pies=expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
+        histograms=expand(
+            "report/hist/{sample}_{pair}_{stage}_hist.png",
+            sample=SAMPLES, pair=["1"], stage=["raw", "clean"],
+        ),
+    output:
+        touch("report/.published"),
+    params:
+        php=SCRIPTS + "*.php",
+    shell:
+        "cp -r blast_filter_out/aln blast_filter_out/fasta report/ 2>/dev/null || true; "
+        "cp blast_filter_out/*.html blast_filter_out/*.xls report/ 2>/dev/null || true; "
+        "cp {params.php} report/ 2>/dev/null || true"

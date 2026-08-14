@@ -67,10 +67,15 @@ check report_sample     2
 check report_all        1
 check merge_table       1
 check index_page        1
+check polya_raw         2
+check polya_clean       2
+check plot_histogram    4
+check sample_blastdb    2
+check publish           1
 
 total=$(awk "\$1 == \"total\" { print \$2 }" dag.txt | head -1)
-if [ "$total" != "337" ]; then
-  echo "FALHA: total de $total jobs, esperado 337"
+if [ "$total" != "349" ]; then
+  echo "FALHA: total de $total jobs, esperado 349"
   fail=1
 fi
 
