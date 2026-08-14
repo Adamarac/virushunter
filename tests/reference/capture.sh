@@ -42,6 +42,8 @@ find "$OUT" -mindepth 1 -delete
 
 docker run --rm \
   -v "$ROOT/script:/src:ro" \
+  -v "$ROOT/src:/pkg:ro" \
+  -v "$ROOT/config:/config:ro" \
   -v "$ROOT/tests/reference/fixture:/fixture:ro" \
   -v "$OUT:/out" \
   -w /work \
@@ -61,6 +63,16 @@ export PATH
 # writable copy of the tree the generator expects
 cp -r /fixture/fastq /work/fastq
 cp /src/virus_hunter.py /work/
+
+# The generator now reads config/default.yaml through the package (ADR-0015), so
+# both have to be reachable, laid out as the loader expects: <root>/config beside
+# <root>/src.
+mkdir -p /app
+cp -r /pkg /app/src
+cp -r /config /app/config
+PYTHONPATH=/app/src
+export PYTHONPATH
+pip install --quiet pyyaml 2>/dev/null
 
 # The generator computes wd = "/mnt" + cwd and writes some artefacts through that
 # absolute path while writing others relative to cwd. Make both resolve to the

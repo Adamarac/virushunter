@@ -7,6 +7,12 @@ import sys
 import itertools
 import subprocess
 
+from virushunter.config import load as load_config
+
+# Parameters used to be literals in this file; they now come from
+# config/default.yaml, whose values reproduce them exactly. See ADR-0015.
+cfg = load_config()
+
 # samtools lcurses to lncurses
 # find . -iname "*.gz" -type f -exec /bin/mv {} /mnt/cluster2/xdeng/SatishRNASeq/ \;
 # https://stat.ethz.ch/pipermail/r-help/2006-April/103372.html
@@ -203,105 +209,60 @@ def serverInfo():
 		SI[server]=(CPU, RAM)
 	return SI
 
-superservers=['bsidna35']
+superservers = list(cfg['cluster.high_memory_nodes'])
 
 # servers=['bsidna3']
-trinitypath='/mnt/cluster/xdeng/tools/trinityrnaseq-2.2.0/'
+trinitypath = cfg['tools.spades_dir']
 #spadepath='/mnt/cluster/xdeng/tools/SPAdes-3.8.0-Linux/bin/'
-spadepath='/mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/'
+spadepath = cfg['tools.spades_dir']
 #spadepath='/mnt/cluster/tools/SPAdes-3.13.1-Linux/bin/'
 #diamondpath='/mnt/cluster/tools/diamond'
-cap3path = '/mnt/cluster/xdeng/tools/CAP3/cap3'
-soappath='/mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer'
-velvetg='/mnt/cluster/tools/MetaVelvet-1.2.02/velvetg'
-velveth='/mnt/cluster/tools/MetaVelvet-1.2.02/velveth'
-abysspath='/mnt/cluster/tools/abyss/bin/abyss-pe'
+cap3path = cfg['tools.cap3']
+soappath = cfg['tools.soapdenovo']
+velvetg = cfg['tools.velvetg']
+velveth = cfg['tools.velveth']
+abysspath = cfg['tools.abyss_pe']
 meta_velvetg="/mnt/cluster/tools/MetaVelvet-1.2.02/meta-velvetg"
-bowtiepath='/mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2' 
-blastxpath='/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx'
-blastnpath='/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn'
-dustmaskerpath='/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker'
-samtools='/mnt/cluster/xdeng/tools/samtools-1.2/samtools'
-rapsearch='/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/rapsearch'
-prerapsearch='/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch'
-newdiamondpath='/mnt/cluster/xdeng/tools/diamond/diamond' #new version of diamond can generate xml blast format
+bowtiepath = cfg['tools.bowtie2']
+blastxpath = cfg['tools.blastx']
+blastnpath = cfg['tools.blastn']
+dustmaskerpath = cfg['tools.dustmasker']
+samtools = cfg['tools.samtools']
+rapsearch = cfg['tools.rapsearch']
+prerapsearch = cfg['tools.prerapsearch']
+newdiamondpath = cfg['tools.diamond']
 diamondpath=newdiamondpath
 
-diamonddb='/mnt/cluster/xdeng/blastdb/diamond.dmnd'
-bowtieindexpath='/mnt/cluster/xdeng/hg38/mrnadna_bowtie'
+diamonddb = cfg['databases.diamond_nr']
+bowtieindexpath = cfg['databases.human_bowtie_index']
 			
-bowtiebacs= [
-			'/mnt/cluster/xdeng/nt/Bacteria1', \
-			'/mnt/cluster/xdeng/nt/Bacteria2', \
-			'/mnt/cluster/xdeng/nt/Bacteria3', \
-			'/mnt/cluster/xdeng/nt/Bacteria4', \
-			'/mnt/cluster/xdeng/nt/Bacteria5', \
-			'/mnt/cluster/xdeng/nt/Bacteria6', \
-			'/mnt/cluster/xdeng/nt/Bacteria7', \
-			'/mnt/cluster/xdeng/nt/Bacteria8', \
-			'/mnt/cluster/xdeng/nt/Bacteria9', \
-			'/mnt/cluster/xdeng/nt/Bacteria10', \
-			'/mnt/cluster/xdeng/nt/Bacteria11', \
-			'/mnt/cluster/xdeng/nt/Bacteria12', \
-			'/mnt/cluster/xdeng/nt/Bacteria13', \
-			'/mnt/cluster/xdeng/nt/Bacteria14', \
-			'/mnt/cluster/xdeng/nt/Bacteria15', \
-			'/mnt/cluster/xdeng/nt/Bacteria16', \
-			'/mnt/cluster/xdeng/nt/Bacteria17', \
-			'/mnt/cluster/xdeng/nt/Bacteria18', \
-			'/mnt/cluster/xdeng/nt/Bacteria19', \
-			'/mnt/cluster/xdeng/nt/Bacteria20', \
-			'/mnt/cluster/xdeng/nt/Bacteria21', \
-			'/mnt/cluster/xdeng/nt/Bacteria22', \
-			'/mnt/cluster/xdeng/nt/Bacteria23', \
-			'/mnt/cluster/xdeng/nt/Bacteria24', \
-			'/mnt/cluster/xdeng/nt/Bacteria25', \
-			'/mnt/cluster/xdeng/nt/Bacteria26', \
-			'/mnt/cluster/xdeng/nt/Bacteria27'
-			
-			#'/mnt/cluster/xdeng/malaria/malaria'
-			#'/mnt/cluster/xdeng/insect/insect',
-			#'/mnt/cluster/xdeng/zebrafish/zebra' #,\
-			#'/mnt/cluster/xdeng/mosquito/mosquito'
-			]
-bowtieNTIndex= ['/mnt/cluster/xdeng/taxon/nt_1', \
-				'/mnt/cluster/xdeng/taxon/nt_2', \
-				'/mnt/cluster/xdeng/taxon/nt_3', \
-				'/mnt/cluster/xdeng/taxon/nt_4', \
-				'/mnt/cluster/xdeng/taxon/nt_5', \
-				'/mnt/cluster/xdeng/taxon/nt_6', \
-				'/mnt/cluster/xdeng/taxon/nt_7', \
-				'/mnt/cluster/xdeng/taxon/nt_8', \
-				'/mnt/cluster/xdeng/taxon/nt_9', \
-				'/mnt/cluster/xdeng/taxon/nt_10', \
-				'/mnt/cluster/xdeng/taxon/nt_11', \
-				'/mnt/cluster/xdeng/taxon/nt_12', \
-				'/mnt/cluster/xdeng/taxon/nt_13', \
-				'/mnt/cluster/xdeng/taxon/nt_14'
-			]
+bowtiebacs = [cfg['databases.bacteria_bowtie_prefix'] + str(i)
+              for i in range(1, cfg['databases.bacteria_index_count'] + 1)]
+bowtieNTIndex = [cfg['databases.nt_bowtie_prefix'] + str(i)
+                 for i in range(1, cfg['databases.nt_index_count'] + 1)]
 #including 3 insect genomes
-diamondvirusdb='/mnt/cluster/xdeng/blastdb/virusdiamond.dmnd'
-hmmannot='/mnt/cluster/xdeng/blastdb/vFam/annot2014.txt'
+diamondvirusdb = cfg['databases.diamond_virus']
+hmmannot = cfg['databases.vfam_annotation']
 virusdbpath='/mnt/cluster/xdeng/blastdb/virus_mask'
-virusdbpathDNA='/mnt/cluster/xdeng/blastdb/virus_DNA_mask' 
+virusdbpathDNA = cfg['databases.virus_dna']
 #virusdbpath='/mnt/cluster/xdeng/blastdb/viral_pasteur_mask'
-phagedbpath='/mnt/cluster/xdeng/blastdb/phage_mask'
-virusphagedbpath='/mnt/cluster/xdeng/blastdb/virusphage_mask'
+phagedbpath = cfg['databases.phage']
+virusphagedbpath = cfg['databases.virus_phage']
 #phan_phagedbpath='/mnt/cluster/xdeng/blastdb/phan_phage_mask'
 #nvnrdbpath='/mnt/cluster/xdeng/blastdb/nvrefseq'
-nvnrdbpath='/mnt/cluster/xdeng/blastdb/nvnr'
-vfampath='/mnt/cluster/xdeng/blastdb/vFam/vFam-A_2014.hmm'
-rapdbnr='/mnt/cluster/xdeng/blastdb/nvrap'
-nvnrfa = '/mnt/cluster/xdeng/blastdb/nvrefseq.fa'
-virusfa = '/mnt/cluster/xdeng/blastdb/virus.fa'
-dirscr='/mnt/cluster/xdeng/script/'
-Raytool='/mnt/cluster2/xdeng/tools/Ray2.3/Ray'
-picard = '/mnt/cluster/xdeng/tools/picard-tools-1.136/'
+nvnrdbpath = cfg['databases.non_viral_nr']
+vfampath = cfg['databases.vfam_hmm']
+rapdbnr = cfg['databases.rapsearch_nr']
+nvnrfa = cfg['databases.non_viral_fasta']
+virusfa = cfg['databases.virus_fasta']
+dirscr = cfg['tools.scripts_dir']
+Raytool = cfg['tools.ray']
+picard = cfg['tools.picard_dir']
 nservers=len(servers)
 nsuperservers=len(superservers)
 
 #hmmerpath = '/mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/phmmer'
-hmmerpath = '/mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch'
+hmmerpath = cfg['tools.hmmsearch']
 # -o  hello  tutorial/HBB_HUMAN tutorial/globins45.fa
 
 
@@ -579,7 +540,7 @@ def mergePairFq():
 	seeds=seeds2
 	for key in seeds:
 		print(key, seeds[key])
-	pair=False
+	pair = cfg['steps.paired_end']
 	f.close()
 	#return (seeds, pair)
 
@@ -1951,48 +1912,48 @@ if __name__ == "__main__":
 		sys.exit()
 	
 	password='Welcome39'
-	n=50 #50 #number fo splits
-	length=50 #lengh reads for blast
-	contigLength1 = 300 #length before cap3
-	contigLength2 = 1500 #length after cap3 before blast
-	myslen = 1000
-	fasta=False
-	bam=False
+	n = cfg['compute.query_splits']
+	length = cfg['params.min_read_length']
+	contigLength1 = cfg['params.contig_length_pre_cap3']
+	contigLength2 = cfg['params.contig_length_post_cap3']
+	myslen = cfg['params.mystery_min_length']
+	fasta = cfg['steps.input.from_fasta']
+	bam = cfg['steps.input.from_bam']
 	mira_local=False
-	sra=False
-	keep_human=False
-	keep_bac=True
+	sra = cfg['steps.input.sra_prep']
+	keep_human = cfg['steps.host_filter.keep_human']
+	keep_bac = cfg['steps.host_filter.keep_bacteria']
 	pair=False
-	mergePair=False
-	phage='False' #'Both' #'False', 'True'
-	rm_adaptor=False
-	skipread=False
-	doMyth=False
-	doAssembly= 'no' # 'denovo'#, 'trinity' #, 'no', #Trinity is spade
+	mergePair = cfg['steps.merge_pairs']
+	phage = cfg['steps.viral_search.phage']
+	rm_adaptor = cfg['steps.remove_adaptor']
+	skipread = cfg['steps.skip_reads']
+	doMyth = cfg['steps.mystery']
+	doAssembly = cfg['steps.assembly.mode']
 	#doAssembly=  #'trinity' #, 'no', #Trinity is spade
-	dedup=True
-	doHmmer=False
-	doreAssemb=False
+	dedup = cfg['steps.dedup']
+	doHmmer = cfg['steps.hmmer']
+	doreAssemb = cfg['steps.reassemble']
 	internal=False
 	dorapsearch=False
-	donrfilter=True
-	doNT=False
-	genBlast=True
-	genBowtie=True 
-	doClark=False
-	virusdbpath='/mnt/cluster/xdeng/blastdb/virus_mask'
-	doDiamondOnly=False
-	doDNA=False
+	donrfilter = cfg['steps.nr_filter']
+	doNT = cfg['steps.nt_route']
+	genBlast = cfg['steps.output.blast_databases']
+	genBowtie = cfg['steps.output.copy_fastq']
+	doClark = cfg['steps.clark']
+	virusdbpath = cfg['databases.virus_protein']
+	doDiamondOnly = cfg['steps.viral_search.diamond_only']
+	doDNA = cfg['steps.viral_search.nucleotide']
 	if doDiamondOnly:
 		n=1
 	#virusdbpath='/mnt/cluster/xdeng/blastdb/viral_pasteur_mask'
 
-	thread = '48'
-	EVALUE='0.01'#'0.01' #threshold for virus
-	abysskmer='31'
-	soapkmer='31'
-	metakmer='31'
-	hsp='NO' # show whole reads, if 'YES' show only blast hsp
+	thread = str(cfg['compute.threads'])
+	EVALUE = cfg['params.evalue']
+	abysskmer = cfg['params.kmers.abyss']
+	soapkmer = cfg['params.kmers.soap']
+	metakmer = cfg['params.kmers.metavelvet']
+	hsp = cfg['params.hsp_only']
 	
 	#genseedfile()
 	# if pair:

@@ -13,6 +13,7 @@ license = { text = "UNLICENSED" }   # upstream has no licence; see ADR-0002
 # workers parse BLAST XML through Bio.Blast.NCBIXML.
 dependencies = [
     "biopython>=1.81",
+    "pyyaml>=6",
 ]
 
 [project.optional-dependencies]

@@ -52,19 +52,44 @@ status=0
 docker run --rm \
   -v "$ROOT/script:/src:ro" \
   -v "$ROOT/src:/pkg:ro" \
+  -v "$ROOT/config:/config:ro" \
   -v "$CLOSURE:/closure.txt:ro" \
   -e PYTHONPATH=/pkg \
   "$IMAGE" /bin/sh -c '
-pip install --quiet biopython 2>/dev/null
+# Mirrors the runtime dependencies declared in pyproject.toml.
+pip install --quiet biopython pyyaml 2>/dev/null
+
+# virus_hunter.py calls serverInfo(), which shells out to ssh. Same stand-in as
+# tests/reference/capture.sh, so reaching it counts as starting cleanly rather
+# than as a failure.
+mkdir -p /fake
+printf "#!/bin/sh\necho \\"\\$1 48 64\\"\\n" > /fake/ssh
+chmod +x /fake/ssh
+PATH="/fake:$PATH"
+export PATH
+
 mkdir -p /tmp/sandbox && cd /tmp/sandbox
 susp=0; okc=0
 while read b; do
   [ -f "/src/$b" ] || continue
   err=$(python "/src/$b" 2>&1 >/dev/null | tail -1)
+  # Allowlist, not blocklist. Listing the suspicious exceptions instead let any
+  # new failure mode pass as expected -- a missing config file raised
+  # ConfigError, which is a ValueError, and the check reported everything clean.
+  # Only the ways a worker is *supposed* to fail without arguments count as fine.
   case "$err" in
-    *NameError*|*AttributeError*|*SyntaxError*|*ModuleNotFound*|*ImportError*)
+    # No arguments were given, and the worker said so. IndexError is the common
+    # shape; "not enough values to unpack" is the same thing where the script
+    # unpacks sys.argv in one go.
+    ""|*IndexError*|*SystemExit*|*usage*|*Usage*|*"not enough values to unpack"*)
+      okc=$((okc+1)) ;;
+    # Artefacts of this sandbox, not of the code. A few workers derive an output
+    # path from sys.argv[0] and so try to write next to the script, which is
+    # mounted read-only on purpose.
+    *"Read-only file system"*)
+      okc=$((okc+1)) ;;
+    *)
       echo "  SUSPEITO  $b :: $err"; susp=$((susp+1)) ;;
-    *) okc=$((okc+1)) ;;
   esac
 done < /closure.txt
 echo

@@ -1,0 +1,164 @@
+# VirusHunter — configuração padrão
+#
+# Os valores aqui reproduzem exatamente o que estava embutido no bloco __main__
+# de script/virus_hunter.py. Isso é deliberado: a extração não pode mudar o que o
+# pipeline faz, e tests/reference/verify.sh prova isso comparando os scripts
+# gerados byte a byte.
+#
+# Onde um valor é suspeito mas foi preservado, há uma nota. Corrigi-los é decisão
+# científica separada, não efeito colateral de mover configuração de lugar.
+#
+# Sobrescreva com --config caminho.yaml em vez de editar este arquivo.
+
+# ---------------------------------------------------------------------------
+# Recursos da máquina
+#
+# Dimensionados para um nó do cluster original (48 núcleos, 64 GB). A execução
+# passou a ser local, então quase certamente precisam cair -- ver ADR-0015.
+# ---------------------------------------------------------------------------
+compute:
+  threads: 48          # passado a bowtie2, BLAST, SPAdes, HMMER
+  query_splits: 50     # fatias da query para o BLAST viral; era 1 por nó, 50 no total
+
+# ---------------------------------------------------------------------------
+# Parâmetros científicos
+# ---------------------------------------------------------------------------
+params:
+  evalue: "0.01"           # limiar do BLAST viral e do filtro NR
+  min_read_length: 50      # comprimento mínimo para uma leitura ir ao BLAST
+  contig_length_pre_cap3: 300    # filtro antes da montagem de consenso
+  contig_length_post_cap3: 1500  # filtro antes do BLAST
+  mystery_min_length: 1000       # contig sem hit acima disso vira candidato a vírus novo
+  hsp_only: "NO"           # "YES" mostra só o HSP; "NO" mostra a leitura inteira
+
+  kmers:
+    abyss: "31"            # k=31 conforme Deng et al. 2015
+    soap: "31"
+    metavelvet: "31"
+
+# ---------------------------------------------------------------------------
+# Etapas: o que roda
+#
+# ATENÇÃO: assembly.mode 'no' é o estado commitado, e NÃO é a configuração de
+# produção -- o método publicado exige a montagem ensemble SAVaC, que só roda com
+# 'denovo'. Ver ADR-0004.
+# ---------------------------------------------------------------------------
+steps:
+  paired_end: false
+  dedup: true
+  remove_adaptor: false      # false => sem remoção de adaptador E sem trim de qualidade
+  merge_pairs: false         # FLASH
+  skip_reads: false
+
+  host_filter:
+    keep_human: false        # false => remove humano
+    keep_bacteria: true      # true  => NÃO remove bactérias
+
+  assembly:
+    mode: "no"               # "no" | "denovo" (SAVaC) | "trinity" (na verdade SPAdes)
+
+  viral_search:
+    diamond_only: false
+    nucleotide: false        # blastn contra o banco de DNA em vez de blastx
+    phage: "False"           # "False" | "True" | "Both"
+
+  nr_filter: true
+  mystery: false             # doMyth
+  hmmer: false               # vFam sobre os contigs mystery
+  clark: false
+  nt_route: false            # bowtie2 contra os índices nt -- ver K2, contagens não confiáveis
+  reassemble: false          # remontagem cruzada entre amostras
+
+  input:
+    from_fasta: false
+    from_bam: false
+    sra_prep: false
+
+  output:
+    blast_databases: true    # genBlast
+    copy_fastq: true         # genBowtie
+
+# ---------------------------------------------------------------------------
+# Ferramentas externas
+#
+# Caminhos do cluster original. Em execução local, aponte para os binários
+# instalados -- ou deixe o nome puro para resolver via PATH.
+# ---------------------------------------------------------------------------
+tools:
+  scripts_dir: "/mnt/cluster/xdeng/script/"
+  blastn: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn"
+  blastx: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx"
+  dustmasker: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker"
+  bowtie2: "/mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2"
+  diamond: "/mnt/cluster/xdeng/tools/diamond/diamond"
+  hmmsearch: "/mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch"
+  spades_dir: "/mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/"
+  cap3: "/mnt/cluster/xdeng/tools/CAP3/cap3"
+  soapdenovo: "/mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer"
+  velvetg: "/mnt/cluster/tools/MetaVelvet-1.2.02/velvetg"
+  velveth: "/mnt/cluster/tools/MetaVelvet-1.2.02/velveth"
+  meta_velvetg: "/mnt/cluster/tools/MetaVelvet-1.2.02/meta-velvetg"
+  abyss_pe: "/mnt/cluster/tools/abyss/bin/abyss-pe"
+  samtools: "/mnt/cluster/xdeng/tools/samtools-1.2/samtools"
+  picard_dir: "/mnt/cluster/xdeng/tools/picard-tools-1.136/"
+  rapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/rapsearch"
+  prerapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch"
+  ray: "/mnt/cluster2/xdeng/tools/Ray2.3/Ray"
+
+# ---------------------------------------------------------------------------
+# Bancos de dados
+#
+# Sem versionamento -- ver K6. Os caminhos não carregam data nem checksum, então
+# não há como saber contra qual versão um resultado antigo foi gerado.
+# ---------------------------------------------------------------------------
+databases:
+  virus_protein: "/mnt/cluster/xdeng/blastdb/virus_mask"
+  virus_dna: "/mnt/cluster/xdeng/blastdb/virus_DNA_mask"
+  phage: "/mnt/cluster/xdeng/blastdb/phage_mask"
+  virus_phage: "/mnt/cluster/xdeng/blastdb/virusphage_mask"
+  non_viral_nr: "/mnt/cluster/xdeng/blastdb/nvnr"
+  diamond_nr: "/mnt/cluster/xdeng/blastdb/diamond.dmnd"
+  diamond_virus: "/mnt/cluster/xdeng/blastdb/virusdiamond.dmnd"
+  rapsearch_nr: "/mnt/cluster/xdeng/blastdb/nvrap"
+  vfam_hmm: "/mnt/cluster/xdeng/blastdb/vFam/vFam-A_2014.hmm"
+  vfam_annotation: "/mnt/cluster/xdeng/blastdb/vFam/annot2014.txt"
+  virus_fasta: "/mnt/cluster/xdeng/blastdb/virus.fa"
+  non_viral_fasta: "/mnt/cluster/xdeng/blastdb/nvrefseq.fa"
+  human_bowtie_index: "/mnt/cluster/xdeng/hg38/mrnadna_bowtie"
+  bacteria_bowtie_prefix: "/mnt/cluster/xdeng/nt/Bacteria"
+  bacteria_index_count: 27
+  nt_bowtie_prefix: "/mnt/cluster/xdeng/taxon/nt_"
+  nt_index_count: 14
+
+# ---------------------------------------------------------------------------
+# Execução distribuída — LEGADO
+#
+# A execução passou a ser local. Estes campos existem apenas para reproduzir a
+# saída do gerador atual e serão descartados na migração para Snakemake, que
+# resolve paralelismo local com --cores. Ver ADR-0015.
+# ---------------------------------------------------------------------------
+cluster:
+  enabled: true
+  nodes:
+    - bsidna4
+    - bsidna5
+    - bsidna6
+    - bsidna7
+    - bsidna8
+    - bsidna9
+    - bsidna10
+    - bsidna11
+    - bsidna14
+    - bsidna15
+    - bsidna19
+    - bsidna20
+    - bsidna23
+    - bsidna24
+    - bsidna25
+    - bsidna26
+    - bsidna27
+    - bsidna28
+    - bsidna29
+    - bsidna30
+  high_memory_nodes:
+    - bsidna35
