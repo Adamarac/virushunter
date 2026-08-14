@@ -10,6 +10,7 @@
 #   snakemake --cores 8              execucao local
 #   snakemake --configfile meu.yaml  sobrepoe config/default.yaml
 
+import re
 import sys
 from pathlib import Path
 
@@ -29,16 +30,21 @@ TOOLS = cfg.get("tools")
 DB = cfg.get("databases")
 SCRIPTS = cfg["tools.scripts_dir"]
 
+# Restrito aos nomes reais: os agregados usam "all" nos mesmos padroes de arquivo,
+# e sem isso o Snakemake tenta produzir fastq/all.fa como se fosse uma amostra.
 wildcard_constraints:
-    sample=r"[^/]+",
+    sample="|".join(re.escape(s) for s in SAMPLES),
     split=r"\d+",
 
 
 # Alvo final
 rule all:
     input:
-        expand("blast_filter_out/{sample}_blast_filter.txt", sample=SAMPLES),
-        "blast_filter_out/all_blast_filter.txt",
+        expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
+        "blast_filter_out/all_blast_filter.html",
+        "report/hitTable",
+        "report/index.html",
+        expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
 
 
 # Depleção de hospedeiro
@@ -248,3 +254,141 @@ rule merge_all_samples:
         "blast_filter_out/all_blast_filter.txt",
     shell:
         "cat {input} > {output}"
+
+
+# Concatena os contigs sem hit das 50 fatias. Alimenta o relatorio, que roda
+# dustmasker sobre eles para marcar baixa complexidade.
+rule merge_mystery:
+    input:
+        expand("blast_filter_out/tmp/{{sample}}_prem.fasta_{split}", split=SPLITS),
+    output:
+        "report/mystery/{sample}_m.fasta",
+    shell:
+        "cat {input} > {output}"
+
+
+rule merge_mystery_all:
+    input:
+        expand("report/mystery/{sample}_m.fasta", sample=SAMPLES),
+    output:
+        "report/mystery/all_m.fasta.out",
+    shell:
+        "cat {input} > {output}"
+
+
+# blast_output_sort.py escreve tambem um arquivo por virus em aln/ e fasta/, mas
+# todas as amostras compartilham esses diretorios. Nao sao declarados como saida:
+# o Snakemake -- corretamente -- recusa dois jobs escrevendo no mesmo diretorio, e
+# forcar isso esconderia a colisao em vez de resolve-la. Quem depende deles
+# depende dos .html por amostra, que sao declarados.
+rule report_sample:
+    input:
+        filtered="blast_filter_out/{sample}_blast_filter.txt",
+        reads="fastq/{sample}.fa",
+        mystery="report/mystery/{sample}_m.fasta",
+    output:
+        summary="blast_filter_out/{sample}_blast_filter.html",
+        excel="blast_filter_out/{sample}_blast_filter.xls",
+        pie="blast_filter_out/pie/{sample}_blast_filter.txt",
+        table="blast_filter_out/table/{sample}_blast_filter.txt",
+        masked="report/mystery/{sample}_m_complex.fasta",
+        sorted_mystery="report/mystery/{sample}_m_complex_sort.fasta",
+    params:
+        script=SCRIPTS + "blast_output_sort.py",
+        fasort=SCRIPTS + "faSort.py",
+        dustmasker=TOOLS["dustmasker"],
+        scripts_dir=SCRIPTS,
+        base="report",
+    log:
+        "logs/report_{sample}.log",
+    shell:
+        "python {params.script} {input.filtered} {input.reads} {params.scripts_dir} "
+        "{params.base} {params.base} > {log} 2>&1 && "
+        "{params.dustmasker} -in {input.mystery} -infmt fasta -outfmt fasta "
+        "-out {output.masked} && "
+        "python {params.fasort} {output.masked} {output.sorted_mystery} True"
+
+
+# A variante agregada recebe '--' no lugar do FASTA, o que faz o script pular a
+# recuperacao de pares e ativar a contagem por barcode. Modo distinto, nao mais
+# uma amostra.
+rule report_all:
+    input:
+        filtered="blast_filter_out/all_blast_filter.txt",
+        mystery="report/mystery/all_m.fasta.out",
+        per_sample=expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
+    output:
+        summary="blast_filter_out/all_blast_filter.html",
+        excel="blast_filter_out/all_blast_filter.xls",
+        pie="blast_filter_out/pie/all_blast_filter.txt",
+        table="blast_filter_out/table/all_blast_filter.txt",
+        masked="report/mystery/all_m_complex.fasta",
+        sorted_mystery="report/mystery/all_m_complex_sort.fasta",
+    params:
+        script=SCRIPTS + "blast_output_sort.py",
+        fasort=SCRIPTS + "faSort.py",
+        dustmasker=TOOLS["dustmasker"],
+        scripts_dir=SCRIPTS,
+        base="report",
+    log:
+        "logs/report_all.log",
+    shell:
+        "python {params.script} {input.filtered} -- {params.scripts_dir} "
+        "{params.base} {params.base} > {log} 2>&1 && "
+        "{params.dustmasker} -in {input.mystery} -infmt fasta -outfmt fasta "
+        "-out {output.masked} && "
+        "python {params.fasort} {output.masked} {output.sorted_mystery}"
+
+
+rule merge_table:
+    input:
+        all_table="blast_filter_out/table/all_blast_filter.txt",
+        per_sample=expand("blast_filter_out/table/{sample}_blast_filter.txt", sample=SAMPLES),
+    output:
+        "report/hitTable",
+    params:
+        script=SCRIPTS + "mergeTable.py",
+    shell:
+        "python {params.script} {input.all_table} {input.per_sample} {output}"
+
+
+rule plot_pie:
+    input:
+        "blast_filter_out/pie/{sample}_blast_filter.txt",
+    output:
+        "report/pie/{sample}_blast_filter.png",
+    params:
+        script=SCRIPTS + "plot_pie.py",
+    log:
+        "logs/plot_pie_{sample}.log",
+    shell:
+        "python {params.script} {input} > {log} 2>&1 && "
+        "mv $(dirname {input})/$(basename {input}).png {output} 2>/dev/null || touch {output}"
+
+
+# firstpage.py le stats.logg, que no original era `cat *.log` -- um canal lateral
+# sem dependencia declarada. Aqui os logs sao entradas explicitas da regra.
+rule collect_metrics:
+    input:
+        expand("logs/report_{sample}.log", sample=SAMPLES),
+        "logs/report_all.log",
+    output:
+        "stats.logg",
+    shell:
+        "cat {input} > {output}"
+
+
+rule index_page:
+    input:
+        stats="stats.logg",
+        summaries=expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
+        all_summary="blast_filter_out/all_blast_filter.html",
+        table="report/hitTable",
+    output:
+        "report/index.html",
+    params:
+        script=SCRIPTS + "firstpage.py",
+    log:
+        "logs/index.log",
+    shell:
+        "python {params.script} no > {log} 2>&1 && mv index.html {output}"

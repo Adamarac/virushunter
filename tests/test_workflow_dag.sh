@@ -62,14 +62,18 @@ check parse_virus_hits  100
 check filter_against_nr 100
 check merge_filtered    2
 check merge_all_samples 1
+check report_sample     2
+check report_all        1
+check merge_table       1
+check index_page        1
 
 total=$(awk "\$1 == \"total\" { print \$2 }" dag.txt | head -1)
-if [ "$total" != "326" ]; then
-  echo "FALHA: total de $total jobs, esperado 326"
+if [ "$total" != "337" ]; then
+  echo "FALHA: total de $total jobs, esperado 337"
   fail=1
 fi
 
-[ "$fail" -eq 0 ] && echo "OK      DAG resolve: $total jobs em 17 regras, 2 amostras x 50 fatias"
+[ "$fail" -eq 0 ] && echo "OK      DAG resolve: $total jobs, 2 amostras x 50 fatias, relatorio incluso"
 exit "$fail"
 ' > "$OUT" 2>&1 || status=$?
 
