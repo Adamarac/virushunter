@@ -58,3 +58,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0013](0013-package-foundation.md) | Fundação do pacote e primeira extração | Aceita |
 | [0014](0014-workers-import-the-package.md) | Workers passam a importar o pacote | Aceita |
 | [0015](0015-declarative-configuration.md) | Configuração declarativa | Aceita |
+| [0016](0016-snakemake-workflow.md) | Workflow em Snakemake | Aceita (primeira fatia) |
