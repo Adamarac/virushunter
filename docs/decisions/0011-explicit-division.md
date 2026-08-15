@@ -43,7 +43,7 @@ caractere por ocorrência e elimina a classe inteira de defeito.
 
 Toda divisão envolvendo literal inteiro, no fecho vivo, deve declarar a intenção: `//`
 para divisão inteira, `float()` num operando para divisão real. `/` puro é rejeitado por
-[`tests/check_integer_division.py`](../../tests/check_integer_division.py).
+`tests/check_integer_division.py`.
 
 As nove ocorrências viraram `//`. Todas operam sobre contadores não-negativos — contadores
 de linha e contagens — onde `//` reproduz exatamente a semântica do Python 2. Para valores
@@ -64,7 +64,7 @@ aqui.
 - O comportamento do Python 2 fica preservado nos nove pontos. Não é mudança científica:
   é a correção que **evita** uma.
 - Surge o primeiro teste comportamental de um worker:
-  [`tests/test_read_identity.sh`](../../tests/test_read_identity.sh) roda os três
+  `tests/test_read_identity.sh` roda os três
   geradores sobre um FASTQ mínimo e exige ordinais inteiros e concordantes. Verificado nos
   dois sentidos — revertendo uma divisão, ele falha e mostra `@s0.25_1_lib`.
 - A regra é mais estrita do que o estritamente necessário: `clark_result.py:103` já estava

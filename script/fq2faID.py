@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-"""FASTQ -> FASTA, naming each record by its position in the file.
-
-The ordinal must match what recodeID.py and blast_trim.py compute for the same
-read; that shared arithmetic lives in virushunter.domain. See invariant I1.
-"""
+"""FASTQ para FASTA, nomeando cada registro pela sua posicao no arquivo (I1)."""
 import gzip
 import sys
 

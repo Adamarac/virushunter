@@ -1,4 +1,4 @@
-"""File-format boundary: the only place that knows how data is stored."""
+"""Fronteira de formato: o unico lugar que sabe como os dados sao armazenados."""
 
 from virushunter.io.fasta import FastaIndex, FastaIndexError
 

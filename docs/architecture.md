@@ -113,7 +113,7 @@ inteiro não importável, não testável e não analisável estaticamente — e 
 pipeline dos orquestradores legados, via `firstpage.py`.
 
 Corrigido em [ADR-0006](decisions/0006-no-import-side-effects.md); guardado por
-[`tests/check_no_import_side_effects.py`](../tests/check_no_import_side_effects.py).
+`tests/check_no_import_side_effects.py`.
 
 ### Caminhos absolutos espalhados
 

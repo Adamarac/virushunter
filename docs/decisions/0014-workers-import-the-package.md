@@ -38,7 +38,7 @@ Ao reescrever o bloco de imports do `blast_trim.py`, removi `from collections im
 defaultdict`, ainda usado adiante. E ao substituir o cálculo do ordinal, removi a variável
 `lineno`, que a linha 101 usa para indexar a tabela de hits de adaptador.
 
-A primeira foi pega por [`tests/test_read_identity.sh`](../../tests/test_read_identity.sh),
+A primeira foi pega por `tests/test_read_identity.sh`,
 que falhou com `NameError`. A segunda **não** foi — só apareceu numa varredura de nomes não
 definidos por AST, porque o teste morria antes de chegar lá.
 

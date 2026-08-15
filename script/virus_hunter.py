@@ -8,8 +8,7 @@ import subprocess
 
 from virushunter.config import load as load_config
 
-# Parameters used to be literals in this file; they now come from
-# config/default.yaml, whose values reproduce them exactly. See ADR-0015.
+# Parametros vem de config/default.yaml.
 cfg = load_config()
 
 # samtools lcurses to lncurses
@@ -1893,9 +1892,7 @@ def blastVirus(n, hsp):
 
 
 if __name__ == "__main__":
-	# serverInfo() used to run at module level, so merely importing this file
-	# opened SSH connections to every node. It runs here instead, first thing,
-	# which keeps the original execution order. See docs/decisions/0006.
+	# Aqui, e nao em nivel de modulo, para que importar o arquivo nao abra SSH.
 	SI=serverInfo()
 	print(SI)
 	wd = os.path.abspath(os.path.dirname('.')).replace('san2', 'cluster2')

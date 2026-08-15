@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-"""Trim adaptor hits and recode each read by its position in the file.
-
-The identity format is shared with recodeID.py and fq2faID.py through
-virushunter.domain. See invariant I1.
-"""
+"""Corta adaptadores e recodifica cada leitura pela sua posicao no arquivo (I1)."""
 import sys
 from collections import defaultdict
 
@@ -95,8 +91,7 @@ for line in f:
 	i+=1
 	if i%LINES_PER_RECORD==1:
 		read_id = ReadId.at_line(i, pair_end, label)
-		# The adaptor hit table is keyed by the same ordinal, and the sequence
-		# line below looks it up, so it has to survive past this branch.
+		# A tabela de adaptadores e indexada por este ordinal, lido adiante.
 		lineno = read_id.ordinal
 		print(read_id, file=of)
 	elif i%2==0:

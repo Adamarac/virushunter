@@ -23,7 +23,7 @@ nós, índices de fatia e ordem de concatenação" — se materializando.
 ### O que exatamente mudou
 
 Comparação insensível a nó e a ordem de linha
-([`compare_normalized.sh`](../../tests/reference/compare_normalized.sh)), entre a captura
+(`compare_normalized.sh`), entre a captura
 Python 2 (commit `2705fa7`) e a Python 3:
 
 | Resultado | Artefatos |
@@ -90,7 +90,7 @@ todo o trabalho seguinte, ao custo de aceitar formalmente a mudança desta ADR.
 2. **Re-congelar** `tests/reference/expected/` a partir da saída Python 3. A referência
    Python 2 permanece no histórico, em `git show 2705fa7:tests/reference/expected/<arquivo>`.
 3. **Preservar a evidência como ferramenta**, não como afirmação:
-   [`compare_normalized.sh`](../../tests/reference/compare_normalized.sh) reproduz a
+   `compare_normalized.sh` reproduz a
    comparação a qualquer momento.
 4. **Não** ordenar `seeds` neste incremento — seria uma terceira mudança de comportamento.
 

@@ -63,7 +63,7 @@ pedido.
 BLAST, bowtie2 nem bancos, que é o único motivo de isso ser testável
 ([ADR-0009](0009-no-execution-environment.md)).
 
-[`tests/test_workflow_dag.sh`](../../tests/test_workflow_dag.sh) exige cardinalidade
+`tests/test_workflow_dag.sh` exige cardinalidade
 exata: 326 jobs, com 100 de `blast_virus` (2 amostras × 50 fatias). Verificado nos dois
 sentidos — apontar uma regra para um arquivo que ninguém produz faz o teste falhar com
 saída 1.

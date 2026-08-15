@@ -52,7 +52,7 @@ Extrair dois componentes:
 ### Equivalência provada, não assumida
 
 `FastaIndex` substitui código em produção há anos, então passar nos próprios testes não
-basta. [`tests/unit/test_fasta_index_equivalence.py`](../../tests/unit/test_fasta_index_equivalence.py)
+basta. `tests/unit/test_fasta_index_equivalence.py`
 reproduz a implementação legada **verbatim** como oráculo e compara cabeçalhos, intervalos
 e sequências em 13 casos de borda — FASTA quebrado em várias linhas, último registro sem
 `\n` final, linhas em branco, sequência vazia, CRLF, arquivo sem cabeçalho, arquivo vazio.

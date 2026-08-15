@@ -21,8 +21,8 @@ Isso invalida parte da estratégia de validação proposta em
 | 3 | Regressão sobre dado real | **Bloqueado** — e não se sabe se há execução preservada |
 
 Os dois testes existentes
-([`check_no_import_side_effects.py`](../../tests/check_no_import_side_effects.py) e
-[`check_argv_numeric_comparison.py`](../../tests/check_argv_numeric_comparison.py)) rodam
+(`check_no_import_side_effects.py` e
+`check_argv_numeric_comparison.py`) rodam
 em Python 3 justamente porque são **léxicos**: nunca importam nem executam o alvo. Foi o
 que permitiu corrigir [K1](../known-issues.md) e [K10](../known-issues.md) com evidência
 real.

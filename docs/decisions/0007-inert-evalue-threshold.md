@@ -25,7 +25,7 @@ sem ser notado.
 ### Alcance
 
 Varredura dos 155 arquivos `.py` com
-[`tests/check_argv_numeric_comparison.py`](../../tests/check_argv_numeric_comparison.py):
+`tests/check_argv_numeric_comparison.py`:
 
 | Arquivo | Linha | Alcançável pelo pipeline de referência |
 |---|---|---|

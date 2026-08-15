@@ -1,8 +1,4 @@
-"""Descoberta de amostras e resolucao de configuracao para o Snakefile.
-
-Fora do Snakefile para poder ser testado: a descoberta de amostras e exatamente
-o tipo de coisa que falha em silencio. Ver ADR-0016.
-"""
+"""Descoberta de amostras e resolucao de configuracao para o Snakefile."""
 
 from __future__ import annotations
 
@@ -13,27 +9,19 @@ from typing import Any
 from virushunter.config import Config, ConfigError
 from virushunter.config import load as load_config
 
-#: Illumina-style names, e.g. A_S1_L001_R1_001.fastq.gz -> sample S1, pair 1.
 _ILLUMINA = re.compile(
     r"^(?P<prefix>.+?)_(?P<sample>[^_]+)_L\d+_R(?P<pair>[12])_\d+\.fastq(?:\.gz)?$"
 )
 
-#: Fallback: <sample>_<pair>.fastq[.gz]
 _SIMPLE = re.compile(r"^(?P<sample>.+)_(?P<pair>[12])\.fastq(?:\.gz)?$")
 
 
 class SampleDiscoveryError(ValueError):
-    """No samples were found, or a filename could not be interpreted."""
+    """Nenhuma amostra encontrada, ou nome de arquivo nao reconhecido."""
 
 
 def parse_fastq_name(name: str) -> tuple[str, str] | None:
-    """Return (sample, pair) for a FASTQ filename, or None if it is not one.
-
-    The legacy readSeeds2() did this positionally --
-    `line.split('.')[0].split('_')[1]` -- which silently mis-grouped any name not
-    matching the sequencer's convention, and had no way to say so. Here the
-    patterns are explicit and a non-match is visible.
-    """
+    """Devolve (amostra, par) do nome do FASTQ, ou None se nao for reconhecido."""
     for pattern in (_ILLUMINA, _SIMPLE):
         match = pattern.match(name)
         if match:
@@ -42,12 +30,7 @@ def parse_fastq_name(name: str) -> tuple[str, str] | None:
 
 
 def discover_samples(fastq_dir: str | Path) -> list[str]:
-    """Sample names found in `fastq_dir`, sorted.
-
-    Sorted rather than in filesystem order: iteration order used to decide which
-    node ran which sample and the order of aggregation arguments, and under
-    Python 2 it came from dict hashing. Determinism here is deliberate.
-    """
+    """Nomes de amostra encontrados no diretorio, ordenados para ser deterministico."""
     directory = Path(fastq_dir)
     if not directory.is_dir():
         raise SampleDiscoveryError(f"diretorio de fastq nao encontrado: {directory}")
@@ -79,13 +62,7 @@ def discover_samples(fastq_dir: str | Path) -> list[str]:
 
 
 def fastq_files(fastq_dir: str | Path) -> dict[tuple[str, str], str]:
-    """Map (sample, pair) to the actual filename on disk.
-
-    Rules cannot name their inputs by pattern here: a sample called S1 lives in a
-    file called A_S1_L001_R1_001.fastq.gz, and the parts around the sample name
-    are not derivable from it. So the mapping is built once from what is really
-    there.
-    """
+    """Mapeia (amostra, par) para o arquivo real; o nome da amostra nao o determina."""
     directory = Path(fastq_dir)
     if not directory.is_dir():
         raise SampleDiscoveryError(f"diretorio de fastq nao encontrado: {directory}")
@@ -108,16 +85,8 @@ def fastq_files(fastq_dir: str | Path) -> dict[tuple[str, str], str]:
 
 
 def resolve_config(snakemake_config: dict[str, Any], workflow_dir: str | Path) -> Config:
-    """Merge Snakemake's --config/--configfile over config/default.yaml.
-
-    Snakemake hands the workflow a plain dict. Routing it through the same loader
-    means the workflow and the legacy generator validate identically, instead of
-    the workflow silently accepting a value the generator would have rejected.
-    """
+    """Mescla a config do Snakemake sobre o padrao, usando o mesmo validador."""
     overrides = dict(snakemake_config or {})
-
-    # Defaults for keys the generator never needed, because it derived them from
-    # the working directory instead.
     io_defaults = {
         "fastq_dir": "fastq",
         "library_prefix": Path.cwd().name,

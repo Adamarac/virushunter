@@ -43,7 +43,7 @@ e converteria uma correção local em refatoração ampla.
 
 Todo `gzip.open` no fecho vivo usa modo texto: `'rt'` para leitura, `'at'` para a escrita
 em [`sra.py:8`](../../script/sra.py#L8). Verificado por
-[`tests/check_gzip_text_mode.py`](../../tests/check_gzip_text_mode.py), que rejeita modo
+`tests/check_gzip_text_mode.py`, que rejeita modo
 omitido, `'r'` e também `'rb'` — este último é explícito, mas explicitamente errado, e
 passaria por intencional numa revisão.
 
@@ -68,7 +68,7 @@ que não seja `open`.
 ## Consequências
 
 - Workers voltam a ler `.gz`, que é como os dados chegam.
-- Surge [`tests/test_gzip_input.sh`](../../tests/test_gzip_input.sh): comprime um FASTQ,
+- Surge `tests/test_gzip_input.sh`: comprime um FASTQ,
   passa pelos workers e exige que `.gz` e texto puro produzam saída idêntica. Verificado
   nos dois sentidos — revertendo `fq2fa.py` para `'rb'`, falha com
   `TypeError: can only concatenate str (not "bytes") to str`.

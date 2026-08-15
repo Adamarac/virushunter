@@ -1,12 +1,6 @@
-# VirusHunter -- configuracao padrao.
-#
-# Os valores reproduzem exatamente os literais que estavam em virus_hunter.py.
-# Onde um valor e suspeito mas foi preservado, ha uma nota. Ver ADR-0015.
-#
-# Sobrescreva com --configfile em vez de editar este arquivo.
+# Configuracao do pipeline; os valores reproduzem os literais originais.
+# Avisos sobre valores suspeitos estao em docs/ e nas ADRs.
 
-# Dimensionados para um no do cluster original. A execucao e local: quase
-# certamente precisam cair.
 compute:
   threads: 48          # passado a bowtie2, BLAST, SPAdes, HMMER
   query_splits: 50     # fatias da query para o BLAST viral; era 1 por nó, 50 no total
@@ -24,8 +18,6 @@ params:
     soap: "31"
     metavelvet: "31"
 
-# ATENCAO: assembly.mode 'no' e o estado commitado e NAO e a configuracao de
-# producao -- o metodo publicado exige a montagem SAVaC ('denovo'). Ver ADR-0004.
 steps:
   paired_end: false
   dedup: true
@@ -61,8 +53,6 @@ steps:
     blast_databases: true    # genBlast
     copy_fastq: true         # genBowtie
 
-# Caminhos do cluster original. Local: aponte para os binarios instalados, ou
-# deixe o nome puro para resolver via PATH.
 tools:
   scripts_dir: "/mnt/cluster/xdeng/script/"
   blastn: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn"
@@ -84,8 +74,6 @@ tools:
   prerapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch"
   ray: "/mnt/cluster2/xdeng/tools/Ray2.3/Ray"
 
-# Sem versionamento: os caminhos nao carregam data nem checksum, entao nao ha
-# como saber contra qual versao um resultado antigo foi gerado (K6).
 databases:
   virus_protein: "/mnt/cluster/xdeng/blastdb/virus_mask"
   virus_dna: "/mnt/cluster/xdeng/blastdb/virus_DNA_mask"
@@ -105,8 +93,6 @@ databases:
   nt_bowtie_prefix: "/mnt/cluster/xdeng/taxon/nt_"
   nt_index_count: 14
 
-# LEGADO: existe so para reproduzir a saida do gerador. O workflow Snakemake nao
-# usa nada disto.
 cluster:
   enabled: true
   nodes:

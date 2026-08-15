@@ -57,7 +57,7 @@ Mover `SI=serverInfo()` e `print SI` para a primeira posição do bloco
 
 Adotar como regra do projeto: **nenhum módulo deve produzir efeito colateral ao ser
 importado.** A regra é verificada por
-[`tests/check_no_import_side_effects.py`](../../tests/check_no_import_side_effects.py).
+`tests/check_no_import_side_effects.py`.
 
 ## Consequências
 

@@ -1,14 +1,4 @@
-# VirusHunter -- workflow Snakemake.
-#
-# Substitui o gerador de scripts shell. A execucao e local, entao o envelope de
-# distribuicao por SSH nao foi traduzido: desapareceu. Ver ADR-0016.
-#
-# Cobre a configuracao de referencia: single-end, sem montagem, sem remocao de
-# adaptador, filtro NR por DIAMOND. Rotas opcionais ainda nao migradas.
-#
-#   snakemake -n                     valida o DAG sem executar
-#   snakemake --cores 8              execucao local
-#   snakemake --configfile meu.yaml  sobrepoe config/default.yaml
+# Workflow do VirusHunter: substitui o gerador de scripts shell (ADR-0016).
 
 import re
 import sys
@@ -26,9 +16,6 @@ FASTQ = fastq_files(cfg["io.fastq_dir"])
 SPLITS = list(range(cfg["compute.query_splits"]))
 LIB = cfg["io.library_prefix"]
 
-# Em single-end so o primeiro arquivo atravessa a cadeia. Ver K25: o gerador
-# legado emitia a forma de arquivo unico aqui e mesmo assim iterava os dois
-# adiante, quebrando a cadeia.
 PAIRS = ["1", "2"] if cfg["steps.paired_end"] else ["1"]
 REMOVE_ADAPTOR = cfg["steps.remove_adaptor"]
 
@@ -36,14 +23,12 @@ TOOLS = cfg.get("tools")
 DB = cfg.get("databases")
 SCRIPTS = cfg["tools.scripts_dir"]
 
-# Restrito aos nomes reais: os agregados usam "all" nos mesmos padroes de arquivo,
-# e sem isso o Snakemake tenta produzir fastq/all.fa como se fosse uma amostra.
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
     split=r"\d+",
 
 
-# Alvo final
+# Alvo final: relatorio por amostra, agregado e publicacao.
 rule all:
     input:
         expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
@@ -54,12 +39,9 @@ rule all:
         "report/.published",
 
 
-# Depleção de hospedeiro
+# Alinha as leituras contra o indice do hospedeiro.
 rule host_align:
     input:
-        # Resolved from what is on disk: sample S1 lives in a file called
-        # A_S1_L001_R1_001.fastq.gz, and the surrounding parts are not derivable
-        # from the sample name.
         fastq=lambda w: FASTQ[(w.sample, w.pair)],
     output:
         sam=temp("fastq/{sample}_{pair}_0.sam"),
@@ -68,12 +50,11 @@ rule host_align:
         bowtie2=TOOLS["bowtie2"],
     threads: cfg["compute.threads"]
     shell:
-        # --reorder e --no-hd sao obrigatorios: os SAMs sao lidos em lockstep
-        # posicional e a contagem de linhas precisa igualar a de leituras (I2).
         "{params.bowtie2} --quiet --local --very-fast-local --no-hd --reorder "
         "-p {threads} -x {params.index} -U {input.fastq} -S {output.sam}"
 
 
+# Mascara leituras alinhadas em vez de remover, preservando a posicao (I1).
 rule host_filter:
     input:
         sams=expand("fastq/{{sample}}_{pair}_0.sam", pair=PAIRS),
@@ -83,12 +64,10 @@ rule host_filter:
         script=SCRIPTS + "sam2fq_bac.py",
         prefix=lambda w: f"fastq/{w.sample}",
     shell:
-        # Mascara, nao remove: a identidade e a posicao no arquivo (I1).
-        # Com dois arquivos o script entra em modo par; com um, em modo single.
         "python {params.script} {params.prefix} 0 0 {output.filtered}"
 
 
-# Deduplicação clonal
+# Remove duplicatas clonais mascarando-as, nao excluindo.
 rule dedup:
     input:
         "fastq/{sample}_{pair}.fil",
@@ -100,11 +79,10 @@ rule dedup:
         "python {params.script} {input} {output}"
 
 
-# Duas rotas produzem o mesmo .trim e sao mutuamente exclusivas: sem remocao de
-# adaptador ha so recodificacao; com ela, blastn dos adaptadores contra as
-# leituras, corte, e trim de qualidade.
 if not REMOVE_ADAPTOR:
 
+
+    # Reescreve cada cabecalho como @s<ordinal>_<par>_<biblioteca>.
     rule recode_ids:
         input:
             "fastq/{sample}_{pair}.dup",
@@ -118,6 +96,8 @@ if not REMOVE_ADAPTOR:
 
 else:
 
+
+    # Converte para FASTA para servir de banco na busca por adaptadores.
     rule reads_to_fasta_for_adaptor:
         input:
             "fastq/{sample}_{pair}.dup",
@@ -128,6 +108,8 @@ else:
         shell:
             "python {params.script} {input} {wildcards.sample}_{wildcards.pair} {output}"
 
+
+    # Banco BLAST das proprias leituras, um por par.
     rule adaptor_blastdb:
         input:
             "fastq/{sample}_{pair}.fa",
@@ -142,8 +124,7 @@ else:
             "makeblastdb -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
             "> {log} 2>&1"
 
-    # Os adaptadores sao a QUERY e as leituras o banco -- o inverso do habitual.
-    # Permite um conjunto arbitrario de adaptadores sem reconfigurar ferramenta.
+    # Os adaptadores sao a query e as leituras o banco -- o inverso do habitual.
     rule find_adaptors:
         input:
             db="blast_filter_out/blast2/{sample}_{pair}_blastdb.nhr",
@@ -151,8 +132,6 @@ else:
             "fastq/{sample}_{pair}.tab",
         params:
             blastn=TOOLS["blastn"],
-            # Recurso estatico, como os bancos: fica em params, nao em input, ou o
-            # Snakemake exigiria o caminho do cluster antes mesmo de montar o DAG.
             adaptors=SCRIPTS + "adaptor.fa",
             prefix=lambda w: f"blast_filter_out/blast2/{w.sample}_{w.pair}_blastdb",
         threads: cfg["compute.threads"]
@@ -162,6 +141,8 @@ else:
             "-query {params.adaptors} -num_threads {threads} "
             "-db {params.prefix} -out {output}"
 
+
+    # Corta as regioes de adaptador encontradas pelo blastn.
     rule trim_adaptors:
         input:
             reads="fastq/{sample}_{pair}.dup",
@@ -175,6 +156,8 @@ else:
             "python {params.script} {input.reads} {input.hits} {output} "
             "{params.label} {wildcards.pair}"
 
+
+    # Apara a cauda por qualidade phred.
     rule trim_quality:
         input:
             trimmed="fastq/{sample}_{pair}.ada",
@@ -189,6 +172,7 @@ else:
             "{input.raw}"
 
 
+# Descarta pares curtos demais; e aqui que as leituras mascaradas saem.
 rule length_filter:
     input:
         expand("fastq/{{sample}}_{pair}.trim", pair=PAIRS),
@@ -201,7 +185,7 @@ rule length_filter:
         "python {params.script} {input} {output} {params.min_length}"
 
 
-# Preparo das leituras
+# Concatena os arquivos de sequencia da amostra.
 rule reads_to_fastq:
     input:
         expand("fastq/{{sample}}_{pair}_sequence.txt", pair=PAIRS),
@@ -211,6 +195,7 @@ rule reads_to_fastq:
         "cat {input} > {output}"
 
 
+# Converte para FASTA aplicando o corte de comprimento minimo.
 rule reads_to_fasta:
     input:
         "fastq/{sample}.fq",
@@ -223,15 +208,14 @@ rule reads_to_fasta:
         "python {params.script} {input} {output} {params.min_length}"
 
 
-# Query do BLAST
 def query_parts(wildcards):
-    """Contigs entram na query so quando ha montagem."""
     parts = [f"fastq/{wildcards.sample}.fa"]
     if cfg["steps.assembly.mode"] != "no":
         parts.insert(0, f"fastq/{wildcards.sample}_contig4")
     return parts
 
 
+# Monta a query do BLAST; contigs entram so quando ha montagem.
 rule build_query:
     input:
         query_parts,
@@ -241,6 +225,7 @@ rule build_query:
         "cat {input} > {output}"
 
 
+# Fatia a query para paralelizar a busca viral.
 rule split_query:
     input:
         "fastq/{sample}_c",
@@ -253,7 +238,7 @@ rule split_query:
         "python {params.script} {input} {params.n}"
 
 
-# Triagem viral
+# Triagem viral por similaridade de proteina.
 rule blast_virus:
     input:
         "fastq/{sample}_c_{split}",
@@ -271,6 +256,7 @@ rule blast_virus:
         "-db {params.db} -query {input} -out {output}"
 
 
+# Separa candidatos virais dos contigs sem hit.
 rule parse_virus_hits:
     input:
         xml="blast_virus_out/{sample}_blast.xml_{split}",
@@ -288,6 +274,7 @@ rule parse_virus_hits:
         "{output.mystery} {params.myslen} {params.evalue} {params.log}"
 
 
+# Junta os candidatos virais de todas as fatias.
 rule merge_significant:
     input:
         expand("fastq/{{sample}}_c_{split}_s", split=SPLITS),
@@ -297,7 +284,7 @@ rule merge_significant:
         "cat {input} > {output}"
 
 
-# Filtro contra NR
+# Busca contra o banco nao-viral, para suprimir falsos positivos.
 rule diamond_nr:
     input:
         "fastq/{sample}_sig",
@@ -312,6 +299,7 @@ rule diamond_nr:
         "-d {params.db} -q {input} -o {output}"
 
 
+# Descarta queries cujo melhor hit nao e viral.
 rule filter_against_nr:
     input:
         xml="blast_virus_out/{sample}_blast.xml_{split}",
@@ -328,17 +316,17 @@ rule filter_against_nr:
         "{params.evalue} {params.hsp}"
 
 
+# Concatena as fatias; so funciona porque os blocos tem tamanho fixo (I4).
 rule merge_filtered:
     input:
         expand("blast_filter_out/{{sample}}_blast_filter.txt_{split}", split=SPLITS),
     output:
         "blast_filter_out/{sample}_blast_filter.txt",
     shell:
-        # Blocos posicionais de 11 linhas; a concatenacao so vale porque todos
-        # tem o mesmo tamanho (I4).
         "cat {input} > {output}"
 
 
+# Agrega o resultado filtrado de todas as amostras.
 rule merge_all_samples:
     input:
         expand("blast_filter_out/{sample}_blast_filter.txt", sample=SAMPLES),
@@ -348,8 +336,7 @@ rule merge_all_samples:
         "cat {input} > {output}"
 
 
-# Concatena os contigs sem hit das 50 fatias. Alimenta o relatorio, que roda
-# dustmasker sobre eles para marcar baixa complexidade.
+# Junta os contigs sem hit, candidatos a virus novo.
 rule merge_mystery:
     input:
         expand("blast_filter_out/tmp/{{sample}}_prem.fasta_{split}", split=SPLITS),
@@ -359,6 +346,7 @@ rule merge_mystery:
         "cat {input} > {output}"
 
 
+# Agrega os contigs sem hit de todas as amostras.
 rule merge_mystery_all:
     input:
         expand("report/mystery/{sample}_m.fasta", sample=SAMPLES),
@@ -368,11 +356,7 @@ rule merge_mystery_all:
         "cat {input} > {output}"
 
 
-# blast_output_sort.py escreve tambem um arquivo por virus em aln/ e fasta/, mas
-# todas as amostras compartilham esses diretorios. Nao sao declarados como saida:
-# o Snakemake -- corretamente -- recusa dois jobs escrevendo no mesmo diretorio, e
-# forcar isso esconderia a colisao em vez de resolve-la. Quem depende deles
-# depende dos .html por amostra, que sao declarados.
+# Agrupa hits por especie e escreve HTML e FASTA por virus.
 rule report_sample:
     input:
         filtered="blast_filter_out/{sample}_blast_filter.txt",
@@ -401,9 +385,7 @@ rule report_sample:
         "python {params.fasort} {output.masked} {output.sorted_mystery} True"
 
 
-# A variante agregada recebe '--' no lugar do FASTA, o que faz o script pular a
-# recuperacao de pares e ativar a contagem por barcode. Modo distinto, nao mais
-# uma amostra.
+# Variante agregada: recebe '--' no lugar do FASTA e conta por barcode.
 rule report_all:
     input:
         filtered="blast_filter_out/all_blast_filter.txt",
@@ -432,6 +414,7 @@ rule report_all:
         "python {params.fasort} {output.masked} {output.sorted_mystery}"
 
 
+# Consolida as tabelas por amostra na tabela de hits.
 rule merge_table:
     input:
         all_table="blast_filter_out/table/all_blast_filter.txt",
@@ -444,6 +427,7 @@ rule merge_table:
         "python {params.script} {input.all_table} {input.per_sample} {output}"
 
 
+# Grafico de pizza por familia viral.
 rule plot_pie:
     input:
         "blast_filter_out/pie/{sample}_blast_filter.txt",
@@ -458,8 +442,7 @@ rule plot_pie:
         "mv $(dirname {input})/$(basename {input}).png {output} 2>/dev/null || touch {output}"
 
 
-# firstpage.py le stats.logg, que no original era `cat *.log` -- um canal lateral
-# sem dependencia declarada. Aqui os logs sao entradas explicitas da regra.
+# Reune as metricas que o indice consome.
 rule collect_metrics:
     input:
         expand("logs/report_{sample}.log", sample=SAMPLES),
@@ -470,6 +453,7 @@ rule collect_metrics:
         "cat {input} > {output}"
 
 
+# Pagina inicial com as metricas por amostra.
 rule index_page:
     input:
         stats="stats.logg",
@@ -486,14 +470,10 @@ rule index_page:
         "python {params.script} no > {log} 2>&1 && mv index.html {output}"
 
 
-# ---------------------------------------------------------------------------
-# Montagem ensemble SAVaC -- SOAPdenovo2, ABySS, MetaVelvet, ABySS particionado,
-# consenso por CAP3. E a combinacao publicada em Deng et al. 2015 e a unica
-# configuracao que o metodo exige. So entra no DAG com assembly.mode == "denovo".
-# ---------------------------------------------------------------------------
 ASSEMBLY = cfg["steps.assembly.mode"]
 
 
+# Filtro de comprimento especifico da montagem por ABySS.
 rule prepare_abyss_reads:
     input:
         "fastq/{sample}.fq",
@@ -506,9 +486,7 @@ rule prepare_abyss_reads:
         "python {params.script} {input} {output} {params.min_length}"
 
 
-# O numero de fatias depende do tamanho da amostra, e so e conhecido depois de
-# rodar. checkpoint e o mecanismo do Snakemake para isso; o gerador legado
-# assumia 20 e deixava as inexistentes falharem em silencio.
+# Fatia as leituras; o numero de fatias so e conhecido em execucao.
 checkpoint partition_reads:
     input:
         "fastq/{sample}abyss.fq",
@@ -531,6 +509,7 @@ def abyss_chunks(wildcards):
     )
 
 
+# Montagem por SOAPdenovo2.
 rule assemble_soap:
     input:
         reads="fastq/{sample}_1_sequence.txt",
@@ -551,6 +530,7 @@ rule assemble_soap:
         "> {log} 2>&1"
 
 
+# Montagem por MetaVelvet, apos velveth e velvetg.
 rule assemble_metavelvet:
     input:
         reads="fastq/{sample}_1_sequence.txt",
@@ -570,6 +550,7 @@ rule assemble_metavelvet:
         "{params.meta_velvetg} {params.outdir}) > {log} 2>&1"
 
 
+# Montagem por ABySS sobre a amostra inteira.
 rule assemble_abyss:
     input:
         "fastq/{sample}abyss.fq",
@@ -586,6 +567,7 @@ rule assemble_abyss:
         "se=$(realpath {input}) > {log} 2>&1"
 
 
+# Montagem por ABySS sobre uma fatia.
 rule assemble_abyss_chunk:
     input:
         "partitions/{sample}/{sample}abyss.fq_{chunk}",
@@ -602,6 +584,7 @@ rule assemble_abyss_chunk:
         "k={params.kmer} se=$(realpath {input}) > {log} 2>&1"
 
 
+# Junta os contigs das fatias.
 rule combine_abyss_chunks:
     input:
         abyss_chunks,
@@ -611,6 +594,7 @@ rule combine_abyss_chunks:
         "cat {input} > {output}"
 
 
+# Reune os contigs dos assemblers individuais.
 rule collect_contigs:
     input:
         soap="soap_out/{sample}_soap.contig",
@@ -625,8 +609,7 @@ rule collect_contigs:
         "cp --dereference {input.abyss} {output.abyss}"
 
 
-# Ordem S, V, A, a preservada: a concatenacao decide qual contig o CAP3 encontra
-# primeiro, e trocar a ordem muda o consenso.
+# Concatena na ordem S, V, A, a -- a ordem muda o consenso do CAP3.
 rule combine_contigs:
     input:
         soap="contig_individual/{sample}_S.contig",
@@ -644,6 +627,7 @@ rule combine_contigs:
         "python {params.script} {params.merged} {output} {params.min_length}"
 
 
+# Consenso OLC sobre os contigs dos assemblers de grafo.
 rule cap3_consensus:
     input:
         "fastq/{sample}_contig2",
@@ -660,6 +644,7 @@ rule cap3_consensus:
         "{params.cap3} {input} -o {params.overlap} -p {params.identity} > {log} 2>&1"
 
 
+# Junta contigs e singlets do CAP3 e aplica o corte final.
 rule assembled_contigs:
     input:
         contigs="fastq/{sample}_contig2.cap.contigs",
@@ -676,10 +661,7 @@ rule assembled_contigs:
         "python {params.script} {params.merged} {output} {params.min_length} {params.label}"
 
 
-# ---------------------------------------------------------------------------
-# QC de composicao: histogramas de polyA/polyC/polyG antes e depois da limpeza.
-# polyA.py escreve os dados e o script R que os plota; o R roda em seguida.
-# ---------------------------------------------------------------------------
+# Composicao de homopolimeros antes da limpeza.
 rule polya_raw:
     input:
         lambda w: FASTQ[(w.sample, w.pair)],
@@ -695,6 +677,7 @@ rule polya_raw:
         "python {params.script} {input} {params.prefix} raw > {log} 2>&1"
 
 
+# Composicao de homopolimeros depois da limpeza.
 rule polya_clean:
     input:
         "fastq/{sample}_{pair}_sequence.txt",
@@ -710,6 +693,7 @@ rule polya_clean:
         "python {params.script} {input} {params.prefix} clean > {log} 2>&1"
 
 
+# Executa o script R que polyA.py gerou.
 rule plot_histogram:
     input:
         "report/hist/{sample}_{pair}_{stage}_hist.R",
@@ -721,9 +705,7 @@ rule plot_histogram:
         "R CMD BATCH --quiet --vanilla {input} {params.rout}"
 
 
-# ---------------------------------------------------------------------------
-# Banco BLAST por amostra, para consulta interativa pela camada PHP.
-# ---------------------------------------------------------------------------
+# Banco BLAST por amostra, para consulta interativa.
 rule sample_blastdb:
     input:
         "fastq/{sample}.fa",
@@ -739,6 +721,7 @@ rule sample_blastdb:
         "> {log} 2>&1"
 
 
+# Alias que agrupa os bancos por amostra.
 rule blastdb_alias:
     input:
         expand("report/blast/{sample}_blastdb.nhr", sample=SAMPLES),
@@ -752,10 +735,7 @@ rule blastdb_alias:
         "python {params.script} report report/blast/ > {log} 2>&1"
 
 
-# ---------------------------------------------------------------------------
-# Publicacao: reune o que a camada web serve. No original era movetowww.sh, uma
-# sequencia de `cp -r` sem dependencia declarada; aqui as entradas sao explicitas.
-# ---------------------------------------------------------------------------
+# Reune o que a camada web serve.
 rule publish:
     input:
         summaries=expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),

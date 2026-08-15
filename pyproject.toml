@@ -18,16 +18,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8",
     "ruff>=0.6",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests/unit"]
-pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -40,5 +35,3 @@ src = ["src", "tests"]
 # held to this, and the set grows as the migration moves code across.
 select = ["E", "F", "I", "UP", "B"]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["E501"]

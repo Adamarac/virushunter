@@ -40,7 +40,7 @@ resultado mais restritivo obterá exatamente o mesmo resultado, sem qualquer avi
 
 **Resolução.** Corrigido para `E_VALUE_THRESH = float(sys.argv[5])` nos três arquivos
 afetados ([ADR-0007](decisions/0007-inert-evalue-threshold.md)). Coberto por
-[`tests/check_argv_numeric_comparison.py`](../tests/check_argv_numeric_comparison.py), que
+`tests/check_argv_numeric_comparison.py`, que
 falhava antes e passa agora. A verificação dos pontos de chamada revelou [K24](#k24).
 
 Segue pendente: as chamadas DIAMOND não passam `--evalue`, então nessa rota o limiar
@@ -154,7 +154,7 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | ~~K8~~ | ~~Cinco forks do orquestrador~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | [`orchestrators.md`](orchestrators.md) | Os quatro legados foram removidos; recuperáveis na tag `legacy-2020` |
 | K9 | Configuração dentro do código | [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992) | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
 | ~~K24~~ | ~~Legados passam argumento errado ao filtro NR~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | — | Os arquivos afetados foram removidos |
-| ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por [`tests/check_no_import_side_effects.py`](../tests/check_no_import_side_effects.py) |
+| ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por `tests/check_no_import_side_effects.py` |
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
 | K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |

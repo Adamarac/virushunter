@@ -1,75 +1,56 @@
-"""Identidade de leitura: a posicao no arquivo, nao o cabecalho do sequenciador.
-
-Consequencias, detalhadas em docs/invariants.md (I1): nenhuma etapa anterior a
-recodificacao pode remover registros -- por isso os filtros mascaram --, e o
-ordinal e divisao inteira (ADR-0011).
-"""
+"""Identidade de leitura: a posicao no arquivo, nao o cabecalho do sequenciador (I1)."""
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 
-#: FASTQ records are four lines: header, sequence, separator, quality.
 LINES_PER_RECORD = 4
 
 _PATTERN = re.compile(r"^@s(?P<ordinal>\d+)_(?P<pair>[^_]+)_(?P<library>.+)$")
 
 
 class ReadIdError(ValueError):
-    """A read identifier could not be parsed or built."""
+    """Identificador de leitura invalido ou impossivel de interpretar."""
 
 
 @dataclass(frozen=True)
 class ReadId:
-    """The identity of a single read.
-
-    Immutable on purpose: an identity that can be edited in place is an identity
-    that can be edited by accident.
-    """
+    """Identidade imutavel de uma leitura: ordinal, par e biblioteca."""
 
     ordinal: int
     pair: str
     library: str
 
     def __post_init__(self) -> None:
+        """Rejeita ordinal fracionario, sintoma da divisao real do Python 3."""
         if not isinstance(self.ordinal, int) or isinstance(self.ordinal, bool):
             raise ReadIdError(
-                f"ordinal must be an int, got {self.ordinal!r} "
-                f"({type(self.ordinal).__name__}) -- a float here is the "
-                "Python 3 division bug"
+                f"ordinal deve ser int, veio {self.ordinal!r} "
+                f"({type(self.ordinal).__name__})"
             )
         if self.ordinal < 0:
-            raise ReadIdError(f"ordinal must not be negative, got {self.ordinal}")
+            raise ReadIdError(f"ordinal nao pode ser negativo, veio {self.ordinal}")
         if not self.pair:
-            raise ReadIdError("pair must not be empty")
+            raise ReadIdError("par nao pode ser vazio")
         if "_" in self.pair:
-            raise ReadIdError(f"pair must not contain '_', got {self.pair!r}")
+            raise ReadIdError(f"par nao pode conter '_', veio {self.pair!r}")
         if not self.library:
-            raise ReadIdError("library must not be empty")
+            raise ReadIdError("biblioteca nao pode ser vazia")
 
     @classmethod
     def at_line(cls, line_number: int, pair: str, library: str) -> ReadId:
-        """Build the identity of the read whose header is at `line_number`.
-
-        Line numbers are one-based, matching how the scripts count while reading.
-        Integer division is used deliberately -- see ADR-0011.
-        """
+        """Identidade da leitura cujo cabecalho esta na linha dada, contada a partir de 1."""
         if line_number < 1:
-            raise ReadIdError(f"line_number is one-based, got {line_number}")
+            raise ReadIdError(f"linha e contada a partir de 1, veio {line_number}")
         return cls(line_number // LINES_PER_RECORD, pair, library)
 
     @classmethod
     def parse(cls, text: str) -> ReadId:
-        """Parse `@s<ordinal>_<pair>_<library>`.
-
-        The library name may itself contain underscores -- the pipeline builds it
-        as `<project>_<sample>`, e.g. `work_S1` -- so only the first two fields
-        are split off.
-        """
+        """Interpreta @s<ordinal>_<par>_<biblioteca>; a biblioteca pode conter '_'."""
         match = _PATTERN.match(text.strip())
         if match is None:
-            raise ReadIdError(f"not a read identifier: {text!r}")
+            raise ReadIdError(f"nao e um identificador de leitura: {text!r}")
         return cls(
             ordinal=int(match.group("ordinal")),
             pair=match.group("pair"),
@@ -77,11 +58,7 @@ class ReadId:
         )
 
     def mate(self, of_pair: str | None = None) -> ReadId:
-        """The other read of the pair.
-
-        With no argument this flips 1 <-> 2, which is what the reporting stage
-        does when it looks up a hit's partner.
-        """
+        """A outra leitura do par; sem argumento alterna entre 1 e 2."""
         if of_pair is None:
             if self.pair == "1":
                 of_pair = "2"
@@ -89,21 +66,17 @@ class ReadId:
                 of_pair = "1"
             else:
                 raise ReadIdError(
-                    f"cannot infer the mate of pair {self.pair!r}; pass one explicitly"
+                    f"nao da para inferir o par de {self.pair!r}; passe explicitamente"
                 )
         return ReadId(self.ordinal, of_pair, self.library)
 
     def __str__(self) -> str:
+        """Formato emitido por recodeID.py e blast_trim.py."""
         return f"@s{self.ordinal}_{self.pair}_{self.library}"
 
 
 def fasta_ordinal(line_number: int) -> int:
-    """Ordinal for the FASTA side, as `fq2faID.py` computes it.
-
-    fq2faID.py emits `><fileID>_<ordinal>` from the *sequence* line rather than
-    the header line, so it counts a different line of the same record. Both land
-    on the same ordinal, which is exactly what the two must agree on.
-    """
+    """Ordinal do lado FASTA, contado da linha de sequencia; concorda com ReadId."""
     if line_number < 1:
-        raise ReadIdError(f"line_number is one-based, got {line_number}")
+        raise ReadIdError(f"linha e contada a partir de 1, veio {line_number}")
     return line_number // LINES_PER_RECORD

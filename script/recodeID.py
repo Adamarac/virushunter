@@ -1,13 +1,5 @@
 #!/usr/bin/env python
-"""Replace every FASTQ header with the read's positional identity.
-
-The identifier the sequencer assigned is discarded; what identifies a read from
-here on is where it sits in the file. See docs/invariants.md, invariant I1.
-
-The identity format and the ordinal arithmetic now live in
-virushunter.domain.ReadId, shared with fq2faID.py and blast_trim.py, which have
-to agree with this file exactly.
-"""
+"""Substitui cada cabecalho FASTQ pela identidade posicional da leitura (I1)."""
 
 import sys
 
