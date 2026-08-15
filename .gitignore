@@ -68,3 +68,4 @@ dist/
 # Sem esta excecao um clone novo teria referencia incompleta -- incluindo o
 # pipeline_run.sh, que descreve a ordem de execucao.
 !tests/reference/expected/**
+.dagcheck/

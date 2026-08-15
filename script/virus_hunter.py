@@ -1922,7 +1922,7 @@ if __name__ == "__main__":
 	sra = cfg['steps.input.sra_prep']
 	keep_human = cfg['steps.host_filter.keep_human']
 	keep_bac = cfg['steps.host_filter.keep_bacteria']
-	pair=False
+	pair = cfg['steps.paired_end']
 	mergePair = cfg['steps.merge_pairs']
 	phage = cfg['steps.viral_search.phage']
 	rm_adaptor = cfg['steps.remove_adaptor']

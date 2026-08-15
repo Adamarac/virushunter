@@ -208,9 +208,15 @@ concluíra por outro caminho: o estado commitado é de teste, não de produção
 por que o efeito é invisível — o `except` nu do `dedup.py` imprime *"usage"* e sai com
 sucesso quando o arquivo não existe.
 
-**Recomendação.** Nenhuma correção no gerador legado. O workflow Snakemake trata apenas
-`_1` de ponta a ponta, que é internamente consistente e corresponde ao que de fato é
-produzido. Divergência deliberada, registrada aqui.
+**Só ocorre em single-end.** Com `pair=true` o `sam2fq_bac.py` recebe 5 argumentos, entra
+em modo par e produz os dois arquivos — a cadeia fecha. Verificado capturando a referência
+`expected-paired`: `bowtiesam2fq` passa a produzir `S1_1.fil` **e** `S1_2.fil`, exatamente
+o que o `clonetrim` consome.
+
+**Recomendação.** Nenhuma correção no gerador legado. O workflow Snakemake deriva o
+conjunto de pares da configuração (`PAIRS`), então cada etapa roda exatamente sobre os
+arquivos que existem — em single-end só `_1`, em paired-end os dois. A inconsistência não
+tem como se reproduzir.
 
 ## Médias
 

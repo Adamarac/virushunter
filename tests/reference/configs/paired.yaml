@@ -1,0 +1,4 @@
+# Modo paired-end. Com pair=true o sam2fq_bac recebe 5 argumentos e produz os
+# dois arquivos por amostra -- ver K25, onde a cadeia quebra em single-end.
+steps:
+  paired_end: true

@@ -26,6 +26,12 @@ FASTQ = fastq_files(cfg["io.fastq_dir"])
 SPLITS = list(range(cfg["compute.query_splits"]))
 LIB = cfg["io.library_prefix"]
 
+# Em single-end so o primeiro arquivo atravessa a cadeia. Ver K25: o gerador
+# legado emitia a forma de arquivo unico aqui e mesmo assim iterava os dois
+# adiante, quebrando a cadeia.
+PAIRS = ["1", "2"] if cfg["steps.paired_end"] else ["1"]
+REMOVE_ADAPTOR = cfg["steps.remove_adaptor"]
+
 TOOLS = cfg.get("tools")
 DB = cfg.get("databases")
 SCRIPTS = cfg["tools.scripts_dir"]
@@ -70,47 +76,124 @@ rule host_align:
 
 rule host_filter:
     input:
-        sam="fastq/{sample}_1_0.sam",
+        sams=expand("fastq/{{sample}}_{pair}_0.sam", pair=PAIRS),
     output:
-        filtered="fastq/{sample}_1.fil",
+        filtered=expand("fastq/{{sample}}_{pair}.fil", pair=PAIRS),
     params:
         script=SCRIPTS + "sam2fq_bac.py",
         prefix=lambda w: f"fastq/{w.sample}",
     shell:
         # Mascara, nao remove: a identidade e a posicao no arquivo (I1).
+        # Com dois arquivos o script entra em modo par; com um, em modo single.
         "python {params.script} {params.prefix} 0 0 {output.filtered}"
 
 
 # Deduplicação clonal
 rule dedup:
     input:
-        "fastq/{sample}_1.fil",
+        "fastq/{sample}_{pair}.fil",
     output:
-        "fastq/{sample}_1.dup",
+        "fastq/{sample}_{pair}.dup",
     params:
         script=SCRIPTS + "dedup.py",
     shell:
         "python {params.script} {input} {output}"
 
 
-# Recodificação de identidade
-rule recode_ids:
-    input:
-        "fastq/{sample}_1.dup",
-    output:
-        "fastq/{sample}_1.trim",
-    params:
-        script=SCRIPTS + "recodeID.py",
-        label=lambda w: f"{LIB}_{w.sample}",
-    shell:
-        "python {params.script} {input} {output} {params.label} 1"
+# Duas rotas produzem o mesmo .trim e sao mutuamente exclusivas: sem remocao de
+# adaptador ha so recodificacao; com ela, blastn dos adaptadores contra as
+# leituras, corte, e trim de qualidade.
+if not REMOVE_ADAPTOR:
+
+    rule recode_ids:
+        input:
+            "fastq/{sample}_{pair}.dup",
+        output:
+            "fastq/{sample}_{pair}.trim",
+        params:
+            script=SCRIPTS + "recodeID.py",
+            label=lambda w: f"{LIB}_{w.sample}",
+        shell:
+            "python {params.script} {input} {output} {params.label} {wildcards.pair}"
+
+else:
+
+    rule reads_to_fasta_for_adaptor:
+        input:
+            "fastq/{sample}_{pair}.dup",
+        output:
+            "fastq/{sample}_{pair}.fa",
+        params:
+            script=SCRIPTS + "fq2faID.py",
+        shell:
+            "python {params.script} {input} {wildcards.sample}_{wildcards.pair} {output}"
+
+    rule adaptor_blastdb:
+        input:
+            "fastq/{sample}_{pair}.fa",
+        output:
+            multiext("blast_filter_out/blast2/{sample}_{pair}_blastdb", ".nhr", ".nin", ".nsq"),
+        params:
+            prefix=lambda w: f"blast_filter_out/blast2/{w.sample}_{w.pair}_blastdb",
+        log:
+            "logs/adaptor_blastdb_{sample}_{pair}.log",
+        shell:
+            "mkdir -p blast_filter_out/blast2 && "
+            "makeblastdb -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
+            "> {log} 2>&1"
+
+    # Os adaptadores sao a QUERY e as leituras o banco -- o inverso do habitual.
+    # Permite um conjunto arbitrario de adaptadores sem reconfigurar ferramenta.
+    rule find_adaptors:
+        input:
+            db="blast_filter_out/blast2/{sample}_{pair}_blastdb.nhr",
+        output:
+            "fastq/{sample}_{pair}.tab",
+        params:
+            blastn=TOOLS["blastn"],
+            # Recurso estatico, como os bancos: fica em params, nao em input, ou o
+            # Snakemake exigiria o caminho do cluster antes mesmo de montar o DAG.
+            adaptors=SCRIPTS + "adaptor.fa",
+            prefix=lambda w: f"blast_filter_out/blast2/{w.sample}_{w.pair}_blastdb",
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.blastn} -task blastn -evalue 1 -max_target_seqs 100000000 "
+            "-outfmt '6 qseqid sseqid evalue qstart qend sstart send' "
+            "-query {params.adaptors} -num_threads {threads} "
+            "-db {params.prefix} -out {output}"
+
+    rule trim_adaptors:
+        input:
+            reads="fastq/{sample}_{pair}.dup",
+            hits="fastq/{sample}_{pair}.tab",
+        output:
+            "fastq/{sample}_{pair}.ada",
+        params:
+            script=SCRIPTS + "blast_trim.py",
+            label=lambda w: f"{LIB}_{w.sample}",
+        shell:
+            "python {params.script} {input.reads} {input.hits} {output} "
+            "{params.label} {wildcards.pair}"
+
+    rule trim_quality:
+        input:
+            trimmed="fastq/{sample}_{pair}.ada",
+            raw=lambda w: FASTQ[(w.sample, w.pair)],
+        output:
+            "fastq/{sample}_{pair}.trim",
+        params:
+            script=SCRIPTS + "trim_quality.py",
+            phred_offset=33,
+        shell:
+            "python {params.script} {input.trimmed} {output} {params.phred_offset} "
+            "{input.raw}"
 
 
 rule length_filter:
     input:
-        "fastq/{sample}_1.trim",
+        expand("fastq/{{sample}}_{pair}.trim", pair=PAIRS),
     output:
-        "fastq/{sample}_1_sequence.txt",
+        expand("fastq/{{sample}}_{pair}_sequence.txt", pair=PAIRS),
     params:
         script=SCRIPTS + "fq_pair_clean.py",
         min_length=5,
@@ -121,7 +204,7 @@ rule length_filter:
 # Preparo das leituras
 rule reads_to_fastq:
     input:
-        "fastq/{sample}_1_sequence.txt",
+        expand("fastq/{{sample}}_{pair}_sequence.txt", pair=PAIRS),
     output:
         "fastq/{sample}.fq",
     shell:

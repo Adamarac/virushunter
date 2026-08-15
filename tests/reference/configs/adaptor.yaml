@@ -1,0 +1,4 @@
+# Remocao de adaptador por blastn: os adaptadores sao a QUERY e as leituras o
+# banco. Ativa tambem o trim de qualidade, que fica desligado sem isto.
+steps:
+  remove_adaptor: true

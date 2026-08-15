@@ -79,6 +79,8 @@ VH_PY_IMAGE=python:2.7-slim sh tests/reference/capture.sh
 |---|---|
 | `expected/` | padrao: sem montagem, single-end |
 | `expected-denovo/` | montagem ensemble SAVaC (ADR-0004) |
+| `expected-paired/` | paired-end; fecha a cadeia quebrada em K25 |
+| `expected-adaptor/` | remocao de adaptador por blastn + trim de qualidade |
 
 Capturar outra rota:
 
@@ -89,8 +91,8 @@ sh tests/reference/capture.sh tests/reference/expected-X configs/X.yaml
 ## Limites
 
 - Cobre o **gerador**, não os ~45 scripts worker. Estes precisam de testes próprios.
-- Cobre duas configuracoes: a padrao e a `denovo`. CLARK, NT, HMMER, reAssemble,
-  remocao de adaptador e paired-end **nao** sao exercidos.
+- Cobre quatro configuracoes. CLARK, rota NT, HMMER/vFam e reAssemble **nao** sao
+  exercidos.
 - Prova que os **comandos** são os mesmos, não que produzem o mesmo resultado científico.
   Para isso só executando o pipeline de verdade.
 
