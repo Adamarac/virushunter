@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-"""Corta adaptadores e recodifica cada leitura pela sua posicao no arquivo (I1)."""
+# Corta os pedacos de adaptador encontrados em cada leitura e renomeia a leitura
+# pela posicao dela no arquivo.
 import sys
 from collections import defaultdict
 
-from virushunter.domain import LINES_PER_RECORD, ReadId
+from virushunter.reads import LINES_PER_RECORD, read_id, read_ordinal
 
 f=open(sys.argv[1], 'r')#fq file
 f2=open(sys.argv[2],'r') #blast table
@@ -90,10 +91,9 @@ num_adaptors, left, right= 0,0,0
 for line in f:
 	i+=1
 	if i%LINES_PER_RECORD==1:
-		read_id = ReadId.at_line(i, pair_end, label)
-		# A tabela de adaptadores e indexada por este ordinal, lido adiante.
-		lineno = read_id.ordinal
-		print(read_id, file=of)
+		# A tabela de adaptadores e consultada por este numero, mais abaixo.
+		lineno = read_ordinal(i)
+		print(read_id(i, pair_end, label), file=of)
 	elif i%2==0:
 		seq=line.strip()
 		n=len(seq)

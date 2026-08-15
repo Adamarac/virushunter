@@ -162,7 +162,8 @@ if __name__ == '__main__':
 	nrxml=sys.argv[2]
 	cachename = sys.argv[3]
 	filtertxt = sys.argv[4]
-	# float(): sem a conversao a comparacao adiante e sempre verdadeira.
+	# Converte para numero. Sem isso a comparacao logo abaixo da sempre certo e o
+	# limite de e-value configurado nao vale para nada.
 	E_VALUE_THRESH = float(sys.argv[5])
 	try: hsp_only = sys.argv[6]
 	except: hsp_only = 'NO'

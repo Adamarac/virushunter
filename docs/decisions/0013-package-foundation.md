@@ -1,5 +1,9 @@
 # 0013 — Fundação do pacote e primeira extração
 
+> **Superseda parcialmente por [ADR-0017](0017-simplify-the-package.md) (2026-08-15):** `FastaIndex` foi removido por não ter consumidor e `ReadId`
+> virou duas funções em `reads.py`. O registro abaixo descreve o estado da época.
+
+
 - **Status:** Aceita
 - **Data:** 2026-08-12
 - **Decidido por:** Alan M

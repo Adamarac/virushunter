@@ -8,7 +8,7 @@ import subprocess
 
 from virushunter.config import load as load_config
 
-# Parametros vem de config/default.yaml.
+# Os valores abaixo vem do arquivo config/default.yaml.
 cfg = load_config()
 
 # samtools lcurses to lncurses
@@ -1892,7 +1892,8 @@ def blastVirus(n, hsp):
 
 
 if __name__ == "__main__":
-	# Aqui, e nao em nivel de modulo, para que importar o arquivo nao abra SSH.
+	# Fica aqui dentro de proposito: se ficasse solto no arquivo, so de importar
+	# este script o programa ja tentaria abrir conexao com as maquinas.
 	SI=serverInfo()
 	print(SI)
 	wd = os.path.abspath(os.path.dirname('.')).replace('san2', 'cluster2')

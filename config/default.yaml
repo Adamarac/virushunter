@@ -1,48 +1,55 @@
-# Configuracao do pipeline; os valores reproduzem os literais originais.
-# Avisos sobre valores suspeitos estao em docs/ e nas ADRs.
+# Todos os ajustes do pipeline ficam aqui. Os valores sao os mesmos que estavam
+# escritos dentro do codigo original, para o resultado continuar igual.
+# Para mudar algo sem editar este arquivo, passe --configfile ao Snakemake.
 
 compute:
-  threads: 48          # passado a bowtie2, BLAST, SPAdes, HMMER
-  query_splits: 50     # fatias da query para o BLAST viral; era 1 por nó, 50 no total
+  threads: 48          # quantos processadores os programas podem usar
+  query_splits: 50     # em quantos pedacos dividir a busca, para rodar em paralelo
 
 params:
-  evalue: "0.01"           # limiar do BLAST viral e do filtro NR
-  min_read_length: 50      # comprimento mínimo para uma leitura ir ao BLAST
-  contig_length_pre_cap3: 300    # filtro antes da montagem de consenso
-  contig_length_post_cap3: 1500  # filtro antes do BLAST
-  mystery_min_length: 1000       # contig sem hit acima disso vira candidato a vírus novo
-  hsp_only: "NO"           # "YES" mostra só o HSP; "NO" mostra a leitura inteira
+  evalue: "0.01"           # o quanto uma semelhanca precisa ser boa para valer
+                           # (quanto menor, mais exigente)
+  min_read_length: 50      # leitura menor que isso e descartada
+  contig_length_pre_cap3: 300    # tamanho minimo para entrar na montagem final
+  contig_length_post_cap3: 1500  # tamanho minimo para sair da montagem e ser pesquisado
+  mystery_min_length: 1000       # acima disso, uma sequencia desconhecida vira
+                                 # candidata a virus novo
+  hsp_only: "NO"           # "YES" mostra so o trecho que deu semelhanca;
+                           # "NO" mostra a sequencia inteira
 
   kmers:
-    abyss: "31"            # k=31 conforme Deng et al. 2015
+    abyss: "31"            # tamanho do pedaco usado na montagem, como no artigo
+                           # de Deng et al. 2015
     soap: "31"
     metavelvet: "31"
 
 steps:
   paired_end: false
   dedup: true
-  remove_adaptor: false      # false => sem remoção de adaptador E sem trim de qualidade
-  merge_pairs: false         # FLASH
+  remove_adaptor: false      # desligado tambem desliga o corte por qualidade
+  merge_pairs: false         # tenta juntar as duas leituras de um mesmo fragmento
   skip_reads: false
 
   host_filter:
-    keep_human: false        # false => remove humano
-    keep_bacteria: true      # true  => NÃO remove bactérias
+    keep_human: false        # false = joga fora o que for humano
+    keep_bacteria: true      # true = mantem o que for bacteria
 
   assembly:
-    mode: "no"               # "no" | "denovo" (SAVaC) | "trinity" (na verdade SPAdes)
+    mode: "no"               # "no" = sem montagem; "denovo" = tres montadores +
+                             # consenso; "trinity" = na verdade usa o SPAdes
 
   viral_search:
     diamond_only: false
-    nucleotide: false        # blastn contra o banco de DNA em vez de blastx
-    phage: "False"           # "False" | "True" | "Both"
+    nucleotide: false        # busca comparando DNA em vez de proteina
+    phage: "False"           # inclui ou nao virus que infectam bacterias
 
   nr_filter: true
-  mystery: false             # doMyth
-  hmmer: false               # vFam sobre os contigs mystery
+  mystery: false             # investiga as sequencias que nao se pareceram com nada
+  hmmer: false               # busca por familias virais nas sequencias desconhecidas
   clark: false
-  nt_route: false            # bowtie2 contra os índices nt -- ver K2, contagens não confiáveis
-  reassemble: false          # remontagem cruzada entre amostras
+  nt_route: false            # rota alternativa; as contagens que ela produz nao sao
+                             # confiaveis, ver docs/known-issues.md
+  reassemble: false          # tenta montar de novo usando varias amostras juntas
 
   input:
     from_fasta: false
@@ -50,8 +57,8 @@ steps:
     sra_prep: false
 
   output:
-    blast_databases: true    # genBlast
-    copy_fastq: true         # genBowtie
+    blast_databases: true    # deixa o resultado pesquisavel no final
+    copy_fastq: true         # guarda uma copia das leituras originais
 
 tools:
   scripts_dir: "/mnt/cluster/xdeng/script/"
@@ -93,6 +100,8 @@ databases:
   nt_bowtie_prefix: "/mnt/cluster/xdeng/taxon/nt_"
   nt_index_count: 14
 
+# Sobra da epoca em que o pipeline rodava num cluster. Rodando localmente nada
+# disto e usado, exceto high_memory_nodes, que o orquestrador antigo ainda le.
 cluster:
   enabled: true
   nodes:

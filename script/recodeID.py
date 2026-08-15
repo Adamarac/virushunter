@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Substitui cada cabecalho FASTQ pela identidade posicional da leitura (I1)."""
+# Troca o cabecalho de cada leitura por um nome baseado na posicao dela no arquivo.
 
 import sys
 
-from virushunter.domain import LINES_PER_RECORD, ReadId
+from virushunter.reads import LINES_PER_RECORD, read_id
 
 f = open(sys.argv[1])  # fq dup file
 of = open(sys.argv[2], 'w')  # sequence.txt with recoded read ID
@@ -17,7 +17,7 @@ i = 0
 for line in f:
     i += 1
     if i % LINES_PER_RECORD == 1:
-        print(ReadId.at_line(i, pair_end, label), file=of)
+        print(read_id(i, pair_end, label), file=of)
     else:
         print(line.strip(), file=of)
 f.close()

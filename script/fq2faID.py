@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""FASTQ para FASTA, nomeando cada registro pela sua posicao no arquivo (I1)."""
+# Muda o formato do arquivo e da a cada sequencia um nome baseado na posicao dela.
 import gzip
 import sys
 
