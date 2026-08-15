@@ -69,3 +69,6 @@ dist/
 # pipeline_run.sh, que descreve a ordem de execucao.
 !tests/reference/expected/**
 .dagcheck/
+
+# Artefatos de execucao do Snakemake, nao versionados.
+.snakemake/
