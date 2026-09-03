@@ -127,14 +127,34 @@ junto com `virus_hunter.py`, e os demais nunca acompanharam — o que é esperad
 
 1. **`--evalue` explícito nas chamadas DIAMOND — RESOLVIDA: passar explicitamente.**
 
-   A pendência dependia de descobrir o padrão da ferramenta com `diamond blastx --help`.
-   Essa via está fechada: não há DIAMOND instalado, nem qualquer outra ferramenta, na
-   máquina onde o pipeline vai rodar ([ADR-0018](0018-local-execution.md)).
+   O `Snakefile` passa agora `--evalue {params.evalue}` na busca contra o NR.
 
-   Isso não é um impedimento — é o argumento decisivo. Se o padrão não pode ser verificado,
-   depender dele é pior do que declarar o valor: a versão que o usuário venha a instalar é
-   desconhecida, e padrões de ferramenta mudam entre versões sem aviso. O
-   `Snakefile` passa agora `--evalue {params.evalue}` na busca contra o NR.
+   **O padrão da ferramenta foi verificado** ([ADR-0019](0019-local-tools.md)), com o
+   DIAMOND 2.2.6 instalado em `tools/bin/`:
+
+   ```
+   $ diamond blastx
+   --evalue    maximum e-value to report alignments (default=0.001)
+   ```
+
+   **O padrão é 0.001 — dez vezes mais restritivo que o `0.01` configurado.** A suspeita
+   registrada na primeira versão desta ADR estava correta, e o número agora é conhecido.
+
+   ### Consequência científica, agora quantificável
+
+   Sem `--evalue`, o DIAMOND reportava apenas hits com e-value ≤ 0.001, embora a
+   configuração declarasse 0.01. Com a correção, hits entre 0.001 e 0.01 passam a aparecer
+   no `.m8`.
+
+   Na rota `diamond`, o `.m8` alimenta uma **lista negra**: se o melhor hit de uma query não
+   for viral, a query é descartada. Logo, uma busca mais permissiva significa **mais
+   candidatos virais descartados**. Uma query que antes não tinha hit no NR — e por isso
+   passava — pode agora receber um hit fraco não viral e ser barrada.
+
+   Ou seja: a correção torna o pipeline **mais conservador**, não menos. Resultados
+   anteriores obtidos nessa rota têm chance de conter falsos positivos que a configuração
+   declarada teria barrado. Isso é o oposto do risco que se costuma temer numa correção de
+   limiar, e vale registrar explicitamente para quem for comparar análises antigas.
 
    **Isto é mudança de comportamento científico**, autorizada nesta data. O limiar
    configurado passa a governar de fato a busca DIAMOND; antes governava o padrão da
@@ -145,6 +165,10 @@ junto com `virus_hunter.py`, e os demais nunca acompanharam — o que é esperad
    Acrescentado junto, e **não** presente no original: `--threads {threads}`, para que o
    DIAMOND respeite `compute.threads` em vez de tomar todos os núcleos da máquina. Afeta
    uso de recurso, não resultado.
+
+   *Não verificado:* qual era o padrão da versão de DIAMOND usada em 2015 (v0.7.x). O valor
+   0.001 confirmado aqui é o da v2.2.6. Se o padrão mudou entre as versões, análises antigas
+   usaram um terceiro limiar, diferente tanto de 0.001 quanto de 0.01.
 
    Comando original, para comparação
    ([`virus_hunter.py:1807`](../../script/virus_hunter.py#L1807)):

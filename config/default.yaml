@@ -64,16 +64,18 @@ steps:
     blast_databases: true    # deixa o resultado pesquisavel no final
     copy_fastq: true         # guarda uma copia das leituras originais
 
-# Os programas externos, procurados no PATH do sistema. Se algum estiver instalado
-# fora do PATH, troque so aquela linha pelo caminho completo.
-# scripts_dir e a pasta dos scripts deste projeto, nao um programa externo.
+# Os programas externos. Caminho com barra e relativo a raiz do projeto; nome simples
+# e procurado no PATH do sistema. Ver tools/README.md.
+# As linhas sem caminho sao ferramentas que NAO tem versao para Windows: a rota de
+# montagem (assembly.mode: "denovo") e a rota hmmer nao rodam nesta maquina.
 tools:
   scripts_dir: "script/"
-  blastn: "blastn"
-  blastx: "blastx"
-  dustmasker: "dustmasker"
-  bowtie2: "bowtie2"
-  diamond: "diamond"
+  blastn: "tools/bin/blastn.exe"
+  makeblastdb: "tools/bin/makeblastdb.exe"
+  blastx: "tools/bin/blastx.exe"
+  dustmasker: "tools/bin/dustmasker.exe"
+  bowtie2: "tools/bin/bowtie2"
+  diamond: "tools/bin/diamond.exe"
   hmmsearch: "hmmsearch"
   spades_dir: ""            # vazio = spades.py esta no PATH
   cap3: "cap3"

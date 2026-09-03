@@ -21,13 +21,22 @@ PAIRS = ["1", "2"] if cfg["steps.paired_end"] else ["1"]
 REMOVE_ADAPTOR = cfg["steps.remove_adaptor"]
 NR_FILTER_METHOD = cfg["steps.nr_filter_method"]
 
-TOOLS = cfg.get("tools")
 DB = cfg.get("databases")
-# Caminho relativo aqui e relativo ao projeto, nao a pasta de trabalho da amostra.
-_scripts = Path(cfg["tools.scripts_dir"])
-if not _scripts.is_absolute():
-    _scripts = Path(workflow.basedir).parent / _scripts
-SCRIPTS = str(_scripts) + "/"
+PROJETO = Path(workflow.basedir).parent
+
+
+def caminho_do_projeto(valor):
+    """Nome simples fica como esta e e procurado no PATH; caminho vira absoluto."""
+    if not valor or ("/" not in valor and "\\" not in valor):
+        return valor
+    caminho = Path(valor)
+    if not caminho.is_absolute():
+        caminho = PROJETO / caminho
+    return str(caminho)
+
+
+TOOLS = {nome: caminho_do_projeto(valor) for nome, valor in cfg.get("tools").items()}
+SCRIPTS = caminho_do_projeto(cfg["tools.scripts_dir"]).rstrip("/\\") + "/"
 
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
@@ -125,11 +134,12 @@ else:
             multiext("blast_filter_out/blast2/{sample}_{pair}_blastdb", ".nhr", ".nin", ".nsq"),
         params:
             prefix=lambda w: f"blast_filter_out/blast2/{w.sample}_{w.pair}_blastdb",
+            makeblastdb=TOOLS["makeblastdb"],
         log:
             "logs/adaptor_blastdb_{sample}_{pair}.log",
         shell:
             "mkdir -p blast_filter_out/blast2 && "
-            "makeblastdb -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
+            "{params.makeblastdb} -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
             "> {log} 2>&1"
 
     # Procura pedacos de adaptador dentro das leituras. Aqui a busca e invertida:
@@ -771,11 +781,12 @@ rule sample_blastdb:
         multiext("report/blast/{sample}_blastdb", ".nhr", ".nin", ".nsq"),
     params:
         prefix=lambda w: f"report/blast/{w.sample}_blastdb",
+        makeblastdb=TOOLS["makeblastdb"],
     log:
         "logs/blastdb_{sample}.log",
     shell:
         "mkdir -p report/blast && "
-        "makeblastdb -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
+        "{params.makeblastdb} -dbtype nucl -parse_seqids -in {input} -out {params.prefix} "
         "> {log} 2>&1"
 
 

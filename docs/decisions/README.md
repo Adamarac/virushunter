@@ -61,3 +61,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0016](0016-snakemake-workflow.md) | Workflow em Snakemake | Aceita (primeira fatia) |
 | [0017](0017-simplify-the-package.md) | Simplificar o pacote: sem camadas nem objetos de domínio | Aceita |
 | [0018](0018-local-execution.md) | Execução local: sem cluster, ferramentas no PATH | Aceita |
+| [0019](0019-local-tools.md) | Ferramentas locais em `tools/` | Aceita (parcial) |

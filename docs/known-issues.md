@@ -273,3 +273,39 @@ Se existir uma execução real preservada (entrada + saída), congelá-la como r
 
 *Não determinado:* se existe alguma execução real preservada acessível ao grupo. Essa
 resposta define se o Nível 3 é viável.
+
+### K26
+
+**`-max_target_seqs 1` não devolve o melhor hit.** Aberta. Descoberta ao testar o BLAST+
+2.17 recém-instalado ([ADR-0019](decisions/0019-local-tools.md)): a própria ferramenta
+avisa.
+
+```
+$ blastx -max_target_seqs 1 -outfmt 5 -db protdb -query leitura.fa -out out.xml
+Warning: [blastx] Examining 5 or more matches is recommended
+```
+
+O parâmetro é largamente entendido como "me dê o melhor hit". Não é o que ele faz: o BLAST
+interrompe a busca ao acumular o número pedido de alinhamentos, **antes** de ordenar por
+qualidade. Com `1`, o hit devolvido é o primeiro encontrado na ordem em que o banco foi
+percorrido, que só coincide com o melhor por acaso.
+
+O pipeline usa `-max_target_seqs 1` em **todas** as buscas: 4 ocorrências no `Snakefile`,
+11 em `virus_hunter.py`. Inclui a busca viral e a busca contra o NR.
+
+**Por que isso morde aqui em particular.** O filtro contra NR compara o hit viral com o
+melhor hit não viral. Se nenhum dos dois lados é de fato o melhor, a comparação perde o
+sentido — nas duas rotas, `diamond` e `blast`. É uma questão independente do limiar de
+e-value ([K1](#k1)) e independente da escolha entre as rotas
+([ADR-0005](decisions/0005-nr-filter-strategy.md)).
+
+**Não é regressão desta refatoração.** Está no código desde 2015 e o valor foi preservado
+como estava. O que mudou é que agora existe evidência direta, emitida pela ferramenta.
+
+**Não determinado:** se a versão 2.2.31 usada no cluster tinha o mesmo comportamento. O
+aviso é recente, mas o comportamento subjacente é antigo — foi documentado publicamente em
+2018 (Shah et al., *Bioinformatics*, "Misunderstood parameter of NCBI BLAST impacts the
+correctness of bioinformatics workflows"), três anos depois do artigo do pipeline.
+
+**Correção requer decisão científica**, não técnica: subir `-max_target_seqs` (o BLAST
+sugere 5 ou mais) muda o resultado de todas as buscas. Fica registrado, não corrigido.
