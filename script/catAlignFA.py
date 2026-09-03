@@ -4,7 +4,6 @@ import sys
 import linecache
 from operator import itemgetter, attrgetter
 
-#print sys.argv[1]
 e1=float(sys.argv[1])
 e2=float(sys.argv[2])
 f=open(sys.argv[3], 'r')

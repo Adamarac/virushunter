@@ -1,7 +1,7 @@
 # Fluxo real de execução
 
 Reconstruído a partir do código, não da estrutura de diretórios. A referência principal é
-o bloco `__main__` de [`script/virus_hunter.py:1937-2233`](../script/virus_hunter.py#L1937-L2233),
+o bloco `__main__` de `script/virus_hunter.py:1937-2233`,
 que define simultaneamente os parâmetros **e** a ordem em que `pipeline_run.sh` é escrito.
 
 > **Escopo.** Este documento descreve o fluxo de `virus_hunter.py`, que é **a referência
@@ -30,7 +30,7 @@ Consequências práticas:
 
 ## Parâmetros no estado commitado
 
-De [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992):
+De `virus_hunter.py:1950-1992`:
 
 | Parâmetro | Valor | Efeito |
 |---|---|---|
@@ -86,12 +86,12 @@ FASTQ bruto
 ## E1 — Descoberta de amostras
 
 - **Entrada:** `fastq/samples.txt`, gerado **manualmente** (`ls -1 *.gz > samples.txt`)
-- **Processo:** [`readSeeds2()`](../script/virus_hunter.py#L519-L560) agrupa arquivos em amostras
+- **Processo:** `readSeeds2()` agrupa arquivos em amostras
 - **Saída:** dicionário `seeds` em memória, `run.log`, `server.txt`
 - **Alimenta:** todas as etapas — é a raiz do fan-out
 
 A chave da amostra vem de `line.strip().split('.')[0].split('_')[1]`
-([linha 534](../script/virus_hunter.py#L534)) — **posicional e frágil**: depende da
+(linha 534) — **posicional e frágil**: depende da
 convenção de nomes do sequenciador. Um arquivo `A_S1_L001_R1_001.fastq.gz` vira a chave
 `S1`. Nomes fora dessa convenção agrupam errado, sem aviso.
 
@@ -101,7 +101,7 @@ Máximo de dois arquivos por chave; o terceiro cria uma chave `<key>.2`.
 
 FASTA→FASTQ (`fa2fq2.py`), BAM→FASTQ (Picard `SamToFastq`), unzip, preparo SRA
 (`sra.py`), fusão de pares sobrepostos (**FLASH** `-M 250`,
-[linha 569](../script/virus_hunter.py#L569)). Todas desligadas no estado commitado.
+linha 569). Todas desligadas no estado commitado.
 
 ## E3 — Depleção de hospedeiro e bactérias
 
@@ -112,7 +112,7 @@ FASTA→FASTQ (`fa2fq2.py`), BAM→FASTQ (Picard `SamToFastq`), unzip, preparo S
   reduzidas a `A` (ver [I1](invariants.md#i1--a-identidade-de-uma-leitura-é-a-sua-posição-no-arquivo))
 - **Alimenta:** E4
 
-[`bowtieBac()`](../script/virus_hunter.py#L950-L976) escreve `bowtieBac.txt` — uma lista
+`bowtieBac()` escreve `bowtieBac.txt` — uma lista
 de jobs, não um `.sh` — consumida por `schedule2.py`. Em seguida
 [`sam2fq_bac.py`](../script/sam2fq_bac.py) lê os SAMs em lockstep posicional
 (ver [I2](invariants.md#i2--arquivos-paralelos-são-lidos-em-correspondência-posicional))
@@ -166,7 +166,7 @@ de 35 bp → `abyss.fq`.
 ## E8 — Classificação taxonômica (opcional, desligada)
 
 - **CLARK** (k=20, n=48) contra três bancos → `clark_result.py` → `clark_html.py`
-- **bowtie2 contra 14 índices `nt`** → [`samNT.py`](../script/samNT.py) → contagens por
+- **bowtie2 contra 14 índices `nt`** → `samNT.py` → contagens por
   categoria/classe/família/espécie
 
 > ⚠️ A rota NT contém um defeito que invalida as contagens — ver
@@ -184,7 +184,7 @@ Filtros de comprimento: 300 bp antes do CAP3, 1500 bp depois.
 
 > **Nomenclatura enganosa.** A função `trinity()` executa **SPAdes**, não Trinity — o
 > próprio código admite: `def trinity(RAM): #This is actually spade`
-> ([linha 1667](../script/virus_hunter.py#L1667)). Todos os artefatos herdam o nome errado.
+> (linha 1667). Todos os artefatos herdam o nome errado.
 
 MIRA e Minimo existem no código mas não são alcançáveis pelas ramificações atuais.
 
@@ -229,7 +229,7 @@ cujo melhor hit não é viral e as remove.
 A variante legada [`blast_filter_NR.py`](../script/blast_filter_NR.py) faz uma comparação
 de e-values (um hit viral só passa se seu e-value for melhor que o do melhor hit
 não-viral) — cientificamente mais forte, porém **desativada**
-([linha 2208](../script/virus_hunter.py#L2208) está comentada).
+(linha 2208 está comentada).
 
 > **`readseeds2.py` difere aqui:** usa a rota BLAST + `blast_filter_NR.py`, não DIAMOND.
 
@@ -279,6 +279,6 @@ Os números não indicam semântica: `_contig2` é o resultado de um filtro de c
 `_contig3` é o merge de contigs e singlets do CAP3, `_contig4` é outro filtro de
 comprimento. Renomear essa cadeia é uma das melhorias de maior retorno e menor risco.
 
-> ⚠️ [`clean_dir()`](../script/virus_hunter.py#L797-L801) gera um script que apaga
+> ⚠️ `clean_dir()` gera um script que apaga
 > **todo arquivo que não seja `.gz`** no diretório do projeto. Não é executado por
 > `pipeline_run.sh`, mas está disponível como `clean.sh`.

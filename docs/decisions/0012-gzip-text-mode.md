@@ -42,7 +42,7 @@ e converteria uma correção local em refatoração ampla.
 ## Decisão
 
 Todo `gzip.open` no fecho vivo usa modo texto: `'rt'` para leitura, `'at'` para a escrita
-em [`sra.py:8`](../../script/sra.py#L8). Verificado por
+em `sra.py:8`. Verificado por
 `tests/check_gzip_text_mode.py`, que rejeita modo
 omitido, `'r'` e também `'rb'` — este último é explícito, mas explicitamente errado, e
 passaria por intencional numa revisão.

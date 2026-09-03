@@ -2,26 +2,8 @@
 
 import sys
 
-# def checkBacSAM(samindex, start, end): # first scan to get the mutation positions
 	# fs1, fs2=[],[]
-	# for j in range(start, end+1):
-		# filename=samindex+'_1'+'_'+str(j)+'.sam'
-		# fs1.append(open(filename, 'r'))
-	# for j in range(start, end+1):
-		# filename=samindex+'_2'+'_'+str(j)+'.sam'
-		# fs2.append(open(filename, 'r'))
 
-	# fs = fs1+fs2
-	# for f in fs:
-		# count+=1
-		# line1 = f1.readline() 
-		# line2 = f2.readline() 
-		# if not line1: end=True; break
-	# if end: break
-	# for f1,f2 in zip(fs1, fs2):
-		# f1.close()
-		# f2.close()
-	# print filename, 'percentHuman = ', 100*(1-(float(bacCount)/count))
 
 def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get the mutation positions
 	fs1, fs2=[],[]
@@ -60,7 +42,6 @@ def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get t
 					human2=True
 				else:
 					bac2=True
-			#if line1==line2: print 'haha'
 			index+=1
 		if end: break
 		count+=1
@@ -95,8 +76,6 @@ def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get t
 
 	print(filename, 'percentHuman = ', 100*float(humanCount)/count)
 	print(filename, 'percentBac = ', 100*float(bacCount)/count) #, bacCount1, bacCount2, bacCount, count
-	#print filename, 'filtered', filter, 'unmapped', un, 'DNA', geno, 'mRNA', ma, \
-	#	  'HumanPercent', float(ma+geno)/(un+ma+geno)*100, '%'
 
 def processSingleBacSAM(samindex, start, end, outfile): # first scan to get the mutation positions
 	fs1=[]

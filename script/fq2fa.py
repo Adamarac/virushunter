@@ -23,10 +23,7 @@ for line in f:
 		qseq=line.strip()
 		if len(seq) >= length:
 			print('>'+id.strip(), file=of)
-			#print >>of, '>',id,qid,qseq
 			print(seq, file=of)
-			#print 'length', length
-			#print seq
 f.close()
 of.close()
 

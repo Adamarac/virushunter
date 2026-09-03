@@ -64,8 +64,6 @@ if __name__ == '__main__':
 			for alignment in blast_record.alignments:
 				for hsp in alignment.hsps:
 					if hsp.expect < e_threshold:
-						# print '****Alignment****'
-						# print 'query', blast_record.query
 						query_nt = getSeq(cachename, cache, blast_record.query)
 						if blast_record.query not in queryset:
 							if True:#(hsp.expect > 10E-15) :
@@ -73,14 +71,6 @@ if __name__ == '__main__':
 								f.write(query_nt+'\n')
 							sigReads+=1
 						queryset.add(blast_record.query)
-						# print 'query_nt', query_nt
-						# print 'subject:', alignment.title
-						# print 'length:', alignment.length
-						# print 'e value:', hsp.expect
-						# print 'identities:', hsp.identities
-						# print str(hsp.query_start).ljust(11), hsp.query
-						# print ' '.ljust(11), hsp.match
-						# print str(hsp.sbjct_start).ljust(11), hsp.sbjct
 	except:
 		print('bad xml', fsigname)
 		pass

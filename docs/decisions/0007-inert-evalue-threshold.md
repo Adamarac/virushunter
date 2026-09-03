@@ -31,7 +31,7 @@ Varredura dos 155 arquivos `.py` com
 |---|---|---|
 | [`diamond_filter_NR.py`](../../script/diamond_filter_NR.py#L94) | 94 | **Sim — é o filtro ativo** |
 | [`blast_filter_NR.py`](../../script/blast_filter_NR.py#L132) | 132 | Sim (rota alternativa, ver [ADR-0005](0005-nr-filter-strategy.md)) |
-| [`diamond_filter.py`](../../script/diamond_filter.py#L125) | 125 | Não |
+| `diamond_filter.py` | 125 | Não |
 
 Nenhum outro arquivo apresenta o padrão. Quatro falsos positivos da primeira versão do
 verificador foram eliminados (HTML em string tripla; nomes convertidos no ponto de chamada,
@@ -40,7 +40,7 @@ como `int(illumina)` em `trim_quality.py`).
 ### Impacto real — mais estreito do que parece
 
 O mesmo `EVALUE` alimenta **tanto** o `-evalue` do BLAST a montante **quanto** o limiar do
-filtro ([`virus_hunter.py:1804-1806`](../../script/virus_hunter.py#L1804-L1806)). Como o
+filtro (`virus_hunter.py:1804-1806`). Como o
 XML já chega contendo apenas hits com e-value ≤ `EVALUE`, o filtro inerte não deixa passar
 nada que o BLAST já não tivesse aprovado.
 
@@ -51,7 +51,7 @@ comparação estrita `<`.
 Onde o defeito realmente morde:
 
 1. **Rota DIAMOND** (`doDiamondOnly`). A chamada em
-   [`virus_hunter.py:1801`](../../script/virus_hunter.py#L1801) **não passa `--evalue`**,
+   `virus_hunter.py:1801` **não passa `--evalue`**,
    usando o padrão da ferramenta. Com o filtro inerte, o limiar efetivo passa a ser o
    padrão do DIAMOND, e não o `EVALUE` configurado. Ajustar `EVALUE` nessa rota não produz
    o efeito esperado. *Não verificado:* o valor padrão exato da versão de DIAMOND instalada
@@ -104,7 +104,7 @@ de referência passa o e-value nessa posição:
 
 | Orquestrador | `argv[5]` recebe |
 |---|---|
-| [`virus_hunter.py:1825`](../../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
+| `virus_hunter.py:1825` — referência | `EVALUE` ✓ |
 | `readseeds2.py:792` — legado | **`hsp`** (`'NO'`) |
 | `readseeds_denovo.py:713` — legado | **`hsp`** |
 | `readseeds_cloud.py:416` — legado | **`hsp`** |
@@ -171,14 +171,14 @@ junto com `virus_hunter.py`, e os demais nunca acompanharam — o que é esperad
    usaram um terceiro limiar, diferente tanto de 0.001 quanto de 0.01.
 
    Comando original, para comparação
-   ([`virus_hunter.py:1807`](../../script/virus_hunter.py#L1807)):
+   (`virus_hunter.py:1807`):
 
    ```
    diamond blastx --quiet --max-target-seqs 1 --outfmt 6 -d <db> -q <sigfa> -o <out>
    ```
 
 2. **Rota viral do DIAMOND (`doDiamondOnly`) — não migrada.** A pendência original também
-   cobria [`virus_hunter.py:1801`](../../script/virus_hunter.py#L1801). Essa rota não
+   cobria `virus_hunter.py:1801`. Essa rota não
    existe no `Snakefile`, então não há o que corrigir lá; se for migrada, precisa nascer
    com `--evalue`.
 

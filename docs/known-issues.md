@@ -48,7 +48,7 @@ efetivo ainda é o padrão da ferramenta. Decisão separada, registrada na ADR-0
 
 ### K2 — `samNT.py` dessincroniza os arquivos SAM
 
-**Evidência.** [`samNT.py:56-69`](../script/samNT.py#L56-L69) — o `break` no primeiro
+**Evidência.** `samNT.py:56-69` — o `break` no primeiro
 acerto deixa os demais handles sem avançar. Viola
 [I2](invariants.md#i2--arquivos-paralelos-são-lidos-em-correspondência-posicional).
 
@@ -77,10 +77,10 @@ parte da saída. Não há registro algum da troca.
 
 ### K4 — Credenciais em texto claro e `chmod 777`
 
-**Evidência.** [`virus_hunter.py:1950`](../script/virus_hunter.py#L1950)
+**Evidência.** `virus_hunter.py:1950`
 (`password='Welcome39'`, usada em `echo <senha> | sudo` em cinco pontos);
 credenciais FTP em comentários nas linhas 146, 150, 159 e 160; e em
-[`script/readme.txt:44`](../script/readme.txt#L44).
+`script/readme.txt:44`.
 
 **Impacto.** Segredos públicos desde 2020. `chmod 777 -R` recursivo torna dados e bancos
 graváveis por qualquer usuário do cluster.
@@ -90,7 +90,7 @@ removê-las do código não desfaz a exposição. Substituir `777` por grupo Uni
 
 ### K5 — Falha é indistinguível de sucesso
 
-**Evidência.** [`schedule2.py:14-25`](../script/schedule2.py#L14-L25) decide conclusão por
+**Evidência.** `schedule2.py:14-25` decide conclusão por
 existência e tamanho do arquivo de saída, não por código de saída;
 [`blast_parser.py:88`](../script/blast_parser.py#L88) engole XML truncado com
 `except: print 'bad xml'`; 39 `except:` nus só em `virus_hunter.py`.
@@ -104,7 +104,7 @@ entre etapas.
 
 ### K6 — Bancos de dados sem versionamento
 
-**Evidência.** [`script/readme.txt:6-9`](../script/readme.txt#L6-L9):
+**Evidência.** `script/readme.txt:6-9`:
 
 ```
 mv .../blastdb/nr     .../blastdb/nr_today
@@ -125,7 +125,7 @@ taxonomia; registrar o caminho **resolvido** em cada saída.
 
 ### K7 — Não-determinismo dependente do nó de execução
 
-**Evidência.** [`virus_hunter.py:1680`](../script/virus_hunter.py#L1680):
+**Evidência.** `virus_hunter.py:1680`:
 
 ```python
 spades.py -m ' + SI[servers[job%nservers]][1] + ' --meta ...
@@ -152,7 +152,7 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | # | Problema | Evidência | Impacto |
 |---|---|---|---|
 | ~~K8~~ | ~~Cinco forks do orquestrador~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | [`orchestrators.md`](orchestrators.md) | Os quatro legados foram removidos; recuperáveis na tag `legacy-2020` |
-| K9 | Configuração dentro do código | [`virus_hunter.py:1950-1992`](../script/virus_hunter.py#L1950-L1992) | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
+| K9 | Configuração dentro do código | `virus_hunter.py:1950-1992` | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
 | ~~K24~~ | ~~Legados passam argumento errado ao filtro NR~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | — | Os arquivos afetados foram removidos |
 | ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por `tests/check_no_import_side_effects.py` |
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
@@ -175,7 +175,7 @@ correção revelou [K24](#k24).
 
 | Orquestrador | `argv[5]` recebe |
 |---|---|
-| [`virus_hunter.py:1825`](../script/virus_hunter.py#L1825) — referência | `EVALUE` ✓ |
+| `virus_hunter.py:1825` — referência | `EVALUE` ✓ |
 | `readseeds2.py:792` — legado | **`hsp`** (`'NO'`) |
 | `readseeds_denovo.py:713` — legado | **`hsp`** |
 | `readseeds_cloud.py:416` — legado | **`hsp`** |
@@ -227,9 +227,9 @@ tem como se reproduzir.
 | K18 | Nenhum teste ou dado de exemplo | Repositório inteiro |
 | K19 | `readVirusGI()` lê o FASTA viral e o resultado é descartado | [`diamond_filter_NR.py:139`](../script/diamond_filter_NR.py#L139) |
 | ~~K20~~ | ~~`gzip.sopen` — método inexistente~~ — **resolvido** ([ADR-0012](decisions/0012-gzip-text-mode.md)) | era `dedup.py:113`; a deduplicação silenciosamente não ocorria com entrada `.gz` |
-| K21 | `clean_dir()` apaga todo arquivo não-`.gz` | [`virus_hunter.py:797-801`](../script/virus_hunter.py#L797-L801) |
+| K21 | `clean_dir()` apaga todo arquivo não-`.gz` | `virus_hunter.py:797-801` |
 | K22 | Constante mágica `if zz<40` no trim de qualidade | [`trim_quality.py:127`](../script/trim_quality.py#L127) |
-| K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | [`virus_hunter.py:1667`](../script/virus_hunter.py#L1667) |
+| K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | `virus_hunter.py:1667` |
 
 ## Baixas
 
@@ -238,7 +238,7 @@ tem como se reproduzir.
 referenciados mas ausentes (`sorttable.js`, `ajax_select.js`, `DataTables-1.9.4/`), de modo
 que os relatórios HTML não renderizam só com este repositório · ~30% de
 `virus_hunter.py` é código comentado · indentação mista · typo `cahche` em
-[`samNT.py:40`](../script/samNT.py#L40) · imports duplicados.
+`samNT.py:40` · imports duplicados.
 
 ---
 

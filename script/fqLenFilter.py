@@ -12,7 +12,6 @@ for line in f:
 		id=line.strip()[0:30]
 		try: pair= line.strip().split()[1]
 		except: pair=''
-		#id='@mira'+str(i/4)+' '+pair
 	elif i%4==2:
 		seq=line.strip()
 	elif i%4==3:

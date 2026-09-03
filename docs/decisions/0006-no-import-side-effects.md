@@ -6,7 +6,7 @@
 
 ## Contexto
 
-[`virus_hunter.py`](../../script/virus_hunter.py) executava, no nível do módulo:
+`virus_hunter.py` executava, no nível do módulo:
 
 ```python
 SI=serverInfo()
@@ -36,7 +36,7 @@ remover esse efeito passou a ser pré-requisito de qualquer trabalho de validaç
 ## Alternativas consideradas
 
 **Chamar `serverInfo()` sob demanda, só quando `SI` for necessário.** `SI` é usado apenas
-em `trinity()` ([1680-1681](../../script/virus_hunter.py#L1680-L1681)), então o pipeline
+em `trinity()` (1680-1681), então o pipeline
 poderia ser gerado sem cluster nas configurações que não usam SPAdes. Descartada por
 enquanto: `trinity('')` é chamado incondicionalmente, e adiar a chamada mudaria o momento
 em que a verificação de nós indisponíveis aborta a execução — alteração de comportamento,

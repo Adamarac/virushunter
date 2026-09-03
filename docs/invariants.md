@@ -72,7 +72,7 @@ real e `lineno` vira `float` — os identificadores mudam de `@s1_1_lib` para
 
 Quando o pipeline alinha as mesmas leituras contra vários índices, ele confia em que a
 linha *N* de cada arquivo SAM corresponde à mesma leitura. Isso é obtido passando
-`--reorder` ao bowtie2 ([`virus_hunter.py:970`](../script/virus_hunter.py#L970)), que
+`--reorder` ao bowtie2 (`virus_hunter.py:970`), que
 força a saída na ordem da entrada mesmo com múltiplas threads:
 
 ```
@@ -93,7 +93,7 @@ linhas seja igual à contagem de leituras.
 
 ### Violação existente no código
 
-[`samNT.py:56-69`](../script/samNT.py#L56-L69) **quebra este invariante**:
+`samNT.py:56-69` **quebra este invariante**:
 
 ```python
 for f1 in fs1:
@@ -117,7 +117,7 @@ Ver [`known-issues.md`](known-issues.md).
 
 O pipeline não consulta nenhum serviço de taxonomia em tempo de execução. A linhagem é
 **embutida no cabeçalho FASTA** quando o banco é construído
-([`nr_virus3.py:228-231`](../script/nr_virus3.py#L228-L231)):
+(`nr_virus3.py:228-231`):
 
 ```python
 label.append('species'+'$'+species)
@@ -135,7 +135,7 @@ produzindo cabeçalhos na forma:
 O BLAST devolve esse texto como título do *subject*, e os consumidores o desmontam:
 
 - [`blast_output_sort.py:203-207`](../script/blast_output_sort.py#L203-L207) — `split(':')` e `split('$')`
-- [`samNT.py:63`](../script/samNT.py#L63) — `cat, clas, fam, species = chro.split('$')`
+- `samNT.py:63` — `cat, clas, fam, species = chro.split('$')`
 
 ### A consequência
 

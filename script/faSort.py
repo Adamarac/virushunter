@@ -39,7 +39,6 @@ def printFa(infile, outfile):
 	of = open(outfile, 'w')
 	nmys=0
 	for (start, end, seqlen, nlower) in length:
-		#if nlower/float(seqlen) > 0.2: continue
 		nmys+=1
 		for i in range(start, end+1):
 			line = linecache.getline(infile, i)

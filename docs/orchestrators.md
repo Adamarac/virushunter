@@ -10,7 +10,7 @@ eram cópias divergentes, editadas manualmente ao longo do tempo.
 
 | Arquivo | Linhas | Observação |
 |---|---|---|
-| [`virus_hunter.py`](../script/virus_hunter.py) | 2.233 | Superset mais recente |
+| `virus_hunter.py` | 2.233 | Superset mais recente |
 | `readseeds2.py` | 997 | Apontado pelo `script/readme.txt` |
 | `readseeds_denovo.py` | 898 | Variante focada em montagem |
 | `readseeds_cloud.py` | 541 | Variante "cloud" |
@@ -73,7 +73,7 @@ uma decisão de engenharia.
 ### 2. Nenhum dos dois roda fora do cluster
 
 `virus_hunter.py` dispara SSH para 20 servidores no momento do import
-([linha 205](../script/virus_hunter.py#L205)). Sem o cluster original, ele nem inicia.
+(linha 205). Sem o cluster original, ele nem inicia.
 `readseeds2.py` não tem essa chamada — mas **isso não o torna independente do cluster**.
 
 O pipeline gerado por `readseeds2.py` chama `firstpage.py` na etapa final de relatório
@@ -103,7 +103,7 @@ hit não seja viral, sem comparar magnitudes.
 
 Ou seja: o orquestrador com o ferramental **mais moderno** usa o filtro **mais fraco**, e
 a rota mais forte está explicitamente comentada
-([`virus_hunter.py:2208`](../script/virus_hunter.py#L2208)).
+(`virus_hunter.py:2208`).
 
 ---
 

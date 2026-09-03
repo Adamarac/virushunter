@@ -3,11 +3,7 @@ import sys
 from collections import defaultdict
 
 def getBarcode(line, cwd):
-	# line='>Contig1_170412_charlys_metagenomics_2_Dani12Torque_teno_virus_13 length=798'
-	# cwd='170412_charlys_metagenomics_2'
-	# virname='Torque_teno_virus_13'
 	parts=line.strip().split()
-	# virname=parts[1]
 	readid=parts[0]
 	barcode=readid[(readid.find(cwd)+1+len(cwd)):]
 	return barcode

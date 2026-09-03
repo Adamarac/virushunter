@@ -51,7 +51,7 @@ revisão humana é perdida.
 ### Situação no código
 
 A rota B é a ativa. A rota A está **comentada** em
-[`virus_hunter.py:2208`](../../script/virus_hunter.py#L2208):
+`virus_hunter.py:2208`:
 
 ```python
 #sf.write('source blast_nr_filter.sh >blastnr.log  \nwait\n')
@@ -118,7 +118,7 @@ onde `blast_nr_filter.sh` usava `sigfaname` por fatia e o `_sig` concatenado exi
 apenas para alimentar o DIAMOND.
 
 A rota `blast` é reproduzida a partir da linha
-[`virus_hunter.py:1767-1769`](../../script/virus_hunter.py#L1767-L1769), com as mesmas
+`virus_hunter.py:1767-1769`, com as mesmas
 flags. Note que o `blastx` contra o NR **não** leva `-db_soft_mask`, diferente do `blastx`
 viral, que leva `-db_soft_mask 21`. Isso foi preservado como está no original; *não
 determinado* se é intencional.

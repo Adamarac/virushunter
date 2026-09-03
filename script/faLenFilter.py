@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import sys
 def filterLength(infile, outfile, l, label):
-	#outfile = infile.rsplit('.', 1)[0]+str(l)+'_filter.fa'
-	#print 'converting', infile, 'to', outfile
 	f = open(infile, 'r')
 	of = open(outfile, 'w')
 	i = 0
@@ -22,8 +20,6 @@ def filterLength(infile, outfile, l, label):
 	if id!='' and len (''.join(seq)) >= l: of.write('>Contig'+str(b+1)+'_'+label+'\n'+''.join(seq)+'\n')
 	f.close()
 	of.close()
-	#print infile, 'num_contig =', a
-	#print infile, 'num_contig_grater_'+str(l), ' = ', b
 	
 if __name__ == '__main__':
 	infile, outfile, length = sys.argv[1], sys.argv[2], sys.argv[3]

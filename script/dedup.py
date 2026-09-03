@@ -7,48 +7,19 @@ import gzip
 import linecache
 import gc
 from operator import itemgetter
-#import sqlite3
 import gzip
 
 count=0
 total=0
 
-# def RestoreOrderDB(tmpfq, outfq):
-	# try: os.remove(tmpfq+'.db')
-	# except: pass
-	# #conn = sqlite3.connect(tmpfq+'.db')
-	# conn = sqlite3.connect(":memory:")
-	# c = conn.cursor()
 
-	# # Create table
-	# c.execute('''CREATE TABLE ordertable 
                # (lineNo integer, ind integer)''')
 
-	# # c.execute('''CREATE TABLE stocks
-             # # (date text, trans text, symbol text, qty real, price real)''')
 			 
-	# f=open(tmpfq, 'r')
-	# i=0
-	# for line in f:
-		# if i%1000000==0: print i
-		# i+=1
-		# lineNo = int(line.strip().split()[0])
-		# c.execute("INSERT INTO ordertable VALUES ("+str(lineNo)+","+str(i)+")")
-	# f.close()
-	# conn.commit()
 
-	# of=open(outfq, 'w')
-	# j=0
-	# for row in c.execute('SELECT * FROM ordertable ORDER BY lineNo'):
 		# lineNo, i = row[0], row[1]
-		# if j%1000000==0: print 'j',j
-		# j+=1
-		# line = linecache.getline(tmpfq, i)
 		# Number, content = line.strip().split()
-		# of.write(content+'\n')
-	# of.close()
 
-	# conn.close()
 
 def RestoreOrder(tmpfq, outfq):
 	f=open(tmpfq, 'r')
@@ -56,9 +27,7 @@ def RestoreOrder(tmpfq, outfq):
 	i=0
 	for line in f:
 		if i%1000000==0: print(i)
-		#if i>10000000: break
 		lineNo = int(line.strip().split()[0])
-		#print lineNo, line
 		i+=1
 		if i%4==1: order.append((lineNo,i))
 	f.close()
@@ -67,7 +36,6 @@ def RestoreOrder(tmpfq, outfq):
 	j=0
 	for (lineNo, i) in order:
 		try:
-			#if j%1000000==0: print j
 			j+=1
 			line = linecache.getline(tmpfq, i)
 			Number, content = line.strip().split()
@@ -82,32 +50,14 @@ def RestoreOrder(tmpfq, outfq):
 			Number, content = line.strip().split()
 			of.write(content+'\n')
 		except:
-			pass#print 'exception', lineNo, i, j, line
+			pass
 	of.close()
 
-# def RestoreOrder(tmpfq, outfq):
-	# f=open(tmpfq, 'r')
-	# order = []
-	# i=0
-	# for line in f:
-		# if i%1000000==0: print i
-		# i+=1
-		# lineNo = int(line.strip().split()[0])
-		# order.append((lineNo,i))
-	# f.close()
-	# order.sort(key=itemgetter(0))
-	# of=open(outfq, 'w')
-	# for (lineNo, i) in order:
-		# line = linecache.getline(tmpfq, i)
 		# Number, content = line.strip().split()
-		# of.write(content+'\n')
-	# of.close()
 
 
 def removedup(inputfq, outputfq):
-	#print inputfq
 	global count, total
-	#print 'processing..', inputfq
 	if inputfq.endswith('.gz'):
 		f=gzip.open(inputfq, 'rt')
 	else:
@@ -194,4 +144,3 @@ if __name__ == '__main__':
 		sys.exit()
 	print(filename, 'num_dup_reads =', count)
 	print(filename, 'percent_dup =', round(count/float(total)*100, 2)) 
-	#print filename, 'total', total, 'dup', count, 'percentDup', round(count/float(total)*100, 2) 

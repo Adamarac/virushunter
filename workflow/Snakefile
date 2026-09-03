@@ -821,7 +821,8 @@ rule publish:
         touch("report/.published"),
     params:
         php=SCRIPTS + "*.php",
+        assets=SCRIPTS + "tablestyle.css " + SCRIPTS + "wait.gif",
     shell:
         "cp -r blast_filter_out/aln blast_filter_out/fasta report/ 2>/dev/null || true; "
         "cp blast_filter_out/*.html blast_filter_out/*.xls report/ 2>/dev/null || true; "
-        "cp {params.php} report/ 2>/dev/null || true"
+        "cp {params.php} {params.assets} report/ 2>/dev/null || true"

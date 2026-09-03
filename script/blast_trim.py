@@ -65,22 +65,16 @@ def checkEnd(seq, ada):
 def readBlastTab(f):
 	trim_index=defaultdict(list)
 	for line in f:
-		#print line
 		parts=line.strip().split()
 		try: q, sub, e, qs, qe, ss, se=parts #using fasta
-		#try: sub, q, e, ss, se, qs, qe =parts #using blastdb
 		except: print('error', line); sys.exit(1)
 		sub, q, ss, se, qs, qe = q, sub, qs, qe, ss, se #use subject db as trim
 		try: e = float(e)
 		except: e=1
-		#if e>10: continue
-		#print q
 		q=int(q.rsplit('_', 1)[1])
-		#print q
 		qs, qe=int(qs)-1, int(qe)-1 #change to 0 indexed
 		if qs>qe: qs,qe=qe,qs
 		trim_index[q].append((qs, qe))
-	#print 'len(trim_index)', len(trim_index)
 	return trim_index
 
 trim_index = readBlastTab(f2)
@@ -98,17 +92,14 @@ for line in f:
 		seq=line.strip()
 		n=len(seq)
 		hits=trim_index[lineno]
-		#hits=sorted(hits, key=itemgetter(1), reverse=True)
 		minright=n
 		maxleft=0
 		for hit in hits:
 			x,y=hit
-			# if i%4==2:
-				# print x, y, revcomp(seq[x:y+1])
 			mid=(x+y)/2
 			if mid>0.5*n: #right
 				if x< minright:
-					minright=x#seq=seq[0:y]
+					minright=x
 			else:  #left adaptors
 				if y>maxleft:
 					maxleft=y
@@ -118,7 +109,6 @@ for line in f:
 			seq=line[0]
 		if minright < n: right+=1
 		if maxleft  > 0: left+=1
-		#if len(hits)>1: print hits, line.strip(); print seq
 		print(seq, file=of)
 	else:
 		print(line.strip(), file=of)

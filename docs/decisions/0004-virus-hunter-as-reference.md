@@ -26,7 +26,7 @@ O artigo é do próprio autor do código, com Delwart e Chiu, e estabelece **`SA
 
 | Parâmetro do artigo | `virus_hunter.py` | `readseeds2.py` |
 |---|---|---|
-| Combinação `SAVaC` | `assembly_para='SAVa'` → `AddPipe('SAVaC', sf)` — **literal** ([2164-2167](../../script/virus_hunter.py#L2164-L2167)) | conceito ausente; inclui **MIRA**, avaliado e **excluído** pelo artigo |
+| Combinação `SAVaC` | `assembly_para='SAVa'` → `AddPipe('SAVaC', sf)` — **literal** (2164-2167) | conceito ausente; inclui **MIRA**, avaliado e **excluído** pelo artigo |
 | Filtro de 300 bp antes da montagem final | `contigLength1 = 300` ✓ | `contigLength1 = 150` ✗ (é o `CON_LEN_DBG`, filtro anterior) |
 | k = 31 | `31` ✓ | `31` ✓ |
 | Chunks de 100K leituras | `partition.py … 100000` ✓ | `100000` ✓ |

@@ -1,5 +1,19 @@
 # Documentação técnica — VirusHunter
 
+> **Sobre as referências a `script/`.** Boa parte desta documentação cita o código
+> original como evidência — `virus_hunter.py` acima de tudo. Esses arquivos foram removidos
+> da árvore por não fazerem parte da versão migrada
+> ([ADR-0020](decisions/0020-prune-to-the-migrated-version.md)), então as citações aparecem
+> como texto, não como links. Para conferir qualquer uma delas:
+>
+> ```sh
+> git show 505f18b:script/virus_hunter.py | sed -n '1800,1810p'
+> ```
+>
+> `505f18b` é o último commit antes da poda. As afirmações continuam verificáveis; só não
+> estão a um clique.
+
+
 Esta pasta documenta o pipeline **como ele é hoje**, antes de qualquer refatoração.
 
 O código deste repositório foi publicado em julho de 2020 como um upload único, sem

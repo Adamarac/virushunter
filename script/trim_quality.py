@@ -21,7 +21,6 @@ def trimfqTailB(label, seqFile, f, of):
 	Ccount, Gcount =0,0
 	for line in f:
 		i+=1
-		#if i%1000000==0: print i,' ',
 		if i%4==1:
 			id=line.strip()
 		elif i%4==2: #sequence string
@@ -64,7 +63,6 @@ def trimfqTailB(label, seqFile, f, of):
 			rlen+=(len(qseq)-index)
 	print(seqFile, 'polyC = ', Ccount)
 	print(seqFile, 'polyG = ', Gcount)
-	#print '\n average tail removed:', float(rlen)/counter, 'nline', i
 
 def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 	i = 0
@@ -74,7 +72,6 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 	Ccount, Gcount =0,0
 	for line in f:
 		i+=1
-		#if i%1000000==0: print i,' ',
 		if i%4==1:
 			id=line.strip()
 		elif i%4==2: #sequence string
@@ -88,30 +85,6 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 				else:
 					break
 			if r>0: s=r+1
-			# if read.startswith('GGG'):
-				# for r in xrange(len(read)):
-					# if read[r]!='G':
-						# s=r+1
-						# Gcount+=1
-						# break
-			# elif read.startswith('CCC'):
-				# for r in xrange(len(read)):
-					# if read[r]!='C':
-						# s=r+1
-						# Ccount+=1
-						# break
-			# if read.endswith('GGG'):
-				# for r in xrange(len(read)-1,-1,-1):
-					# if read[r]!='G':
-						# t=r
-						# Gcount+=1
-						# break
-			# elif read.endswith('CCC'):
-				# for r in xrange(len(read)-1,-1,-1):
-					# if read[r]!='C':
-						# t=r
-						# Ccount+=1
-						# break
 		elif i%4==3:
 			qid=line.strip()
 		elif i%4==0: #quality string
@@ -124,7 +97,6 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 				elif ord(x)-illumina <= phred:
 					break
 				index+=1
-			#if t<index: index=t
 			if index!=0 and index>s:
 				x=len(qseq)
 				print('\n'.join([id, read[s:index],qid,qseq[s:index]]), file=of)
@@ -132,8 +104,6 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 				rlen+=(len(qseq)-index)
 			else:
 				print('\n'.join([id, read, qid, qseq]), file=of)
-	# print label, 'polyC = ', Ccount
-	# print label, 'polyG = ', Gcount
 	print(label, 'num_tail_removed = ', counter)
 	if counter==0: 
 		out=0
@@ -142,8 +112,8 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 	print(label, 'tail_removed_average = ', out)
 
 if __name__ == '__main__':
-	seqFile = sys.argv[1] #'s_combine_2_sequence.txt'
-	outfile =sys.argv[2] #'s_combine_trim_2_sequence.txt'
+	seqFile = sys.argv[1]
+	outfile =sys.argv[2]
 	illumina=sys.argv[3] #33 or 64 or B
 	label=sys.argv[4] #label of input file library
 	try: phred= int(sys.argv[5])

@@ -10,7 +10,6 @@ def countFasta(filename):
     return count 
 
 def splitFasta(filename, nfiles, nseqs):
-    # chunksize = int(float(nseqs)/nfiles+1)
     fs= []
     for i in range(nfiles):
         fname=filename+'_'+str(i)

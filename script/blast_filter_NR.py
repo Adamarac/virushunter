@@ -64,7 +64,6 @@ def readNRXML(fname, virusGIs):
 					nrE[query]=float(hsp.expect)
 					nrID[query]=subject
 	result_handle.close()
-	#sys.stderr.write( 'count'+str( count))
 	return nrE, nrID
 
 def readVirusXML1(fname):
@@ -86,51 +85,18 @@ def readVirusXML1(fname):
 	result_handle.close()
 	return virusE, virusID
 
-# def OutputVirus(fname):
-	# global virusE, cache, cachename
-	# result_handle = open(fname, 'r')
-	# blast_records = NCBIXML.parse(result_handle)
-	# nalign=0
-	# for blast_record in blast_records:
-		# E_VALUE_THRESH = 0.01
-		# query = blast_record.query
-		# for alignment in blast_record.alignments:
-			# for hsp in alignment.hsps:
-				# if float(hsp.expect) < E_VALUE_THRESH:
-					# nalign+=1
-					# print '****Alignment****'
-					# print 'query', blast_record.query
-					# query_nt = getSeq(cachename, cache, blast_record.query)
-					# print 'query_nt', query_nt
-					# print 'subject:', alignment.title
-					# print 'length:', alignment.length
-					# print 'e value:', hsp.expect
-					# print 'lowest non-virus nr e value (LNVNRE): NA'
-					# print 'identities:', hsp.identities
-					# print str(hsp.query_start).ljust(11), hsp.query
-					# print ' '.ljust(11), hsp.match
-					# print str(hsp.sbjct_start).ljust(11), hsp.sbjct
-	# result_handle.close()
-	# sys.stderr.write('nalign '+str(nalign)+'\n')
 
 def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 	global virusE, nrE, cache, cachename
 	of = open(filtertxt, 'w')
-	#library=os.path.basename(filtertxt).rsplit('_',3)[0] #'Ita-Res-C11-15_blast_filter.txt_34'
 	result_handle = open(fname, 'r')
 	blast_records = NCBIXML.parse(result_handle)
 	nalign, filter=0, 0
 	for blast_record in blast_records:
-		#E_VALUE_THRESH = 0.01
 		query = blast_record.query
 		for alignment in blast_record.alignments:
 			for hsp in alignment.hsps:
 				if float(hsp.expect) < E_VALUE_THRESH:
-					#try: 
-						#sys.stderr.write('nrE: '+str(nrE[query])+' vrE: '+str(virusE[query])+'\n')
-						#sys.stderr.write('nrID: '+str(nrID[query])+'\n')
-						#sys.stderr.write('virus: '+alignment.title+'\n')
-					#except: pass
 					if query in nrE and query in virusE and float(hsp.expect) >= nrE[query]: 
 						filter+=1; continue # filter out
 					nalign+=1
@@ -140,7 +106,6 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 					if hsp_only=='YES':
 						ss,tt = int(hsp.query_start)-1, int(hsp.query_end)
 						query_nt = query_nt[ss:tt]
-						#print ss, tt, query_nt
 					of.write ( 'query_nt '+ query_nt+'\n')
 					of.write ( 'subject: '+ alignment.title+'\n')
 					of.write ( 'length: '+ str(alignment.length)+'\n')
@@ -155,7 +120,6 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH):
 	result_handle.close()
 	of.close()
 	print(fname, ' n_hits = ', str(nalign))
-	#print fname, ' n_filter = ', str(filter)
 
 if __name__ == '__main__': 
 	virusxml=sys.argv[1]
@@ -170,9 +134,7 @@ if __name__ == '__main__':
 	print('hsp_only', hsp_only)
 	cache={}
 	cache = CacheLines(cachename)
-	#sys.stderr.write(cachename+'\n')
 	virusGIs = readVirusGI()
-	#sys.stderr.write('len(cache)'+str(len(cache)))
 	virusE, virusID = readVirusXML1(virusxml)
 	try: nrE, nrID = readNRXML(nrxml, virusGIs)
 	except: nrE={}

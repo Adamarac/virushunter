@@ -42,16 +42,16 @@ Há **dois** mecanismos de paralelismo coexistindo:
 | Mecanismo | Uso | Detecção de falha |
 |---|---|---|
 | `ssh <nó> <cmd> &` + `wait` a cada `nservers` jobs | maioria das etapas | nenhuma |
-| [`schedule2.py`](../script/schedule2.py) | BLAST e bowtie | **existência do arquivo de saída** |
+| `schedule2.py` | BLAST e bowtie | **existência do arquivo de saída** |
 
 `schedule2.py` considera um job concluído se o arquivo de saída existe e tem tamanho
-maior que zero ([linhas 14-25](../script/schedule2.py#L14-L25)) — **não** pelo código de
+maior que zero (linhas 14-25) — **não** pelo código de
 saída. Um BLAST que morreu por falta de memória depois de escrever XML parcial conta como
 sucesso. Em seguida, `blast_parser.py` engole o XML truncado
 ([linha 88](../script/blast_parser.py#L88): `except: print 'bad xml'`) e o pipeline
 prossegue com dados incompletos.
 
-`run_all()` é chamado **duas vezes** ([linhas 123-124](../script/schedule2.py#L123-L124))
+`run_all()` é chamado **duas vezes** (linhas 123-124)
 "para compensar falhas" — o que também significa que jobs podem ser reexecutados em nós
 diferentes entre uma passada e outra.
 
@@ -98,9 +98,9 @@ projeto. Resolvido por [ADR-0008](decisions/0008-repository-scope.md).
 ### Configuração como estado global mutável
 
 Os parâmetros vivem como variáveis de módulo
-([`virus_hunter.py:177-306`](../script/virus_hunter.py#L177-L306)) e como literais dentro
-do `__main__` ([1950-1992](../script/virus_hunter.py#L1950-L1992)). Funções declaram
-`global seeds, pair` e os reatribuem: [`mergePairFq()`](../script/virus_hunter.py#L562-L586)
+(`virus_hunter.py:177-306`) e como literais dentro
+do `__main__` (1950-1992). Funções declaram
+`global seeds, pair` e os reatribuem: `mergePairFq()`
 substitui `seeds` e muda `pair` para o resto do processo.
 
 Não existe caminho para configurar uma execução sem editar o código.
@@ -143,7 +143,7 @@ for (key, fqfiles) in seeds.items():
 ```
 
 A única classe do projeto é `Node` (árvore taxonômica), e ela está **copiada** entre
-[`acc_tax.py:16`](../script/acc_tax.py#L16) e [`nr_virus3.py:42`](../script/nr_virus3.py#L42)
+`acc_tax.py:16` e `nr_virus3.py:42`
 com comportamento **divergente**: o filtro de níveis em `printTree` está ativo em um e
 comentado no outro.
 
@@ -155,9 +155,9 @@ A função `CacheLines()` está copiada literalmente em pelo menos cinco arquivo
 |---|---|
 | `trinity()`, `trinity.sh`, `trinity_<amostra>/` | Executa **SPAdes** |
 | `_contig`, `_contig2`, `_contig3`, `_contig4`, `_c` | Números não indicam semântica |
-| `f`, `f1`, `f2`, … `f65`, `f400`, `fff` | 22 handles em [`blastVirus()`](../script/virus_hunter.py#L1696-L1933) |
+| `f`, `f1`, `f2`, … `f65`, `f400`, `fff` | 22 handles em `blastVirus()` |
 | `doMyth` | "Myth" = "mystery" (contigs sem hit) |
-| `cahche` | [`samNT.py:40`](../script/samNT.py#L40) — parâmetro com typo, ignorado |
+| `cahche` | `samNT.py:40` — parâmetro com typo, ignorado |
 
 ---
 
@@ -174,7 +174,7 @@ ferramentas serem padrão em bioinformática. Os flags booleanos são uma lingua
 configuração rudimentar; `pipeline_run.sh` é o DAG compilado; os workers são as regras.
 
 A evidência mais forte dessa leitura está dentro do próprio repositório:
-[`script/ensembleAssembly_1/`](../script/ensembleAssembly_1/) é um subprojeto do mesmo
+`script/ensembleAssembly_1/` é um subprojeto do mesmo
 autor, empacotado **corretamente** — com `config.txt` declarativo, `readme.txt` de
 usuário, separação `bin/`, dados de exemplo e projeto de exemplo:
 

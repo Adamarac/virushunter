@@ -77,3 +77,7 @@ dist/
 # O README fica: e ele que explica o que baixar e o que nao existe para Windows.
 tools/*
 !tools/README.md
+
+# Bytecode do Python.
+__pycache__/
+*.pyc
