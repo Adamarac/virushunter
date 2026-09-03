@@ -47,7 +47,7 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0002](0002-working-base-and-fork.md) | Base de trabalho e fork | Aceita |
 | [0003](0003-canonical-orchestrator.md) | Orquestrador canônico | Substituída por 0004 |
 | [0004](0004-virus-hunter-as-reference.md) | `virus_hunter.py` é a referência científica | Aceita |
-| [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | **Pendente** |
+| [0005](0005-nr-filter-strategy.md) | Estratégia do filtro contra NR | Aceita (selecionável) |
 | [0006](0006-no-import-side-effects.md) | Sem efeitos colaterais em tempo de importação | Aceita |
 | [0007](0007-inert-evalue-threshold.md) | Limiar de e-value inerte nos filtros | Aceita |
 | [0008](0008-repository-scope.md) | Escopo do repositório | Aceita |
@@ -60,3 +60,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0015](0015-declarative-configuration.md) | Configuração declarativa | Aceita |
 | [0016](0016-snakemake-workflow.md) | Workflow em Snakemake | Aceita (primeira fatia) |
 | [0017](0017-simplify-the-package.md) | Simplificar o pacote: sem camadas nem objetos de domínio | Aceita |
+| [0018](0018-local-execution.md) | Execução local: sem cluster, ferramentas no PATH | Aceita |

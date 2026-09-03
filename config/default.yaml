@@ -44,6 +44,10 @@ steps:
     phage: "False"           # inclui ou nao virus que infectam bacterias
 
   nr_filter: true
+  # Como decidir se um candidato e virus de verdade. "diamond" e rapido e so olha
+  # quem foi o parente mais proximo. "blast" e lento, mas compara o quanto cada
+  # semelhanca foi boa e guarda esse valor no relatorio para voce conferir.
+  nr_filter_method: "diamond"
   mystery: false             # investiga as sequencias que nao se pareceram com nada
   hmmer: false               # busca por familias virais nas sequencias desconhecidas
   clark: false
@@ -60,50 +64,56 @@ steps:
     blast_databases: true    # deixa o resultado pesquisavel no final
     copy_fastq: true         # guarda uma copia das leituras originais
 
+# Os programas externos, procurados no PATH do sistema. Se algum estiver instalado
+# fora do PATH, troque so aquela linha pelo caminho completo.
+# scripts_dir e a pasta dos scripts deste projeto, nao um programa externo.
 tools:
-  scripts_dir: "/mnt/cluster/xdeng/script/"
-  blastn: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn"
-  blastx: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx"
-  dustmasker: "/mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker"
-  bowtie2: "/mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2"
-  diamond: "/mnt/cluster/xdeng/tools/diamond/diamond"
-  hmmsearch: "/mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch"
-  spades_dir: "/mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/"
-  cap3: "/mnt/cluster/xdeng/tools/CAP3/cap3"
-  soapdenovo: "/mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer"
-  velvetg: "/mnt/cluster/tools/MetaVelvet-1.2.02/velvetg"
-  velveth: "/mnt/cluster/tools/MetaVelvet-1.2.02/velveth"
-  meta_velvetg: "/mnt/cluster/tools/MetaVelvet-1.2.02/meta-velvetg"
-  abyss_pe: "/mnt/cluster/tools/abyss/bin/abyss-pe"
-  samtools: "/mnt/cluster/xdeng/tools/samtools-1.2/samtools"
-  picard_dir: "/mnt/cluster/xdeng/tools/picard-tools-1.136/"
-  rapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/rapsearch"
-  prerapsearch: "/mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch"
-  ray: "/mnt/cluster2/xdeng/tools/Ray2.3/Ray"
+  scripts_dir: "script/"
+  blastn: "blastn"
+  blastx: "blastx"
+  dustmasker: "dustmasker"
+  bowtie2: "bowtie2"
+  diamond: "diamond"
+  hmmsearch: "hmmsearch"
+  spades_dir: ""            # vazio = spades.py esta no PATH
+  cap3: "cap3"
+  soapdenovo: "SOAPdenovo-63mer"
+  velvetg: "velvetg"
+  velveth: "velveth"
+  meta_velvetg: "meta-velvetg"
+  abyss_pe: "abyss-pe"
+  samtools: "samtools"
+  picard_dir: ""            # vazio = picard esta no PATH
+  rapsearch: "rapsearch"
+  prerapsearch: "prerapsearch"
+  ray: "Ray"
 
+# Bancos de dados de referencia. ESTES ARQUIVOS NAO VEM COM O PROJETO: e preciso
+# baixar ou construir cada um e apontar o caminho aqui. Os valores abaixo assumem
+# uma pasta db/ dentro do diretorio de trabalho.
 databases:
-  virus_protein: "/mnt/cluster/xdeng/blastdb/virus_mask"
-  virus_dna: "/mnt/cluster/xdeng/blastdb/virus_DNA_mask"
-  phage: "/mnt/cluster/xdeng/blastdb/phage_mask"
-  virus_phage: "/mnt/cluster/xdeng/blastdb/virusphage_mask"
-  non_viral_nr: "/mnt/cluster/xdeng/blastdb/nvnr"
-  diamond_nr: "/mnt/cluster/xdeng/blastdb/diamond.dmnd"
-  diamond_virus: "/mnt/cluster/xdeng/blastdb/virusdiamond.dmnd"
-  rapsearch_nr: "/mnt/cluster/xdeng/blastdb/nvrap"
-  vfam_hmm: "/mnt/cluster/xdeng/blastdb/vFam/vFam-A_2014.hmm"
-  vfam_annotation: "/mnt/cluster/xdeng/blastdb/vFam/annot2014.txt"
-  virus_fasta: "/mnt/cluster/xdeng/blastdb/virus.fa"
-  non_viral_fasta: "/mnt/cluster/xdeng/blastdb/nvrefseq.fa"
-  human_bowtie_index: "/mnt/cluster/xdeng/hg38/mrnadna_bowtie"
-  bacteria_bowtie_prefix: "/mnt/cluster/xdeng/nt/Bacteria"
+  virus_protein: "db/virus_mask"
+  virus_dna: "db/virus_DNA_mask"
+  phage: "db/phage_mask"
+  virus_phage: "db/virusphage_mask"
+  non_viral_nr: "db/nvnr"
+  diamond_nr: "db/diamond.dmnd"
+  diamond_virus: "db/virusdiamond.dmnd"
+  rapsearch_nr: "db/nvrap"
+  vfam_hmm: "db/vFam-A_2014.hmm"
+  vfam_annotation: "db/annot2014.txt"
+  virus_fasta: "db/virus.fa"
+  non_viral_fasta: "db/nvrefseq.fa"
+  human_bowtie_index: "db/mrnadna_bowtie"
+  bacteria_bowtie_prefix: "db/Bacteria"
   bacteria_index_count: 27
-  nt_bowtie_prefix: "/mnt/cluster/xdeng/taxon/nt_"
+  nt_bowtie_prefix: "db/nt_"
   nt_index_count: 14
 
 # Sobra da epoca em que o pipeline rodava num cluster. Rodando localmente nada
 # disto e usado, exceto high_memory_nodes, que o orquestrador antigo ainda le.
 cluster:
-  enabled: true
+  enabled: false
   nodes:
     - bsidna4
     - bsidna5

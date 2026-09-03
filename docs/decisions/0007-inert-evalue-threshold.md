@@ -123,13 +123,41 @@ Isso também **corrobora a ADR-0004**: a assinatura de `blast_filter_NR.py` foi 
 junto com `virus_hunter.py`, e os demais nunca acompanharam — o que é esperado se
 `virus_hunter.py` era o orquestrador em manutenção ativa.
 
-### Pendências abertas por esta ADR
+### Pendências abertas por esta ADR — resolvidas em 2026-08-15
 
-1. **`--evalue` explícito nas chamadas DIAMOND.** A busca viral
-   ([`virus_hunter.py:1801`](../../script/virus_hunter.py#L1801)) e a busca NR
-   ([`:1848`](../../script/virus_hunter.py#L1848)) não passam `--evalue`, usando o padrão da
-   ferramenta. *Não verificado:* o valor padrão da versão instalada — confirmar com
-   `diamond blastx --help` no ambiente de execução.
-2. **Análises antigas na rota DIAMOND** usaram um limiar diferente do declarado.
+1. **`--evalue` explícito nas chamadas DIAMOND — RESOLVIDA: passar explicitamente.**
+
+   A pendência dependia de descobrir o padrão da ferramenta com `diamond blastx --help`.
+   Essa via está fechada: não há DIAMOND instalado, nem qualquer outra ferramenta, na
+   máquina onde o pipeline vai rodar ([ADR-0018](0018-local-execution.md)).
+
+   Isso não é um impedimento — é o argumento decisivo. Se o padrão não pode ser verificado,
+   depender dele é pior do que declarar o valor: a versão que o usuário venha a instalar é
+   desconhecida, e padrões de ferramenta mudam entre versões sem aviso. O
+   `Snakefile` passa agora `--evalue {params.evalue}` na busca contra o NR.
+
+   **Isto é mudança de comportamento científico**, autorizada nesta data. O limiar
+   configurado passa a governar de fato a busca DIAMOND; antes governava o padrão da
+   ferramenta instalada, qualquer que fosse. Com o filtro já corrigido (`float()`), o
+   efeito combinado é que `params.evalue` finalmente significa o que promete nas duas
+   pontas — busca e filtro.
+
+   Acrescentado junto, e **não** presente no original: `--threads {threads}`, para que o
+   DIAMOND respeite `compute.threads` em vez de tomar todos os núcleos da máquina. Afeta
+   uso de recurso, não resultado.
+
+   Comando original, para comparação
+   ([`virus_hunter.py:1807`](../../script/virus_hunter.py#L1807)):
+
+   ```
+   diamond blastx --quiet --max-target-seqs 1 --outfmt 6 -d <db> -q <sigfa> -o <out>
+   ```
+
+2. **Rota viral do DIAMOND (`doDiamondOnly`) — não migrada.** A pendência original também
+   cobria [`virus_hunter.py:1801`](../../script/virus_hunter.py#L1801). Essa rota não
+   existe no `Snakefile`, então não há o que corrigir lá; se for migrada, precisa nascer
+   com `--evalue`.
+
+3. **Análises antigas na rota DIAMOND** usaram um limiar diferente do declarado.
    Reproduzi-las exige o comportamento anterior, o que reforça a necessidade de versionar
    configuração junto ao resultado ([K6](../known-issues.md), [K9](../known-issues.md)).

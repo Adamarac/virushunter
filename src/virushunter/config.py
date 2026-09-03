@@ -27,12 +27,14 @@ REQUIRED_KEYS: tuple[tuple[str, type], ...] = (
     ("params.kmers.metavelvet", str),
     ("steps.paired_end", bool),
     ("steps.assembly.mode", str),
+    ("steps.nr_filter_method", str),
     ("tools.scripts_dir", str),
     ("databases.virus_protein", str),
 )
 
 VALID_ASSEMBLY_MODES = ("no", "denovo", "trinity")
 VALID_PHAGE_MODES = ("False", "True", "Both")
+VALID_NR_FILTER_METHODS = ("diamond", "blast")
 
 
 class ConfigError(ValueError):
@@ -116,6 +118,13 @@ def validate(data: dict[str, Any]) -> None:
     if mode not in VALID_ASSEMBLY_MODES:
         raise ConfigError(
             f"steps.assembly.mode invalido: {mode!r}; use um de {VALID_ASSEMBLY_MODES}"
+        )
+
+    method = cfg.get("steps.nr_filter_method")
+    if method not in VALID_NR_FILTER_METHODS:
+        raise ConfigError(
+            f"steps.nr_filter_method invalido: {method!r}; "
+            f"use um de {VALID_NR_FILTER_METHODS}"
         )
 
     phage = cfg.get("steps.viral_search.phage", "False")

@@ -1,8 +1,8 @@
 # 0005 — Estratégia do filtro contra NR
 
-- **Status:** **Pendente**
-- **Data:** 2026-08-12
-- **Decidido por:** — (em aberto)
+- **Status:** Aceita
+- **Data:** 2026-08-15 (registrada como pendente em 2026-08-12)
+- **Decidido por:** Alan M
 
 ## Contexto
 
@@ -81,10 +81,56 @@ tem cobertura equivalente à do NR usado pela rota A.
 
 ## Decisão
 
-**Em aberto.**
+**Tornar o método selecionável**, em vez de escolher um dos dois em nome do grupo.
 
-Enquanto pendente: não alterar nenhum dos dois filtros, e não remover
-`blast_filter_NR.py`.
+```yaml
+steps:
+  nr_filter_method: "diamond"   # ou "blast"
+```
+
+O padrão é `diamond`, que **preserva exatamente o comportamento da referência**: quem não
+mexer na configuração continua obtendo o mesmo resultado de antes. A rota A deixa de estar
+comentada e passa a ser alcançável por configuração.
+
+Razão para não decidir pelo grupo: as três evidências que resolveriam a questão
+(listadas abaixo) são todas empíricas e nenhuma está disponível — não há registro da época,
+não há ambiente de execução ([ADR-0009](0009-no-execution-environment.md)) e não há dados
+para comparar as rotas. Escolher agora seria fixar por decreto uma questão científica que
+pertence a quem tem os dados. Deixar selecionável permite que a comparação quantitativa —
+a evidência nº 3 — seja finalmente feita.
+
+### Como está implementado
+
+Cada método define suas próprias regras no `Snakefile`, sem ramificação dentro das regras:
+
+| | `diamond` (padrão) | `blast` |
+|---|---|---|
+| Busca contra NR | `diamond blastx --outfmt 6`, uma vez por amostra | `blastx -outfmt 5`, uma vez por amostra **e por fatia** |
+| Filtro | `diamond_filter_NR.py` | `blast_filter_NR.py` |
+| Critério | prefixo do melhor hit | comparação de e-values |
+| `LNVNRE` no relatório | `-` | valor real |
+| Tarefas no DAG (fixture de 2 amostras) | 349 | 445 |
+
+A diferença de 96 tarefas se explica inteira: −2 `diamond_nr`, −2 `merge_significant`,
++100 `blastx_nr`. O método `blast` **não produz** o arquivo concatenado
+`fastq/{sample}_sig`, porque consome as fatias `_s` individualmente — igual ao original,
+onde `blast_nr_filter.sh` usava `sigfaname` por fatia e o `_sig` concatenado existia
+apenas para alimentar o DIAMOND.
+
+A rota `blast` é reproduzida a partir da linha
+[`virus_hunter.py:1767-1769`](../../script/virus_hunter.py#L1767-L1769), com as mesmas
+flags. Note que o `blastx` contra o NR **não** leva `-db_soft_mask`, diferente do `blastx`
+viral, que leva `-db_soft_mask 21`. Isso foi preservado como está no original; *não
+determinado* se é intencional.
+
+### Limites desta decisão
+
+- A rota `blast` **nunca foi executada**, nem antes nem agora: ela estava comentada no
+  orquestrador e aqui foi validada apenas por resolução de DAG. Que o grafo feche não
+  garante que `blast_filter_NR.py` funcione sobre entradas reais.
+- A rota híbrida descrita nas alternativas **não** foi implementada. Ela continua sendo a
+  opção mais promissora, e agora é comparável contra as outras duas.
+- `blast_filter_NR.py` segue no repositório, agora por uso e não por precaução.
 
 Nota: ambos os filtros são afetados por [K1](../known-issues.md) — o limiar de e-value
 inerte por comparação `float < str`. Essa correção é independente desta decisão e deve ser

@@ -19,10 +19,15 @@ LIB = cfg["io.library_prefix"]
 
 PAIRS = ["1", "2"] if cfg["steps.paired_end"] else ["1"]
 REMOVE_ADAPTOR = cfg["steps.remove_adaptor"]
+NR_FILTER_METHOD = cfg["steps.nr_filter_method"]
 
 TOOLS = cfg.get("tools")
 DB = cfg.get("databases")
-SCRIPTS = cfg["tools.scripts_dir"]
+# Caminho relativo aqui e relativo ao projeto, nao a pasta de trabalho da amostra.
+_scripts = Path(cfg["tools.scripts_dir"])
+if not _scripts.is_absolute():
+    _scripts = Path(workflow.basedir).parent / _scripts
+SCRIPTS = str(_scripts) + "/"
 
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
@@ -292,35 +297,78 @@ rule merge_significant:
 
 # Compara os candidatos com um banco de tudo que nao e virus. Se a sequencia se
 # parece mais com uma bacteria do que com um virus, provavelmente nao e virus.
-rule diamond_nr:
-    input:
-        "fastq/{sample}_sig",
-    output:
-        "diamond_nr_out/{sample}.m8",
-    params:
-        diamond=TOOLS["diamond"],
-        db=DB["diamond_nr"],
-    threads: cfg["compute.threads"]
-    shell:
-        "{params.diamond} blastx --quiet --max-target-seqs 1 --outfmt 6 "
-        "-d {params.db} -q {input} -o {output}"
+# Ha dois metodos para isso, escolhidos em steps.nr_filter_method.
+if NR_FILTER_METHOD == "diamond":
 
+    # Metodo rapido: o DIAMOND diz qual e o parente mais proximo de cada candidato.
+    rule diamond_nr:
+        input:
+            "fastq/{sample}_sig",
+        output:
+            "diamond_nr_out/{sample}.m8",
+        params:
+            diamond=TOOLS["diamond"],
+            db=DB["diamond_nr"],
+            evalue=cfg["params.evalue"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.diamond} blastx --quiet --threads {threads} --evalue {params.evalue} "
+            "--max-target-seqs 1 --outfmt 6 "
+            "-d {params.db} -q {input} -o {output}"
 
-# Descarta os candidatos que se pareceram mais com algo nao viral.
-rule filter_against_nr:
-    input:
-        xml="blast_virus_out/{sample}_blast.xml_{split}",
-        m8="diamond_nr_out/{sample}.m8",
-        query="fastq/{sample}_c_{split}",
-    output:
-        "blast_filter_out/{sample}_blast_filter.txt_{split}",
-    params:
-        script=SCRIPTS + "diamond_filter_NR.py",
-        evalue=cfg["params.evalue"],
-        hsp=cfg["params.hsp_only"],
-    shell:
-        "python {params.script} {input.xml} {input.m8} {input.query} {output} "
-        "{params.evalue} {params.hsp}"
+    # Descarta o candidato se o parente mais proximo nao for virus, sem comparar
+    # o quanto cada semelhanca era boa.
+    rule filter_against_nr:
+        input:
+            xml="blast_virus_out/{sample}_blast.xml_{split}",
+            nr="diamond_nr_out/{sample}.m8",
+            query="fastq/{sample}_c_{split}",
+        output:
+            "blast_filter_out/{sample}_blast_filter.txt_{split}",
+        params:
+            script=SCRIPTS + "diamond_filter_NR.py",
+            evalue=cfg["params.evalue"],
+            hsp=cfg["params.hsp_only"],
+        shell:
+            "python {params.script} {input.xml} {input.nr} {input.query} {output} "
+            "{params.evalue} {params.hsp}"
+
+else:
+
+    # Metodo lento: busca completa contra o banco nao viral, que devolve o quanto
+    # cada semelhanca foi boa e nao apenas quem foi o parente mais proximo.
+    rule blastx_nr:
+        input:
+            "fastq/{sample}_c_{split}_s",
+        output:
+            "blast_nr_out/{sample}_nr.xml_{split}",
+        params:
+            blastx=TOOLS["blastx"],
+            db=DB["non_viral_nr"],
+            evalue=cfg["params.evalue"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.blastx} -num_threads {threads} -evalue {params.evalue} -outfmt 5 "
+            "-dbsize 10000000 -searchsp 1000000000 -max_target_seqs 1 "
+            "-best_hit_overhang 0.1 -best_hit_score_edge 0.1 "
+            "-db {params.db} -query {input} -out {output}"
+
+    # So descarta o candidato se a semelhanca com algo nao viral for melhor que a
+    # semelhanca com o virus. Guarda o valor nao viral no relatorio, para conferencia.
+    rule filter_against_nr:
+        input:
+            xml="blast_virus_out/{sample}_blast.xml_{split}",
+            nr="blast_nr_out/{sample}_nr.xml_{split}",
+            query="fastq/{sample}_c_{split}",
+        output:
+            "blast_filter_out/{sample}_blast_filter.txt_{split}",
+        params:
+            script=SCRIPTS + "blast_filter_NR.py",
+            evalue=cfg["params.evalue"],
+            hsp=cfg["params.hsp_only"],
+        shell:
+            "python {params.script} {input.xml} {input.nr} {input.query} {output} "
+            "{params.evalue} {params.hsp}"
 
 
 # Junta os pedacos de volta. Funciona porque cada resultado ocupa sempre o mesmo

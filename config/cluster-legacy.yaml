@@ -1,0 +1,71 @@
+# Valores originais do cluster do grupo, como estavam escritos no codigo antigo.
+# Guardados aqui porque a referencia congelada em tests/reference/ foi capturada
+# com eles: sem este arquivo nao seria possivel reproduzi-la.
+# Use com: snakemake --configfile config/cluster-legacy.yaml
+
+compute:
+  threads: 48
+  query_splits: 50
+tools:
+  scripts_dir: /mnt/cluster/xdeng/script/
+  blastn: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn
+  blastx: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx
+  dustmasker: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker
+  bowtie2: /mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2
+  diamond: /mnt/cluster/xdeng/tools/diamond/diamond
+  hmmsearch: /mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch
+  spades_dir: /mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/
+  cap3: /mnt/cluster/xdeng/tools/CAP3/cap3
+  soapdenovo: /mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer
+  velvetg: /mnt/cluster/tools/MetaVelvet-1.2.02/velvetg
+  velveth: /mnt/cluster/tools/MetaVelvet-1.2.02/velveth
+  meta_velvetg: /mnt/cluster/tools/MetaVelvet-1.2.02/meta-velvetg
+  abyss_pe: /mnt/cluster/tools/abyss/bin/abyss-pe
+  samtools: /mnt/cluster/xdeng/tools/samtools-1.2/samtools
+  picard_dir: /mnt/cluster/xdeng/tools/picard-tools-1.136/
+  rapsearch: /mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/rapsearch
+  prerapsearch: /mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch
+  ray: /mnt/cluster2/xdeng/tools/Ray2.3/Ray
+databases:
+  virus_protein: /mnt/cluster/xdeng/blastdb/virus_mask
+  virus_dna: /mnt/cluster/xdeng/blastdb/virus_DNA_mask
+  phage: /mnt/cluster/xdeng/blastdb/phage_mask
+  virus_phage: /mnt/cluster/xdeng/blastdb/virusphage_mask
+  non_viral_nr: /mnt/cluster/xdeng/blastdb/nvnr
+  diamond_nr: /mnt/cluster/xdeng/blastdb/diamond.dmnd
+  diamond_virus: /mnt/cluster/xdeng/blastdb/virusdiamond.dmnd
+  rapsearch_nr: /mnt/cluster/xdeng/blastdb/nvrap
+  vfam_hmm: /mnt/cluster/xdeng/blastdb/vFam/vFam-A_2014.hmm
+  vfam_annotation: /mnt/cluster/xdeng/blastdb/vFam/annot2014.txt
+  virus_fasta: /mnt/cluster/xdeng/blastdb/virus.fa
+  non_viral_fasta: /mnt/cluster/xdeng/blastdb/nvrefseq.fa
+  human_bowtie_index: /mnt/cluster/xdeng/hg38/mrnadna_bowtie
+  bacteria_bowtie_prefix: /mnt/cluster/xdeng/nt/Bacteria
+  bacteria_index_count: 27
+  nt_bowtie_prefix: /mnt/cluster/xdeng/taxon/nt_
+  nt_index_count: 14
+cluster:
+  enabled: true
+  nodes:
+  - bsidna4
+  - bsidna5
+  - bsidna6
+  - bsidna7
+  - bsidna8
+  - bsidna9
+  - bsidna10
+  - bsidna11
+  - bsidna14
+  - bsidna15
+  - bsidna19
+  - bsidna20
+  - bsidna23
+  - bsidna24
+  - bsidna25
+  - bsidna26
+  - bsidna27
+  - bsidna28
+  - bsidna29
+  - bsidna30
+  high_memory_nodes:
+  - bsidna35
