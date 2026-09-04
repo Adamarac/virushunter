@@ -25,6 +25,10 @@ rap_nr.txt
 
 # Run output directories
 fastq/
+# O fixture de teste e a excecao: sao 5 arquivos minusculos e sem eles
+# nenhuma verificacao do DAG roda.
+!tests/fixture/fastq/
+!tests/fixture/fastq/**
 NT/
 clark_out/
 soap_config/
@@ -67,7 +71,6 @@ dist/
 # A referencia congelada usa os mesmos nomes dos artefatos de execucao acima.
 # Sem esta excecao um clone novo teria referencia incompleta -- incluindo o
 # pipeline_run.sh, que descreve a ordem de execucao.
-!tests/reference/expected/**
 .dagcheck/
 
 # Artefatos de execucao do Snakemake, nao versionados.

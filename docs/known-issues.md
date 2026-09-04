@@ -378,3 +378,26 @@ Os três passaram a receber o caminho da configuração ou a usar `sys.executabl
 O padrão de fundo é o mesmo: uma ferramenta externa referida por nome, sem passar pela
 configuração, que só funciona na máquina onde foi escrita.
 
+### K30
+
+**O `.gitignore` escondeu o fixture de teste, e eu o apaguei.** Corrigido em 2026-08-15.
+
+A linha `fastq/` do `.gitignore` — pensada para os dados de entrada reais, que não devem
+ser versionados — casava também com `tests/reference/fixture/fastq/`. O fixture **nunca
+esteve no Git**, em nenhum commit.
+
+Ao reorganizar `tests/`, um `git mv` da pasta falhou justamente por ela não ser rastreada,
+e o `rm -rf` seguinte a apagou do disco. Não havia de onde recuperar.
+
+O fixture foi recriado a partir do que a documentação registrava: quatro FASTQ com a
+convenção de nomes do sequenciador e um `samples.txt`. A equivalência funcional foi provada
+pelo único critério que importa aqui — as seis rotas do DAG voltaram a resolver nos mesmos
+números: 349, 355, 357, 369, 445 e 349.
+
+Causa raiz corrigida: `!tests/fixture/fastq/**` abre a exceção, e a checagem
+`git check-ignore` confirma que o fixture passou a ser versionável.
+
+É a segunda vez que uma regra ampla demais no `.gitignore` esconde algo que importava — a
+primeira foi o commit `1a9ce92`, que corrigiu a exclusão da referência congelada. A lição
+que ficou: depois de qualquer `git mv` ou `git rm` numa pasta, conferir que ela estava
+rastreada **antes** de remover qualquer coisa do disco.

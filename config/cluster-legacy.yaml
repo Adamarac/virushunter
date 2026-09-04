@@ -1,5 +1,5 @@
 # Valores originais do cluster do grupo, como estavam escritos no codigo antigo.
-# Guardados aqui porque a referencia congelada em tests/reference/ foi capturada
+# Guardados aqui porque a referencia congelada, hoje removida do repositorio, foi capturada
 # com eles: sem este arquivo nao seria possivel reproduzi-la.
 # Use com: snakemake --configfile config/cluster-legacy.yaml
 

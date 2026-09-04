@@ -109,7 +109,7 @@ Erro do teste, não da ferramenta; refeito corretamente.
 - **Deriva de versão.** O pipeline foi publicado com BLAST 2.2.31 e DIAMOND 0.7.x; aqui
   estão 2.17.0 e 2.2.6. Um banco DIAMOND de 2015 não é legível pela 2.2.6 — os bancos
   precisam ser reconstruídos. Reproduzir análises antigas *bit a bit* deixa de ser possível
-  com estas versões, e a referência congelada em `tests/reference/` documenta o
+  com estas versões, e a referência congelada em `tests/reference/` (removida) documentava o
   comportamento do orquestrador, não o das ferramentas.
 - **Os bancos de dados continuam ausentes**, e são obrigatórios. Nenhuma rota roda até o
   fim. É o próximo bloqueio, e é grande: o NR completo passa de 100 GB.

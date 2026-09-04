@@ -87,7 +87,7 @@ todo o trabalho seguinte, ao custo de aceitar formalmente a mudança desta ADR.
 ## Decisão
 
 1. **Aceitar a mudança de ordenação** como consequência inevitável da migração.
-2. **Re-congelar** `tests/reference/expected/` a partir da saída Python 3. A referência
+2. **Re-congelar** `tests/reference/expected/` (removida, ver [tests/README.md](../../tests/README.md)) a partir da saída Python 3. A referência
    Python 2 permanece no histórico, em `git show 2705fa7:tests/reference/expected/<arquivo>`.
 3. **Preservar a evidência como ferramenta**, não como afirmação:
    `compare_normalized.sh` reproduz a

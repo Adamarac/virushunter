@@ -57,7 +57,7 @@ roda com `--directory` apontando para a amostra.
 
 ## Preservação da referência congelada
 
-`tests/reference/expected*/` foi capturada com os valores do cluster. Trocar
+`tests/reference/expected*/ (removida, ver tests/README.md)` foi capturada com os valores do cluster. Trocar
 `default.yaml` tornaria a referência irreproduzível — perda séria, porque ela é a única
 especificação executável do pipeline original que sobrou.
 

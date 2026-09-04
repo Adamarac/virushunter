@@ -33,7 +33,7 @@ retomada nativa, e falha real quando um comando retorna erro.
 `workflow/Snakefile` com 17 regras cobrindo a **configuração de referência**: single-end,
 sem montagem, sem remoção de adaptador, filtro NR por DIAMOND.
 
-A especificação de cada regra é a referência capturada em `tests/reference/expected/` — os
+A especificação de cada regra é a referência capturada em `tests/reference/expected/` (removida, ver [tests/README.md](../../tests/README.md)) — os
 comandos reais do pipeline original, com seus parâmetros. Onde uma regra diverge, há
 comentário dizendo por quê.
 
