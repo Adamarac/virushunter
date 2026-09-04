@@ -65,8 +65,6 @@ erro**, em vez de ignorar em silêncio:
 | `steps.merge_pairs` | FLASH ausente, e sem chave em `tools:` |
 | `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
 | `steps.input.sra_prep` | SRA toolkit ausente |
-| `steps.mystery` | as regras de merge rodam sempre — era assim no original também |
-| `steps.output.*` | publicação e cópia rodam sempre |
 
 Os scripts removidos continuam recuperáveis:
 

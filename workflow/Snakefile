@@ -64,6 +64,8 @@ def indice_do_hospedeiro(n):
         return DB["human_bowtie_index"]
     return f"{DB['bacteria_bowtie_prefix']}{n}"
 FILTRO_NR = cfg["steps.nr_filter"]
+BANCOS_DE_SAIDA = cfg["steps.output.blast_databases"]
+COPIAR_FASTQ = cfg["steps.output.copy_fastq"]
 
 DB = cfg.get("databases")
 PROJETO = Path(workflow.basedir).parent
@@ -87,13 +89,10 @@ WEB = str(PROJETO / "web") + "/"
 # delas nao teria efeito nenhum, entao o pipeline para aqui em vez de enganar.
 NAO_IMPLEMENTADO = {
     "steps.merge_pairs": False,
-    "steps.mystery": False,
     "steps.hmmer": False,
     "steps.reassemble": False,
     "steps.input.from_bam": False,
     "steps.input.sra_prep": False,
-    "steps.output.blast_databases": True,
-    "steps.output.copy_fastq": True,
 }
 _mudadas = [k for k, padrao in NAO_IMPLEMENTADO.items() if cfg.get(k, padrao) != padrao]
 if _mudadas:
@@ -123,12 +122,28 @@ def alvos_finais():
     ]
     if CLARK or ROTA_NT:
         alvos += expand("report/clark/{sample}.html", sample=SAMPLES)
+    if BANCOS_DE_SAIDA:
+        alvos.append("report/blast/report_blastdb.nal")
+    if COPIAR_FASTQ:
+        alvos.append("report/fastq/.copiado")
     return alvos
 
 
 rule all:
     input:
         alvos_finais(),
+
+
+if COPIAR_FASTQ:
+
+    # Guarda uma copia das leituras originais junto do relatorio.
+    rule copy_fastq:
+        input:
+            expand("fastq/{sample}_{pair}.fil", sample=SAMPLES, pair=PAIRS),
+        output:
+            touch("report/fastq/.copiado"),
+        shell:
+            "mkdir -p report/fastq && cp -r fastq/*.fastq* report/fastq/ 2>/dev/null || true"
 
 
 if ENTRADA_FASTA:
@@ -1060,7 +1075,6 @@ rule publish:
         all_summary="blast_filter_out/all_blast_filter.html",
         index="report/index.html",
         table="report/hitTable",
-        alias="report/blast/report_blastdb.nal",
         pies=expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
         histograms=expand(
             "report/hist/{sample}_{pair}_{stage}_hist.png",

@@ -501,3 +501,19 @@ continua na guarda de não implementadas.
 
 Some-se a isso que `hmmsearch` não tem build para Windows e o banco vFam não está
 disponível, então nem haveria como conferir o resultado.
+
+### K35
+
+**`steps.mystery` nunca controlou a fusão dos contigs.** Chave removida em 2026-08-15.
+
+O nome sugere ligar e desligar a investigação das sequências que não se pareceram com nada.
+Não era isso: no gerador, `doMyth` aparece em dois lugares, ambos dentro da cadeia
+HMMER/vFam que [K34](#k34) mostrou nunca ter funcionado.
+
+A fusão dos contigs sem hit — `merge_mystery` e `merge_mystery_all` — sempre aconteceu,
+com a chave ligada ou desligada. Confirmado na referência: `blast_output_merge.sh`, que o
+`pipeline_run.sh` executa em qualquer configuração, faz o `cat` dos `_m.fasta`.
+
+A chave saiu da configuração. As saídas continuam sendo produzidas, como no original.
+Mantê-la seria oferecer um interruptor ligado a nada.
+

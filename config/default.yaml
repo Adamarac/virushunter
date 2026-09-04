@@ -39,7 +39,6 @@ steps:
 
   nr_filter: true
   nr_filter_method: "diamond"  # "diamond" e rapido; "blast" compara e-values
-  mystery: false
   hmmer: false
   clark: false
   nt_route: false            # contagens nao confiaveis, ver docs/known-issues.md
