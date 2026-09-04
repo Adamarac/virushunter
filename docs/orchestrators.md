@@ -78,7 +78,7 @@ uma decisão de engenharia.
 
 O pipeline gerado por `readseeds2.py` chama `firstpage.py` na etapa final de relatório
 (`readseeds2.py:993`), e
-[`firstpage.py:68`](../script/firstpage.py#L68) faz, no nível do módulo:
+[`firstpage.py:68`](../script/report/index_page.py#L68) faz, no nível do módulo:
 
 ```python
 from virus_hunter import readSeeds2

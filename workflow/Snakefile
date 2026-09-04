@@ -337,12 +337,13 @@ if NR_FILTER_METHOD == "diamond":
         output:
             "blast_filter_out/{sample}_blast_filter.txt_{split}",
         params:
-            script=SCRIPTS + "search/filter_nr_diamond.py",
+            script=SCRIPTS + "search/filter_nr.py",
+            metodo=NR_FILTER_METHOD,
             evalue=cfg["params.evalue"],
             hsp=cfg["params.hsp_only"],
         shell:
             "python {params.script} {input.xml} {input.nr} {input.query} {output} "
-            "{params.evalue} {params.hsp}"
+            "{params.evalue} {params.hsp} {params.metodo}"
 
 else:
 
@@ -374,12 +375,13 @@ else:
         output:
             "blast_filter_out/{sample}_blast_filter.txt_{split}",
         params:
-            script=SCRIPTS + "search/filter_nr_blast.py",
+            script=SCRIPTS + "search/filter_nr.py",
+            metodo=NR_FILTER_METHOD,
             evalue=cfg["params.evalue"],
             hsp=cfg["params.hsp_only"],
         shell:
             "python {params.script} {input.xml} {input.nr} {input.query} {output} "
-            "{params.evalue} {params.hsp}"
+            "{params.evalue} {params.hsp} {params.metodo}"
 
 
 # Junta os pedacos de volta. Funciona porque cada resultado ocupa sempre o mesmo
@@ -799,10 +801,11 @@ rule blastdb_alias:
         "report/blast/report_blastdb.nal",
     params:
         script=SCRIPTS + "report/blastdb_alias.py",
+        aliastool=TOOLS["blastdb_aliastool"],
     log:
         "logs/blastdb_alias.log",
     shell:
-        "python {params.script} report report/blast/ > {log} 2>&1"
+        "python {params.script} report report/blast/ {params.aliastool} > {log} 2>&1"
 
 
 # Copia os relatorios prontos para a pasta que o site publica.

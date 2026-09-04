@@ -37,7 +37,7 @@ um assembler que o artigo descartou.
 
 ### E2 — `virus_hunter` é o módulo canônico do código
 
-[`firstpage.py:68`](../../script/firstpage.py#L68), no nível do módulo:
+[`firstpage.py:68`](../../script/report/index_page.py#L68), no nível do módulo:
 
 ```python
 from virus_hunter import readSeeds2

@@ -62,7 +62,7 @@ decidir. Acrescentar verificação de que todos os SAMs têm a mesma contagem de
 
 ### K3 — Troca silenciosa de modo de análise
 
-**Evidência.** [`sam2fq_bac.py:152-153`](../script/sam2fq_bac.py#L152-L153):
+**Evidência.** [`sam2fq_bac.py:152-153`](../script/reads/host_mask.py#L152-L153):
 
 ```python
 try: processBacSAM(...)             # paired-end
@@ -92,7 +92,7 @@ removê-las do código não desfaz a exposição. Substituir `777` por grupo Uni
 
 **Evidência.** `schedule2.py:14-25` decide conclusão por
 existência e tamanho do arquivo de saída, não por código de saída;
-[`blast_parser.py:88`](../script/blast_parser.py#L88) engole XML truncado com
+[`blast_parser.py:88`](../script/search/parse_hits.py#L88) engole XML truncado com
 `except: print 'bad xml'`; 39 `except:` nus só em `virus_hunter.py`.
 
 **Impacto.** Um BLAST morto por falta de memória depois de escrever XML parcial conta como
@@ -158,7 +158,7 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
 | K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |
-| K14 | `argv[4]` usado duas vezes | [`blast_output_sort.py:427-428`](../script/blast_output_sort.py#L427-L428) | `cwd` recebe o valor de `base`; afeta rótulos na tabela final |
+| K14 | `argv[4]` usado duas vezes | [`blast_output_sort.py:427-428`](../script/report/build_report.py#L427-L428) | `cwd` recebe o valor de `base`; afeta rótulos na tabela final |
 | K15 | Duplicação de `CacheLines()` e `Node` | 5 cópias de `CacheLines`; `Node` divergente entre `acc_tax.py:16` e `nr_virus3.py:42` | Correção precisa ser aplicada N vezes |
 
 **Progresso.** K10 foi resolvido — era o bloqueador de toda validação local, porque
@@ -225,16 +225,16 @@ tem como se reproduzir.
 | K16 | ~68% dos `.py` são de outros domínios | [`architecture.md`](architecture.md) |
 | K17 | Nenhuma dependência declarada | Biopython, R e ~17 ferramentas externas sem manifesto |
 | K18 | Nenhum teste ou dado de exemplo | Repositório inteiro |
-| K19 | `readVirusGI()` lê o FASTA viral e o resultado é descartado | [`diamond_filter_NR.py:139`](../script/diamond_filter_NR.py#L139) |
+| K19 | `readVirusGI()` lê o FASTA viral e o resultado é descartado | [`diamond_filter_NR.py:139`](../script/search/filter_nr.py) |
 | ~~K20~~ | ~~`gzip.sopen` — método inexistente~~ — **resolvido** ([ADR-0012](decisions/0012-gzip-text-mode.md)) | era `dedup.py:113`; a deduplicação silenciosamente não ocorria com entrada `.gz` |
 | K21 | `clean_dir()` apaga todo arquivo não-`.gz` | `virus_hunter.py:797-801` |
-| K22 | Constante mágica `if zz<40` no trim de qualidade | [`trim_quality.py:127`](../script/trim_quality.py#L127) |
+| K22 | Constante mágica `if zz<40` no trim de qualidade | [`trim_quality.py:127`](../script/reads/trim_quality.py#L127) |
 | K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | `virus_hunter.py:1667` |
 
 ## Baixas
 
 `.pyc` e `.gif` versionados, sem `.gitignore` · `.xls` que é HTML renomeado
-([`blast_output_sort.py:239`](../script/blast_output_sort.py#L239)) · ativos front-end
+([`blast_output_sort.py:239`](../script/report/build_report.py#L239)) · ativos front-end
 referenciados mas ausentes (`sorttable.js`, `ajax_select.js`, `DataTables-1.9.4/`), de modo
 que os relatórios HTML não renderizam só com este repositório · ~30% de
 `virus_hunter.py` é código comentado · indentação mista · typo `cahche` em
@@ -346,3 +346,35 @@ seguem em `config/cluster-legacy.yaml`.
 **Não verificado:** por que os dois caminhos diferiam (`blastdb/virus.fa` e
 `blastdb/virus/virus.fa`). Se apontavam para arquivos diferentes, as duas rotas do filtro
 nunca compararam contra o mesmo conjunto viral.
+
+### K28
+
+**`print >>arquivo, texto` sobrevive ao compilador.** Corrigida em 2026-08-15.
+
+`web/catAlignFA.py` usava a sintaxe de Python 2 para escrever em arquivo. Ela **parseia**
+em Python 3 sem erro — o interpretador a lê como `print >> arquivo` seguido de uma tupla —
+e só falha na execução, com `TypeError`.
+
+Isso invalida uma verificação que eu vinha usando: compilar em Python 3 **não** prova que
+um arquivo foi portado. A afirmação "24 de 24 compilam, logo 100% portado", registrada na
+[ADR-0020](decisions/0020-prune-to-the-migrated-version.md), era forte demais.
+
+Varredura dos demais padrões que passam pelo compilador (`has_key`, `xrange`, `iteritems`,
+`unicode`, `basestring`): nenhum outro caso no código restante.
+
+### K29
+
+**Ferramentas invocadas como nome nu, fora da configuração.** Corrigida em 2026-08-15.
+
+Três casos, todos encontrados ao reorganizar `script/`:
+
+| Onde | Invocava | Consequência |
+|---|---|---|
+| `report/blastdb_alias.py` | `blastdb_aliastool` | o binário está em `tools/bin/`, não no `PATH`; a regra falhava |
+| `report/build_report.py` | `faSort.py` e `viralCount.py` sem interpretador | depende do shebang, que **não funciona no Windows**; o retorno era ignorado, então falhava em silêncio |
+| `web/cat.php` | `E:\wamp64\www\catAlignFA.py` | caminho absoluto de outra máquina |
+
+Os três passaram a receber o caminho da configuração ou a usar `sys.executable`/`__DIR__`.
+O padrão de fundo é o mesmo: uma ferramenta externa referida por nome, sem passar pela
+configuração, que só funciona na máquina onde foi escrita.
+

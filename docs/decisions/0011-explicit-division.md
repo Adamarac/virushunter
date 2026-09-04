@@ -18,9 +18,9 @@ os outros:
 
 | Script | Formato | Comentário no fonte |
 |---|---|---|
-| [`recodeID.py:14`](../../script/recodeID.py#L14) | `@s<n>_<par>_<lib>` | *"this is to be consistent with fq2faID.py"* |
-| [`fq2faID.py:14`](../../script/fq2faID.py#L14) | `><fileID>_<n>` | *"this has to be consistent with blast_trim.py"* |
-| [`blast_trim.py:86`](../../script/blast_trim.py#L86) | `@s<n>_<par>_<lib>` | *"this is to be consistent with fq2faID.py"* |
+| [`recodeID.py:14`](../../script/reads/rename_reads.py#L14) | `@s<n>_<par>_<lib>` | *"this is to be consistent with fq2faID.py"* |
+| [`fq2faID.py:14`](../../script/reads/to_fasta_positional.py#L14) | `><fileID>_<n>` | *"this has to be consistent with blast_trim.py"* |
+| [`blast_trim.py:86`](../../script/reads/trim_adaptors.py#L86) | `@s<n>_<par>_<lib>` | *"this is to be consistent with fq2faID.py"* |
 
 Sem correção, o `recodeID.py` emite **`@s0.25_1_lib`** — não `@s0.0`, porque `1/4` é
 `0.25`. O pipeline roda até o fim e apenas deixa de casar leituras com seus pares.

@@ -22,7 +22,7 @@ Três consequências:
 1. **Nenhuma parte do arquivo podia ser importada, testada ou inspecionada** sem o cluster
    original, que hoje provavelmente não existe mais. Isso bloqueava toda a infraestrutura
    de validação proposta em [`known-issues.md`](../known-issues.md) (item K10).
-2. **O alcance ia além do próprio arquivo.** [`firstpage.py:68`](../../script/firstpage.py#L68)
+2. **O alcance ia além do próprio arquivo.** [`firstpage.py:68`](../../script/report/index_page.py#L68)
    faz `from virus_hunter import readSeeds2` no nível do módulo, e `firstpage.py` é a etapa
    final de relatório dos pipelines gerados pelos **dois** orquestradores. Ou seja, o
    pipeline de `readseeds2.py` também herdava o SSH — o que corrige a suposição, registrada

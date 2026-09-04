@@ -59,7 +59,7 @@ passaria por intencional numa revisão.
 
 ### Corrige também K20
 
-[`dedup.py:113`](../../script/dedup.py#L113) chamava `gzip.sopen`, um método que **não
+[`dedup.py:113`](../../script/reads/dedup.py#L113) chamava `gzip.sopen`, um método que **não
 existe**. Qualquer entrada `.gz` levantava `AttributeError`, capturado pelo `except` nu do
 `__main__`, que imprimia *"usage: dedup.py ..."* e saía como se estivesse tudo bem — a
 deduplicação silenciosamente não acontecia. O verificador rejeita qualquer `gzip.<nome>`

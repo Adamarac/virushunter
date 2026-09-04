@@ -48,7 +48,7 @@ Há **dois** mecanismos de paralelismo coexistindo:
 maior que zero (linhas 14-25) — **não** pelo código de
 saída. Um BLAST que morreu por falta de memória depois de escrever XML parcial conta como
 sucesso. Em seguida, `blast_parser.py` engole o XML truncado
-([linha 88](../script/blast_parser.py#L88): `except: print 'bad xml'`) e o pipeline
+([linha 88](../script/search/parse_hits.py#L88): `except: print 'bad xml'`) e o pipeline
 prossegue com dados incompletos.
 
 `run_all()` é chamado **duas vezes** (linhas 123-124)
@@ -122,8 +122,8 @@ também têm caminhos embutidos, e eles **divergem entre si**:
 
 | Arquivo | Caminho do FASTA viral |
 |---|---|
-| [`blast_filter_NR.py:28`](../script/blast_filter_NR.py#L28) | `/mnt/cluster/xdeng/blastdb/virus/virus.fa` |
-| [`diamond_filter_NR.py:28`](../script/diamond_filter_NR.py#L28) | `/mnt/cluster/xdeng/blastdb/virus.fa` |
+| [`blast_filter_NR.py:28`](../script/search/filter_nr.py) | `/mnt/cluster/xdeng/blastdb/virus/virus.fa` |
+| [`diamond_filter_NR.py:28`](../script/search/filter_nr.py) | `/mnt/cluster/xdeng/blastdb/virus.fa` |
 
 Não determinado se apontavam para o mesmo arquivo via symlink. Se não, os dois filtros
 usavam conjuntos de referência diferentes. Resolver exigiria a listagem do sistema de

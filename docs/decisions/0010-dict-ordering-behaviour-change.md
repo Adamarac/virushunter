@@ -46,7 +46,7 @@ iteração das amostras:
 | `sra.sh` | **barcode atribuído a cada amostra troca** (`AAAAAG` ↔ `AAAAAC`) |
 
 Os quatro primeiros mudam a **ordem das linhas** dentro do arquivo agregado, não o
-conteúdo. O parsing a jusante ([`blast_output_sort.py`](../../script/blast_output_sort.py))
+conteúdo. O parsing a jusante ([`blast_output_sort.py`](../../script/report/build_report.py))
 agrupa por vírus e lê blocos de 11 linhas (invariante
 [I4](../invariants.md)), que permanecem íntegros.
 

@@ -29,8 +29,8 @@ Varredura dos 155 arquivos `.py` com
 
 | Arquivo | Linha | Alcançável pelo pipeline de referência |
 |---|---|---|
-| [`diamond_filter_NR.py`](../../script/diamond_filter_NR.py#L94) | 94 | **Sim — é o filtro ativo** |
-| [`blast_filter_NR.py`](../../script/blast_filter_NR.py#L132) | 132 | Sim (rota alternativa, ver [ADR-0005](0005-nr-filter-strategy.md)) |
+| [`diamond_filter_NR.py`](../../script/search/filter_nr.py) | 94 | **Sim — é o filtro ativo** |
+| [`blast_filter_NR.py`](../../script/search/filter_nr.py) | 132 | Sim (rota alternativa, ver [ADR-0005](0005-nr-filter-strategy.md)) |
 | `diamond_filter.py` | 125 | Não |
 
 Nenhum outro arquivo apresenta o padrão. Quatro falsos positivos da primeira versão do

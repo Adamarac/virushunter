@@ -59,6 +59,7 @@ tools:
   scripts_dir: "script/"
   blastn: "tools/bin/blastn.exe"
   makeblastdb: "tools/bin/makeblastdb.exe"
+  blastdb_aliastool: "tools/bin/blastdb_aliastool.exe"
   blastx: "tools/bin/blastx.exe"
   dustmasker: "tools/bin/dustmasker.exe"
   bowtie2: "tools/bin/bowtie2"

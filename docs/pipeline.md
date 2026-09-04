@@ -114,7 +114,7 @@ linha 569). Todas desligadas no estado commitado.
 
 `bowtieBac()` escreve `bowtieBac.txt` — uma lista
 de jobs, não um `.sh` — consumida por `schedule2.py`. Em seguida
-[`sam2fq_bac.py`](../script/sam2fq_bac.py) lê os SAMs em lockstep posicional
+[`sam2fq_bac.py`](../script/reads/host_mask.py) lê os SAMs em lockstep posicional
 (ver [I2](invariants.md#i2--arquivos-paralelos-são-lidos-em-correspondência-posicional))
 e mascara leituras alinhadas com pelo menos 20 bp.
 
@@ -127,7 +127,7 @@ adiante. (Interpretação, não afirmação do código.)
 
 ## E4 — Deduplicação clonal
 
-- **Ferramenta:** [`dedup.py`](../script/dedup.py) (in-house)
+- **Ferramenta:** [`dedup.py`](../script/reads/dedup.py) (in-house)
 - **Processo:** particiona o FASTQ em 257 buckets por prefixo de 4 nt, marca duplicatas
   comparando os **primeiros 50 bp**, e reordena pela posição original
 - **Saída:** `.dup`, mais as métricas `num_dup_reads` e `percent_dup` no stdout
@@ -136,9 +136,9 @@ adiante. (Interpretação, não afirmação do código.)
 ## E5 — Adaptador e qualidade
 
 Com `rm_adaptor=True`: FASTA (`fq2faID.py`) → `makeblastdb` por amostra → **blastn dos
-adaptadores contra as leituras** (query = [`adaptor.fa`](../script/adaptor.fa), db = leituras,
-`-evalue 1 -max_target_seqs 100000000`) → [`blast_trim.py`](../script/blast_trim.py) →
-[`trim_quality.py`](../script/trim_quality.py).
+adaptadores contra as leituras** (query = [`adaptor.fa`](../script/reads/adaptor.fa), db = leituras,
+`-evalue 1 -max_target_seqs 100000000`) → [`blast_trim.py`](../script/reads/trim_adaptors.py) →
+[`trim_quality.py`](../script/reads/trim_quality.py).
 
 Detectar adaptador por BLAST em vez de usar cutadapt/Trimmomatic é uma escolha incomum.
 Permite adaptadores arbitrários sem reconfigurar ferramenta, ao custo de construir um
@@ -148,14 +148,14 @@ banco BLAST por amostra. (Interpretação.)
 remoção de adaptador e nenhum trim de qualidade acontecem.**
 
 `trim_quality.py` contém a regra fixa `if zz<40: pass`
-([linha 127](../script/trim_quality.py#L127)): os primeiros 40 bp nunca são avaliados por
+([linha 127](../script/reads/trim_quality.py#L127)): os primeiros 40 bp nunca são avaliados por
 qualidade. Constante mágica, não configurável, sem justificativa registrada.
 
 ## E6 — Limpeza de pares e QC
 
-[`fq_pair_clean.py`](../script/fq_pair_clean.py) descarta pares em que ambas as leituras
+[`fq_pair_clean.py`](../script/reads/filter_pairs.py) descarta pares em que ambas as leituras
 têm 5 bp ou menos — é aqui que as leituras mascaradas em E3/E4 efetivamente saem.
-[`polyA.py`](../script/polyA.py) gera scripts R (`R CMD BATCH`) com histogramas
+[`polyA.py`](../script/report/homopolymer_hist.py) gera scripts R (`R CMD BATCH`) com histogramas
 antes/depois.
 
 ## E7 — Preparo de leituras
@@ -214,7 +214,7 @@ de nucleotídeo perderia.
 
 ## E12 — Parsing e separação de "mystery"
 
-[`blast_parser.py`](../script/blast_parser.py) usa **Biopython `NCBIXML`** e separa:
+[`blast_parser.py`](../script/search/parse_hits.py) usa **Biopython `NCBIXML`** e separa:
 
 - queries com `hsp.expect < 0.01` → FASTA `_s` (candidatos virais) → alimenta E13
 - queries **sem** hit e com mais de `myslen=1000` bp → conjunto **"mystery"** —
@@ -223,10 +223,10 @@ de nucleotídeo perderia.
 ## E13 — Filtro contra NR
 
 DIAMOND blastx contra o banco não-viral → `.m8` →
-[`diamond_filter_NR.py`](../script/diamond_filter_NR.py) monta uma lista negra das queries
+[`diamond_filter_NR.py`](../script/search/filter_nr.py) monta uma lista negra das queries
 cujo melhor hit não é viral e as remove.
 
-A variante legada [`blast_filter_NR.py`](../script/blast_filter_NR.py) faz uma comparação
+A variante legada [`blast_filter_NR.py`](../script/search/filter_nr.py) faz uma comparação
 de e-values (um hit viral só passa se seu e-value for melhor que o do melhor hit
 não-viral) — cientificamente mais forte, porém **desativada**
 (linha 2208 está comentada).
@@ -238,7 +238,7 @@ não-viral) — cientificamente mais forte, porém **desativada**
 
 ## E14 — Agregação e relatório
 
-[`blast_output_sort.py`](../script/blast_output_sort.py) agrupa por espécie viral, calcula
+[`blast_output_sort.py`](../script/report/build_report.py) agrupa por espécie viral, calcula
 menor e-value viral e não-viral, conta hits em três limiares (1e-2, 1e-5, 1e-10), recupera
 a leitura-par e emite `aln/*.html`, `fasta/*.fa`, `pie/`, `table/` e `.xls`.
 
@@ -249,7 +249,7 @@ a leitura-par e emite `aln/*.html`, `fasta/*.fa`, `pie/`, `table/` e `.xls`.
 
 `movetowww.sh` copia HTML/XLS/FASTA/pie e os `.php` para `<wd>/<base>/`.
 `prepBlastFile.sh` cria um banco BLAST por amostra para consulta interativa via
-[`blast.php`](../script/blast.php). Vários `sudo chmod 777 -R` ao longo do caminho.
+[`blast.php`](../web/blast.php). Vários `sudo chmod 777 -R` ao longo do caminho.
 
 ## E16 — Anotação por HMM (opcional)
 

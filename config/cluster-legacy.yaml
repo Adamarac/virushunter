@@ -10,6 +10,7 @@ tools:
   scripts_dir: /mnt/cluster/xdeng/script/
   blastn: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastn
   makeblastdb: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/makeblastdb
+  blastdb_aliastool: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastdb_aliastool
   blastx: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx
   dustmasker: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker
   bowtie2: /mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2

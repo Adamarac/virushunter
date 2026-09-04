@@ -12,7 +12,7 @@ Este é o documento a ler antes de modificar qualquer etapa.
 
 ### O que o código faz
 
-[`script/recodeID.py:12-21`](../script/recodeID.py#L12-L21) descarta o identificador
+[`script/recodeID.py:12-21`](../script/reads/rename_reads.py#L12-L21) descarta o identificador
 original de cada leitura e o substitui por um identificador derivado da **posição**:
 
 ```python
@@ -26,7 +26,7 @@ for line in f:
 
 O identificador `@s<lineno>_<par>_<biblioteca>` é a chave usada de ponta a ponta:
 para reencontrar a leitura-par no relatório final
-([`blast_output_sort.py:128-131`](../script/blast_output_sort.py#L128-L131)), para
+([`blast_output_sort.py:128-131`](../script/report/build_report.py#L128-L131)), para
 agrupar hits e para recuperar sequências.
 
 ### A consequência
@@ -38,17 +38,17 @@ Por isso os filtros do pipeline **mascaram** em vez de remover:
 
 | Etapa | Evidência | Comportamento |
 |---|---|---|
-| Deduplicação | [`dedup.py:130`](../script/dedup.py#L130) | `if read[0:50] in keyset: read='A'; qual='A'` |
-| Depleção de bactérias | [`sam2fq_bac.py:92-93`](../script/sam2fq_bac.py#L92-L93) | `if bac1: seq='A'; qual='G'` |
+| Deduplicação | [`dedup.py:130`](../script/reads/dedup.py#L130) | `if read[0:50] in keyset: read='A'; qual='A'` |
+| Depleção de bactérias | [`sam2fq_bac.py:92-93`](../script/reads/host_mask.py#L92-L93) | `if bac1: seq='A'; qual='G'` |
 
 A leitura duplicada ou de hospedeiro continua no arquivo, ocupando sua linha, reduzida a
 uma única base. O filtro de comprimento posterior
-([`fq_pair_clean.py:17`](../script/fq_pair_clean.py#L17)) é quem efetivamente as
+([`fq_pair_clean.py:17`](../script/reads/filter_pairs.py#L17)) é quem efetivamente as
 descarta — **depois** que a recodificação já fixou as identidades.
 
 `dedup.py` chega a particionar o arquivo por prefixo de 4 nucleotídeos para caber em
 memória e depois **reordenar tudo de volta** pela posição original
-([`dedup.py:54-87`](../script/dedup.py#L54-L87), função `RestoreOrder`) — trabalho
+([`dedup.py:54-87`](../script/reads/dedup.py#L54-L87), função `RestoreOrder`) — trabalho
 considerável, existente apenas para preservar este invariante.
 
 ### Como quebrar sem perceber
@@ -80,7 +80,7 @@ bowtie2 --quiet --local --very-fast-local --no-hd --reorder -p 7 -x <índice> -U
 ```
 
 Os consumidores então leem todos os arquivos em *lockstep* — uma linha de cada, por
-iteração ([`sam2fq_bac.py:52-71`](../script/sam2fq_bac.py#L52-L71)).
+iteração ([`sam2fq_bac.py:52-71`](../script/reads/host_mask.py#L52-L71)).
 
 ### A consequência
 
@@ -134,7 +134,7 @@ produzindo cabeçalhos na forma:
 
 O BLAST devolve esse texto como título do *subject*, e os consumidores o desmontam:
 
-- [`blast_output_sort.py:203-207`](../script/blast_output_sort.py#L203-L207) — `split(':')` e `split('$')`
+- [`blast_output_sort.py:203-207`](../script/report/build_report.py#L203-L207) — `split(':')` e `split('$')`
 - `samNT.py:63` — `cat, clas, fam, species = chro.split('$')`
 
 ### A consequência
@@ -169,8 +169,8 @@ das duas rotas.
 
 O formato de troca entre a filtragem e o relatório não tem cabeçalho, delimitador nem
 esquema. É um bloco de 11 linhas em ordem fixa, escrito por
-[`blast_filter_NR.py:141-158`](../script/blast_filter_NR.py#L141-L158) e por
-[`diamond_filter_NR.py:103-120`](../script/diamond_filter_NR.py#L103-L120):
+[`blast_filter_NR.py:141-158`](../script/search/filter_nr.py) e por
+[`diamond_filter_NR.py:103-120`](../script/search/filter_nr.py):
 
 | # | Conteúdo |
 |---|---|
@@ -187,7 +187,7 @@ esquema. É um bloco de 11 linhas em ordem fixa, escrito por
 | 11 | alinhamento — subject |
 
 O leitor não procura marcadores. Ele conta linhas com aritmética modular sobre o arquivo
-inteiro ([`blast_output_sort.py:128-166`](../script/blast_output_sort.py#L128-L166)):
+inteiro ([`blast_output_sort.py:128-166`](../script/report/build_report.py#L128-L166)):
 
 ```python
 if i%11 == 2 and line.startswith('@'):   # identificador

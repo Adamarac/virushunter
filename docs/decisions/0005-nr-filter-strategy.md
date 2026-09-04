@@ -17,7 +17,7 @@ implementações coexistem no repositório, e elas aplicam critérios diferentes
 
 ### Rota A — comparação de e-values (`blast_filter_NR.py`)
 
-[`blast_filter_NR.py:138-139`](../../script/blast_filter_NR.py#L138-L139):
+[`blast_filter_NR.py:138-139`](../../script/search/filter_nr.py):
 
 ```python
 if nrE.has_key(query) and virusE.has_key(query) and float(hsp.expect) >= nrE[query]:
@@ -30,12 +30,12 @@ permite ao revisor humano julgar cada hit.
 
 A rota também exclui do conjunto "não-viral" qualquer subject que já esteja no banco viral
 ou cujo título contenha `VIRUS`/`VIRAL`
-([linhas 55-62](../../script/blast_filter_NR.py#L55-L62)), evitando que um hit viral seja
+([linhas 55-62](../../script/search/filter_nr.py)), evitando que um hit viral seja
 usado contra si mesmo.
 
 ### Rota B — lista negra por prefixo (`diamond_filter_NR.py`)
 
-[`diamond_filter_NR.py:46-57`](../../script/diamond_filter_NR.py#L46-L57):
+[`diamond_filter_NR.py:46-57`](../../script/search/filter_nr.py):
 
 ```python
 subject=subject.strip().split('_', 1)[0]
@@ -45,7 +45,7 @@ if subject != "VIRUS":
 
 Qualquer query cujo melhor hit DIAMOND não tenha o prefixo `VIRUS_` é descartada, **sem
 comparar magnitudes**. O campo `LNVNRE` da saída é preenchido com `'-'`
-([linha 116](../../script/diamond_filter_NR.py#L116)) — a informação que permitiria
+([linha 116](../../script/search/filter_nr.py)) — a informação que permitiria
 revisão humana é perdida.
 
 ### Situação no código

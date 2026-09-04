@@ -47,7 +47,7 @@ A migração para Python 3 ([K12](../known-issues.md)) é o que rompe o ciclo, p
 1. `python3 -m py_compile` valida a sintaxe de cada arquivo — hoje impossível, já que
    nenhum arquivo compila em Python 3.
 2. As armadilhas semânticas do 2→3 são **enumeráveis e detectáveis estaticamente**:
-   divisão inteira (`lineno = i/4` em [`recodeID.py`](../../script/recodeID.py#L16), que
+   divisão inteira (`lineno = i/4` em [`recodeID.py`](../../script/reads/rename_reads.py#L16), que
    sustenta o invariante [I1](../invariants.md)), `dict.has_key()`, `xrange`, comparações
    entre tipos distintos (a causa de K1), `sort(cmp=)`, `print`, texto vs. bytes.
    Cada categoria admite um verificador do mesmo tipo dos dois já existentes.
