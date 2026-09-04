@@ -6,31 +6,7 @@ import os
 import operator
 import linecache
 import os.path
-
-def CacheLines(fname): 
-	cache={}
-	f = open(fname, 'r')
-	i=0
-	start, end = 0,0
-	header= None
-	for line in f:
-		i+=1
-		if line.strip().startswith('>'):
-			end=i-1
-			if header!=None: cache[header] = (start, end)
-			header = line.strip()[1:]
-			start=i+1
-	if header!=None: cache[header] = (start, i)
-	return cache
-
-def getSeq(cachename, cache, header):
-	seq=[]
-	start, end = cache[header]
-	for i in range(start, end+1):
-		seq.append(linecache.getline(cachename, i).strip())
-	return ''.join(seq)
-
-
+from virushunter.fasta import index_headers, sequence
 
 def plotpie(countfile):
 	Rfile=countfile+'.R'
@@ -60,7 +36,7 @@ path=sys.argv[5]
 of=open(countfile,'w')
 of2=open(countfile+'.csv','w')
 #of2=open(fafile,'r')
-cache = CacheLines(fafile)
+cache = index_headers(fafile)
 
 index={}
 for line in indexf:
@@ -104,7 +80,7 @@ for key, val in sorted_x:
 	outfa=path+'/clark/fasta/'+os.path.basename(countfile)+'.csv.'+key2+'.fa'
 	fa=open(outfa, 'w')
 	for seqname in seqnames:
-		query_nt = getSeq(fafile, cache, seqname)
+		query_nt = sequence(fafile, cache, seqname)
 		fa.write('>'+seqname+'\n')
 		fa.write(query_nt+'\n')
 	fa.close()

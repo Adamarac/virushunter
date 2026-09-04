@@ -8,31 +8,9 @@ from collections import defaultdict
 from operator import itemgetter
 import linecache
 import os.path
+from virushunter.fasta import index_headers, sequence
 
 
-
-def CacheLines(fname): 
-	cache={}
-	f = open(fname, 'r')
-	i=0
-	start, end = 0,0
-	header= None
-	for line in f:
-		i+=1
-		if line.strip().startswith('>'):
-			end=i-1
-			if header!=None: cache[header] = (start, end)
-			header = line.strip()[1:]
-			start=i+1
-	if header!=None: cache[header] = (start, i)
-	return cache
-
-def getSeq(cachename, cache, header):
-	seq=[]
-	start, end = cache[header]
-	for i in range(start, end+1):
-		seq.append(linecache.getline(cachename, i).strip())
-	return ''.join(seq)
 
 def processSAM(key, wd, base, startInd, endInd, cache): # first scan to get the mutation positions
 	countfile=wd+'/'+base+'/clark/'+key+'.count'
@@ -97,7 +75,7 @@ def processSAM(key, wd, base, startInd, endInd, cache): # first scan to get the 
 		outfa=wd+'/'+base+'/clark/fasta/'+os.path.basename(countfile)+'.csv.'+key2+'.fa'
 		fa=open(outfa, 'w')
 		for seqname in seqnames:
-			query_nt = getSeq(fafile, cache, seqname)
+			query_nt = sequence(fafile, cache, seqname)
 			fa.write('>'+seqname+'\n')
 			fa.write(query_nt+'\n')
 		fa.close()
@@ -112,5 +90,5 @@ if __name__ == "__main__":
 	endInd=int(sys.argv[5])
 	
 	fafile=wd+'/fastq/'+key+'.fa'
-	cache = CacheLines(fafile)
+	cache = index_headers(fafile)
 	processSAM(key, wd, base, startInd, endInd, cache) #single end

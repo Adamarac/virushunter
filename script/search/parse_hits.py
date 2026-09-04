@@ -4,29 +4,7 @@ from Bio.Blast import NCBIXML
 import sys
 import linecache
 import fcntl
-
-def CacheLines(fname): 
-	cache={}
-	f = open(fname, 'r')
-	i=0
-	start, end = 0,0
-	header= None
-	for line in f:
-		i+=1
-		if line.strip().startswith('>'):
-			end=i-1
-			if header!=None: cache[header] = (start, end)
-			header = line.strip()[1:]
-			start=i+1
-	if header!=None: cache[header] = (start, i)
-	return cache
-
-def getSeq(cachename, cache, header):
-	seq=[]
-	start, end = cache[header]
-	for i in range(start, end+1):
-		seq.append(linecache.getline(cachename, i).strip())
-	return ''.join(seq)
+from virushunter.fasta import index_headers, sequence
 
 def print_mysterious(cachename, cache, queryset, outfile, length):
 	nmys=0
@@ -34,7 +12,7 @@ def print_mysterious(cachename, cache, queryset, outfile, length):
 	for header in list(cache.keys()):
 		if header in queryset: #hits
 			continue
-		seq=getSeq(cachename, cache, header)
+		seq=sequence(cachename, cache, header)
 		if len(seq)> length:
 			nmys+=1
 			of.write('>'+header+'\n')
@@ -51,7 +29,7 @@ if __name__ == '__main__':
 	e_threshold=float(sys.argv[6])
 	logfile=sys.argv[7]
 	cache={}
-	cache = CacheLines(cachename)
+	cache = index_headers(cachename)
 	result_handle = open(fname, 'r')
 	
 	queryset=set()
@@ -64,7 +42,7 @@ if __name__ == '__main__':
 			for alignment in blast_record.alignments:
 				for hsp in alignment.hsps:
 					if hsp.expect < e_threshold:
-						query_nt = getSeq(cachename, cache, blast_record.query)
+						query_nt = sequence(cachename, cache, blast_record.query)
 						if blast_record.query not in queryset:
 							if True:#(hsp.expect > 10E-15) :
 								f.write('>'+blast_record.query+'\n')

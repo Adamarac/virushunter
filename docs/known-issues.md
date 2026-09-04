@@ -181,7 +181,7 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
 | K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |
 | ~~K14~~ | ~~`argv[4]` usado duas vezes~~ — **resolvido** | `report/build_report.py` | `cwd` passou a ler `argv[5]`. Sem efeito prático: a referência sempre passou o mesmo valor duas vezes (`work work`), então a armadilha era latente |
-| K15 | Duplicação de `CacheLines()` e `Node` | 5 cópias de `CacheLines`; `Node` divergente entre `acc_tax.py:16` e `nr_virus3.py:42` | Correção precisa ser aplicada N vezes |
+| ~~K15~~ | ~~Duplicação de `CacheLines()` e `Node`~~ — **resolvido** | `src/virushunter/fasta.py` | `Node` saiu com a poda. `CacheLines`/`getSeq` viraram `index_headers`/`sequence`, importados pelos 4 scripts que os usavam |
 
 **Progresso.** K10 foi resolvido — era o bloqueador de toda validação local, porque
 alcançava também `readseeds2.py` através do `firstpage.py`. Com ele fora do caminho, o

@@ -9,31 +9,7 @@ import sys
 from Bio.Blast import NCBIXML
 
 from virushunter.config import load as load_config
-
-
-def CacheLines(fname):
-    """Indexa onde comeca e termina a sequencia de cada cabecalho do FASTA."""
-    cache = {}
-    f = open(fname)
-    i = 0
-    header = None
-    start = 0
-    for line in f:
-        i += 1
-        if line.strip().startswith('>'):
-            if header is not None:
-                cache[header] = (start, i - 1)
-            header = line.strip()[1:]
-            start = i + 1
-    if header is not None:
-        cache[header] = (start, i)
-    return cache
-
-
-def getSeq(cachename, cache, header):
-    """Le do disco a sequencia de um cabecalho, usando o indice."""
-    start, end = cache[header]
-    return ''.join(linecache.getline(cachename, i).strip() for i in range(start, end + 1))
+from virushunter.fasta import index_headers, sequence
 
 
 def readVirusGI():
@@ -127,7 +103,7 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH, metodo, nrE, virusE,
                         filtrados += 1
                         continue
                     nalign += 1
-                    query_nt = getSeq(cachename, cache, blast_record.query)
+                    query_nt = sequence(cachename, cache, blast_record.query)
                     if hsp_only == 'YES':
                         query_nt = query_nt[int(hsp.query_start) - 1:int(hsp.query_end)]
                     # O metodo diamond nao guarda o e-value nao viral, so a lista negra.
@@ -172,7 +148,7 @@ if __name__ == '__main__':
         sys.exit(f'metodo invalido: {metodo!r}; use "diamond" ou "blast"')
     print('hsp_only', hsp_only)
 
-    cache = CacheLines(cachename)
+    cache = index_headers(cachename)
     virusE, virusID = readVirusXML1(virusxml, metodo)
     if metodo == 'diamond':
         try:
