@@ -567,7 +567,7 @@ rule merge_significant:
 
 # Compara os candidatos com um banco de tudo que nao e virus. Se a sequencia se
 # parece mais com uma bacteria do que com um virus, provavelmente nao e virus.
-# Ha dois metodos para isso, escolhidos em steps.nr_filter_method.
+# Ha dois metodos, escolhidos em steps.nr_filter_method.
 if NR_FILTER_METHOD == "diamond":
 
     # Metodo rapido: o DIAMOND diz qual e o parente mais proximo de cada candidato.
@@ -585,24 +585,6 @@ if NR_FILTER_METHOD == "diamond":
             "{params.diamond} blastx --quiet --threads {threads} --evalue {params.evalue} "
             "--max-target-seqs 1 --outfmt 6 "
             "-d {params.db} -q {input} -o {output}"
-
-    # Descarta o candidato se o parente mais proximo nao for virus, sem comparar
-    # o quanto cada semelhanca era boa.
-    rule filter_against_nr:
-        input:
-            xml="blast_virus_out/{sample}_blast.xml_{split}",
-            nr="diamond_nr_out/{sample}.m8",
-            query="fastq/{sample}_c_{split}",
-        output:
-            "blast_filter_out/{sample}_blast_filter.txt_{split}",
-        params:
-            script=SCRIPTS + "search/filter_nr.py",
-            metodo=NR_FILTER_METHOD,
-            evalue=cfg["params.evalue"],
-            hsp=cfg["params.hsp_only"],
-        shell:
-            "python {params.script} {input.xml} {input.nr} {input.query} {output} "
-            "{params.evalue} {params.hsp} {params.metodo}"
 
 else:
 
@@ -624,23 +606,31 @@ else:
             "-best_hit_overhang 0.1 -best_hit_score_edge 0.1 "
             "-db {params.db} -query {input} -out {output}"
 
-    # So descarta o candidato se a semelhanca com algo nao viral for melhor que a
-    # semelhanca com o virus. Guarda o valor nao viral no relatorio, para conferencia.
-    rule filter_against_nr:
-        input:
-            xml="blast_virus_out/{sample}_blast.xml_{split}",
-            nr="blast_nr_out/{sample}_nr.xml_{split}",
-            query="fastq/{sample}_c_{split}",
-        output:
-            "blast_filter_out/{sample}_blast_filter.txt_{split}",
-        params:
-            script=SCRIPTS + "search/filter_nr.py",
-            metodo=NR_FILTER_METHOD,
-            evalue=cfg["params.evalue"],
-            hsp=cfg["params.hsp_only"],
-        shell:
-            "python {params.script} {input.xml} {input.nr} {input.query} {output} "
-            "{params.evalue} {params.hsp} {params.metodo}"
+
+def resultado_do_nr(wildcards):
+    """Onde esta a busca contra o NR: um .m8 por amostra, ou um XML por fatia."""
+    if NR_FILTER_METHOD == "diamond":
+        return f"diamond_nr_out/{wildcards.sample}.m8"
+    return f"blast_nr_out/{wildcards.sample}_nr.xml_{wildcards.split}"
+
+
+# Descarta os candidatos que se pareceram mais com algo nao viral. O mesmo script
+# atende aos dois metodos; so muda de onde vem o resultado da busca.
+rule filter_against_nr:
+    input:
+        xml="blast_virus_out/{sample}_blast.xml_{split}",
+        nr=resultado_do_nr,
+        query="fastq/{sample}_c_{split}",
+    output:
+        "blast_filter_out/{sample}_blast_filter.txt_{split}",
+    params:
+        script=SCRIPTS + "search/filter_nr.py",
+        metodo=NR_FILTER_METHOD,
+        evalue=cfg["params.evalue"],
+        hsp=cfg["params.hsp_only"],
+    shell:
+        "python {params.script} {input.xml} {input.nr} {input.query} {output} "
+        "{params.evalue} {params.hsp} {params.metodo}"
 
 
 # Junta os pedacos de volta. Funciona porque cada resultado ocupa sempre o mesmo
