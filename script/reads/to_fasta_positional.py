@@ -10,7 +10,7 @@ else: f=open(filename, 'r')
 fileID = sys.argv[2]
 of=open(sys.argv[3],'w')
 
-i=0 #this has to be consistent with blast_trim.py
+i=0 # a numeracao precisa bater com a de trim_adaptors.py
 for line in f:
 	i+=1
 	if i%4==2:

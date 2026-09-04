@@ -79,7 +79,7 @@ rule host_filter:
     output:
         filtered=expand("fastq/{{sample}}_{pair}.fil", pair=PAIRS),
     params:
-        script=SCRIPTS + "sam2fq_bac.py",
+        script=SCRIPTS + "reads/host_mask.py",
         prefix=lambda w: f"fastq/{w.sample}",
     shell:
         "python {params.script} {params.prefix} 0 0 {output.filtered}"
@@ -92,7 +92,7 @@ rule dedup:
     output:
         "fastq/{sample}_{pair}.dup",
     params:
-        script=SCRIPTS + "dedup.py",
+        script=SCRIPTS + "reads/dedup.py",
     shell:
         "python {params.script} {input} {output}"
 
@@ -107,7 +107,7 @@ if not REMOVE_ADAPTOR:
         output:
             "fastq/{sample}_{pair}.trim",
         params:
-            script=SCRIPTS + "recodeID.py",
+            script=SCRIPTS + "reads/rename_reads.py",
             label=lambda w: f"{LIB}_{w.sample}",
         shell:
             "python {params.script} {input} {output} {params.label} {wildcards.pair}"
@@ -122,7 +122,7 @@ else:
         output:
             "fastq/{sample}_{pair}.fa",
         params:
-            script=SCRIPTS + "fq2faID.py",
+            script=SCRIPTS + "reads/to_fasta_positional.py",
         shell:
             "python {params.script} {input} {wildcards.sample}_{wildcards.pair} {output}"
 
@@ -152,7 +152,7 @@ else:
             "fastq/{sample}_{pair}.tab",
         params:
             blastn=TOOLS["blastn"],
-            adaptors=SCRIPTS + "adaptor.fa",
+            adaptors=SCRIPTS + "reads/adaptor.fa",
             prefix=lambda w: f"blast_filter_out/blast2/{w.sample}_{w.pair}_blastdb",
         threads: cfg["compute.threads"]
         shell:
@@ -170,7 +170,7 @@ else:
         output:
             "fastq/{sample}_{pair}.ada",
         params:
-            script=SCRIPTS + "blast_trim.py",
+            script=SCRIPTS + "reads/trim_adaptors.py",
             label=lambda w: f"{LIB}_{w.sample}",
         shell:
             "python {params.script} {input.reads} {input.hits} {output} "
@@ -185,7 +185,7 @@ else:
         output:
             "fastq/{sample}_{pair}.trim",
         params:
-            script=SCRIPTS + "trim_quality.py",
+            script=SCRIPTS + "reads/trim_quality.py",
             phred_offset=33,
         shell:
             "python {params.script} {input.trimmed} {output} {params.phred_offset} "
@@ -200,7 +200,7 @@ rule length_filter:
     output:
         expand("fastq/{{sample}}_{pair}_sequence.txt", pair=PAIRS),
     params:
-        script=SCRIPTS + "fq_pair_clean.py",
+        script=SCRIPTS + "reads/filter_pairs.py",
         min_length=5,
     shell:
         "python {params.script} {input} {output} {params.min_length}"
@@ -223,7 +223,7 @@ rule reads_to_fasta:
     output:
         "fastq/{sample}.fa",
     params:
-        script=SCRIPTS + "fq2fa.py",
+        script=SCRIPTS + "reads/to_fasta.py",
         min_length=cfg["params.min_read_length"],
     shell:
         "python {params.script} {input} {output} {params.min_length}"
@@ -254,7 +254,7 @@ rule split_query:
     output:
         expand("fastq/{{sample}}_c_{split}", split=SPLITS),
     params:
-        script=SCRIPTS + "splitQuery.py",
+        script=SCRIPTS + "search/split_fasta.py",
         n=cfg["compute.query_splits"],
     shell:
         "python {params.script} {input} {params.n}"
@@ -287,7 +287,7 @@ rule parse_virus_hits:
         significant="fastq/{sample}_c_{split}_s",
         mystery="blast_filter_out/tmp/{sample}_prem.fasta_{split}",
     params:
-        script=SCRIPTS + "blast_parser.py",
+        script=SCRIPTS + "search/parse_hits.py",
         myslen=cfg["params.mystery_min_length"],
         evalue=cfg["params.evalue"],
         log="blast_virus.log",
@@ -337,7 +337,7 @@ if NR_FILTER_METHOD == "diamond":
         output:
             "blast_filter_out/{sample}_blast_filter.txt_{split}",
         params:
-            script=SCRIPTS + "diamond_filter_NR.py",
+            script=SCRIPTS + "search/filter_nr_diamond.py",
             evalue=cfg["params.evalue"],
             hsp=cfg["params.hsp_only"],
         shell:
@@ -374,7 +374,7 @@ else:
         output:
             "blast_filter_out/{sample}_blast_filter.txt_{split}",
         params:
-            script=SCRIPTS + "blast_filter_NR.py",
+            script=SCRIPTS + "search/filter_nr_blast.py",
             evalue=cfg["params.evalue"],
             hsp=cfg["params.hsp_only"],
         shell:
@@ -437,10 +437,10 @@ rule report_sample:
         masked="report/mystery/{sample}_m_complex.fasta",
         sorted_mystery="report/mystery/{sample}_m_complex_sort.fasta",
     params:
-        script=SCRIPTS + "blast_output_sort.py",
-        fasort=SCRIPTS + "faSort.py",
+        script=SCRIPTS + "report/build_report.py",
+        fasort=SCRIPTS + "report/sort_by_length.py",
         dustmasker=TOOLS["dustmasker"],
-        scripts_dir=SCRIPTS,
+        scripts_dir=SCRIPTS + "report/",
         base="report",
     log:
         "logs/report_{sample}.log",
@@ -466,10 +466,10 @@ rule report_all:
         masked="report/mystery/all_m_complex.fasta",
         sorted_mystery="report/mystery/all_m_complex_sort.fasta",
     params:
-        script=SCRIPTS + "blast_output_sort.py",
-        fasort=SCRIPTS + "faSort.py",
+        script=SCRIPTS + "report/build_report.py",
+        fasort=SCRIPTS + "report/sort_by_length.py",
         dustmasker=TOOLS["dustmasker"],
-        scripts_dir=SCRIPTS,
+        scripts_dir=SCRIPTS + "report/",
         base="report",
     log:
         "logs/report_all.log",
@@ -489,7 +489,7 @@ rule merge_table:
     output:
         "report/hitTable",
     params:
-        script=SCRIPTS + "mergeTable.py",
+        script=SCRIPTS + "report/merge_tables.py",
     shell:
         "python {params.script} {input.all_table} {input.per_sample} {output}"
 
@@ -501,7 +501,7 @@ rule plot_pie:
     output:
         "report/pie/{sample}_blast_filter.png",
     params:
-        script=SCRIPTS + "plot_pie.py",
+        script=SCRIPTS + "report/plot_pie.py",
     log:
         "logs/plot_pie_{sample}.log",
     shell:
@@ -530,7 +530,7 @@ rule index_page:
     output:
         "report/index.html",
     params:
-        script=SCRIPTS + "firstpage.py",
+        script=SCRIPTS + "report/index_page.py",
     log:
         "logs/index.log",
     shell:
@@ -547,7 +547,7 @@ rule prepare_abyss_reads:
     output:
         "fastq/{sample}abyss.fq",
     params:
-        script=SCRIPTS + "fqLenFilter.py",
+        script=SCRIPTS + "assembly/filter_fastq_length.py",
         min_length=35,
     shell:
         "python {params.script} {input} {output} {params.min_length}"
@@ -561,7 +561,7 @@ checkpoint partition_reads:
     output:
         directory("partitions/{sample}"),
     params:
-        script=SCRIPTS + "partition.py",
+        script=SCRIPTS + "assembly/split_fastq.py",
         chunk_size=100000,
     shell:
         "python {params.script} {input} {params.chunk_size} && "
@@ -688,7 +688,7 @@ rule combine_contigs:
     output:
         "fastq/{sample}_contig2",
     params:
-        script=SCRIPTS + "faLenFilter.py",
+        script=SCRIPTS + "assembly/filter_contig_length.py",
         min_length=cfg["params.contig_length_pre_cap3"],
         merged=lambda w: f"fastq/{w.sample}_contig",
     shell:
@@ -721,7 +721,7 @@ rule assembled_contigs:
     output:
         "fastq/{sample}_contig4",
     params:
-        script=SCRIPTS + "faLenFilter.py",
+        script=SCRIPTS + "assembly/filter_contig_length.py",
         min_length=cfg["params.contig_length_post_cap3"],
         merged=lambda w: f"fastq/{w.sample}_contig3",
         label=lambda w: f"{LIB}_{w.sample}",
@@ -738,7 +738,7 @@ rule polya_raw:
         data="report/hist/{sample}_{pair}_raw_hist.txt",
         rscript="report/hist/{sample}_{pair}_raw_hist.R",
     params:
-        script=SCRIPTS + "polyA.py",
+        script=SCRIPTS + "report/homopolymer_hist.py",
         prefix=lambda w: f"report/hist/{w.sample}_{w.pair}",
     log:
         "logs/polya_raw_{sample}_{pair}.log",
@@ -754,7 +754,7 @@ rule polya_clean:
         data="report/hist/{sample}_{pair}_clean_hist.txt",
         rscript="report/hist/{sample}_{pair}_clean_hist.R",
     params:
-        script=SCRIPTS + "polyA.py",
+        script=SCRIPTS + "report/homopolymer_hist.py",
         prefix=lambda w: f"report/hist/{w.sample}_{w.pair}",
     log:
         "logs/polya_clean_{sample}_{pair}.log",
@@ -798,7 +798,7 @@ rule blastdb_alias:
     output:
         "report/blast/report_blastdb.nal",
     params:
-        script=SCRIPTS + "blastAlias.py",
+        script=SCRIPTS + "report/blastdb_alias.py",
     log:
         "logs/blastdb_alias.log",
     shell:

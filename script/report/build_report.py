@@ -306,11 +306,11 @@ def OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd):
 		of2.close()
 		fain=os.path.dirname(input)+'/tmp/'+label+'.fa'
 		faout=os.path.dirname(input)+'/fasta/'+label+'.fa'
-		os.system(dirscr+'faSort.py '+fain+' '+faout+' False') #sort fa by length
+		os.system(sys.executable+' '+dirscr+'sort_by_length.py '+fain+' '+faout+' False') #sort fa by length
 		counter+=1
 		if combine =='--':
 			#base is all_blast_filter.txt
-			cmd = dirscr+'viralCount.py '+faout+' '+countfile+' '+cwd+' '+virname
+			cmd = sys.executable+' '+dirscr+'count_by_barcode.py '+faout+' '+countfile+' '+cwd+' '+virname
 			os.system(cmd) #sort fa by length
 	vcounts={}
 	barcodes=set([])
@@ -339,7 +339,7 @@ if __name__ == '__main__':
 	cache, VE, NE, tax, qlen, c2, c5, c10,hit_pairs =CacheLines(input)
 	
 	combine=sys.argv[2] #_r file combined for extracting , no len filter fasta
-	dirscr=sys.argv[3]
+	dirscr=sys.argv[3]  # pasta deste script, para chamar os dois irmaos abaixo
 	try: cachecombine=CacheFASTA(combine, hit_pairs) #combined fasta file cache
 	except: cachecombine ={}
 	base=sys.argv[4] #sorted inputfile
