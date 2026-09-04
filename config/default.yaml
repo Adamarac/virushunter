@@ -1,59 +1,48 @@
-# Todos os ajustes do pipeline ficam aqui. Os valores sao os mesmos que estavam
-# escritos dentro do codigo original, para o resultado continuar igual.
-# Para mudar algo sem editar este arquivo, passe --configfile ao Snakemake.
+# Ajustes do pipeline. Os valores reproduzem o codigo original.
 
 compute:
-  threads: 48          # quantos processadores os programas podem usar
-  query_splits: 50     # em quantos pedacos dividir a busca, para rodar em paralelo
+  threads: 48          # processadores usados por cada programa
+  query_splits: 50     # pedacos em que a busca e dividida
 
 params:
-  evalue: "0.01"           # o quanto uma semelhanca precisa ser boa para valer
-                           # (quanto menor, mais exigente)
-  min_read_length: 50      # leitura menor que isso e descartada
-  contig_length_pre_cap3: 300    # tamanho minimo para entrar na montagem final
-  contig_length_post_cap3: 1500  # tamanho minimo para sair da montagem e ser pesquisado
-  mystery_min_length: 1000       # acima disso, uma sequencia desconhecida vira
-                                 # candidata a virus novo
-  hsp_only: "NO"           # "YES" mostra so o trecho que deu semelhanca;
-                           # "NO" mostra a sequencia inteira
+  evalue: "0.01"                 # quanto menor, mais exigente
+  min_read_length: 50            # leitura menor que isso e descartada
+  contig_length_pre_cap3: 300    # tamanho minimo para entrar na montagem
+  contig_length_post_cap3: 1500  # tamanho minimo para ser pesquisado
+  mystery_min_length: 1000       # acima disso vira candidato a virus novo
+  hsp_only: "NO"                 # "YES" mostra so o trecho semelhante
 
   kmers:
-    abyss: "31"            # tamanho do pedaco usado na montagem, como no artigo
-                           # de Deng et al. 2015
+    abyss: "31"                  # como no artigo de Deng et al. 2015
     soap: "31"
     metavelvet: "31"
 
 steps:
   paired_end: false
   dedup: true
-  remove_adaptor: false      # desligado tambem desliga o corte por qualidade
-  merge_pairs: false         # tenta juntar as duas leituras de um mesmo fragmento
+  remove_adaptor: false      # desligado, desliga tambem o corte por qualidade
+  merge_pairs: false
   skip_reads: false
 
   host_filter:
-    keep_human: false        # false = joga fora o que for humano
+    keep_human: false        # false = descarta o que for humano
     keep_bacteria: true      # true = mantem o que for bacteria
 
   assembly:
-    mode: "no"               # "no" = sem montagem; "denovo" = tres montadores +
-                             # consenso; "trinity" = na verdade usa o SPAdes
+    mode: "no"               # "no" | "denovo" | "trinity" (usa SPAdes)
 
   viral_search:
     diamond_only: false
-    nucleotide: false        # busca comparando DNA em vez de proteina
-    phage: "False"           # inclui ou nao virus que infectam bacterias
+    nucleotide: false        # compara DNA em vez de proteina
+    phage: "False"           # "False" | "True" | "Both"
 
   nr_filter: true
-  # Como decidir se um candidato e virus de verdade. "diamond" e rapido e so olha
-  # quem foi o parente mais proximo. "blast" e lento, mas compara o quanto cada
-  # semelhanca foi boa e guarda esse valor no relatorio para voce conferir.
-  nr_filter_method: "diamond"
-  mystery: false             # investiga as sequencias que nao se pareceram com nada
-  hmmer: false               # busca por familias virais nas sequencias desconhecidas
+  nr_filter_method: "diamond"  # "diamond" e rapido; "blast" compara e-values
+  mystery: false
+  hmmer: false
   clark: false
-  nt_route: false            # rota alternativa; as contagens que ela produz nao sao
-                             # confiaveis, ver docs/known-issues.md
-  reassemble: false          # tenta montar de novo usando varias amostras juntas
+  nt_route: false            # contagens nao confiaveis, ver docs/known-issues.md
+  reassemble: false
 
   input:
     from_fasta: false
@@ -61,13 +50,11 @@ steps:
     sra_prep: false
 
   output:
-    blast_databases: true    # deixa o resultado pesquisavel no final
-    copy_fastq: true         # guarda uma copia das leituras originais
+    blast_databases: true
+    copy_fastq: true
 
-# Os programas externos. Caminho com barra e relativo a raiz do projeto; nome simples
-# e procurado no PATH do sistema. Ver tools/README.md.
-# As linhas sem caminho sao ferramentas que NAO tem versao para Windows: a rota de
-# montagem (assembly.mode: "denovo") e a rota hmmer nao rodam nesta maquina.
+# Caminho com barra = relativo ao projeto; nome simples = procurado no PATH.
+# Sem caminho = nao existe para Windows, ver tools/README.md.
 tools:
   scripts_dir: "script/"
   blastn: "tools/bin/blastn.exe"
@@ -77,7 +64,7 @@ tools:
   bowtie2: "tools/bin/bowtie2"
   diamond: "tools/bin/diamond.exe"
   hmmsearch: "hmmsearch"
-  spades_dir: ""            # vazio = spades.py esta no PATH
+  spades_dir: ""
   cap3: "cap3"
   soapdenovo: "SOAPdenovo-63mer"
   velvetg: "velvetg"
@@ -85,14 +72,12 @@ tools:
   meta_velvetg: "meta-velvetg"
   abyss_pe: "abyss-pe"
   samtools: "samtools"
-  picard_dir: ""            # vazio = picard esta no PATH
+  picard_dir: ""
   rapsearch: "rapsearch"
   prerapsearch: "prerapsearch"
   ray: "Ray"
 
-# Bancos de dados de referencia. ESTES ARQUIVOS NAO VEM COM O PROJETO: e preciso
-# baixar ou construir cada um e apontar o caminho aqui. Os valores abaixo assumem
-# uma pasta db/ dentro do diretorio de trabalho.
+# Nao vem com o projeto: baixe ou construa cada um, ver docs/databases.md.
 databases:
   virus_protein: "db/virus_mask"
   virus_dna: "db/virus_DNA_mask"
@@ -112,8 +97,7 @@ databases:
   nt_bowtie_prefix: "db/nt_"
   nt_index_count: 14
 
-# Sobra da epoca em que o pipeline rodava num cluster. Rodando localmente nada
-# disto e usado, exceto high_memory_nodes, que o orquestrador antigo ainda le.
+# Sobra do cluster antigo; local, so high_memory_nodes ainda e lido.
 cluster:
   enabled: false
   nodes:
