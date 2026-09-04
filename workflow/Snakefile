@@ -67,6 +67,15 @@ FILTRO_NR = cfg["steps.nr_filter"]
 BANCOS_DE_SAIDA = cfg["steps.output.blast_databases"]
 COPIAR_FASTQ = cfg["steps.output.copy_fastq"]
 FUNDIR_PARES = cfg["steps.merge_pairs"]
+ENTRADA_BAM = cfg["steps.input.from_bam"]
+PREPARAR_SRA = cfg["steps.input.sra_prep"]
+
+
+def etiqueta_sra(indice_amostra, par):
+    """Codigo sintetico por amostra, no formato <par>:N:0:<6-mer>, como no original."""
+    import itertools
+    kmers = ["".join(p) for p in itertools.product("ACGT", repeat=6)]
+    return f"{par}:N:0:{kmers[indice_amostra]}"
 if FUNDIR_PARES and cfg["steps.paired_end"]:
     raise WorkflowError(
         "merge_pairs com paired_end nao faz sentido: depois de fundido o par vira um "
@@ -96,8 +105,6 @@ WEB = str(PROJETO / "web") + "/"
 NAO_IMPLEMENTADO = {
     "steps.hmmer": False,
     "steps.reassemble": False,
-    "steps.input.from_bam": False,
-    "steps.input.sra_prep": False,
 }
 _mudadas = [k for k, padrao in NAO_IMPLEMENTADO.items() if cfg.get(k, padrao) != padrao]
 if _mudadas:
@@ -131,6 +138,8 @@ def alvos_finais():
         alvos.append("report/blast/report_blastdb.nal")
     if COPIAR_FASTQ:
         alvos.append("report/fastq/.copiado")
+    if PREPARAR_SRA:
+        alvos.append("sra.fq.gz")
     return alvos
 
 
@@ -182,6 +191,41 @@ if FUNDIR_PARES:
             "fastq/{sample}_flash.fq",
         shell:
             "cat {input.sobra1} {input.sobra2} {input.fundidas} > {output}"
+
+
+if ENTRADA_BAM:
+
+    # Entrada em BAM: o picard extrai as leituras antes de tudo.
+    rule bam_to_fastq:
+        input:
+            "fastq/{sample}_{pair}.bam",
+        output:
+            "fastq/{sample}_{pair}.fastq",
+        params:
+            picard=TOOLS["picard"],
+        shell:
+            "{params.picard} SamToFastq INPUT={input} FASTQ={output} "
+            "VALIDATION_STRINGENCY=SILENT"
+
+
+if PREPARAR_SRA:
+
+    # Junta tudo num arquivo so, reetiquetado para submissao ao SRA. E uma tarefa
+    # unica de proposito: o script acrescenta ao mesmo arquivo, entao jobs em
+    # paralelo se atropelariam.
+    rule prepare_sra:
+        input:
+            [FASTQ[(s, p)] for s in SAMPLES for p in PAIRS],
+        output:
+            "sra.fq.gz",
+        params:
+            script=SCRIPTS + "reads/tag_for_sra.py",
+            etiquetas=[etiqueta_sra(i, p)
+                       for i, s in enumerate(SAMPLES, start=1) for p in PAIRS],
+        run:
+            shell("rm -f {output}")
+            for entrada, etiqueta in zip(input, params.etiquetas):
+                shell("python {params.script} %s %s {output}" % (entrada, etiqueta))
 
 
 if ENTRADA_FASTA:

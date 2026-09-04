@@ -1,0 +1,4 @@
+# Entrada em BAM: o picard extrai as leituras antes de comecar.
+steps:
+  input:
+    from_bam: true

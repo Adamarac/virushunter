@@ -31,13 +31,15 @@ ela define.
 | `clark` | classificação taxonômica pelo CLARK | 361 |
 | `nt` | contagem por taxon contra o banco nt | 382 |
 | `merge-pairs` | funde as duas leituras de cada par com o FLASH | 354 |
+| `from-bam` | entrada em BAM, extraida pelo picard | 350 |
+| `sra-prep` | monta um `sra.fq.gz` reetiquetado para submissao | 351 |
 
 `clark` e `nt` **não podem ser combinadas**: escrevem a mesma contagem por taxon. No
 gerador antigo uma sobrescrevia a outra em silêncio; aqui o workflow recusa com uma
 mensagem.
 
 Rotas com o mesmo número de tarefas mudam **os comandos**, não a forma do grafo.
-`fasta-input` só tem efeito quando a entrada é de fato FASTA.
+`fasta-input` e `from-bam` só têm efeito quando a entrada é de fato daquele formato.
 
 ## Por que `--config routes=` e não vários `--configfile`
 
@@ -63,8 +65,6 @@ erro**, em vez de ignorar em silêncio:
 |---|---|
 | `steps.hmmer` | **a rota nunca funcionou** — o gerador manda executar 7 arquivos que ele mesmo não cria, e o passo que roda o HMMER não é executado. Ver [K34](known-issues.md) |
 | `steps.reassemble` | 415 linhas em Python 2 no histórico, mais os montadores ausentes |
-| `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
-| `steps.input.sra_prep` | SRA toolkit ausente |
 
 Os scripts removidos continuam recuperáveis:
 

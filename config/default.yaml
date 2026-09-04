@@ -76,7 +76,7 @@ tools:
   meta_velvetg: "meta-velvetg"
   abyss_pe: "abyss-pe"
   samtools: "samtools"
-  picard_dir: ""
+  picard: "picard"
   rapsearch: "rapsearch"
   prerapsearch: "prerapsearch"
   ray: "Ray"

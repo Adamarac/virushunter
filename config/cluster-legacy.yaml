@@ -27,6 +27,7 @@ tools:
   abyss_pe: /mnt/cluster/tools/abyss/bin/abyss-pe
   samtools: /mnt/cluster/xdeng/tools/samtools-1.2/samtools
   picard_dir: /mnt/cluster/xdeng/tools/picard-tools-1.136/
+  picard: /mnt/cluster/xdeng/tools/picard-tools-1.136/picard
   rapsearch: /mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/rapsearch
   prerapsearch: /mnt/cluster/xdeng/tools/RAPSearch2.23_64bits/bin/prerapsearch
   ray: /mnt/cluster2/xdeng/tools/Ray2.3/Ray

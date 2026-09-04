@@ -1,0 +1,4 @@
+# Alem do pipeline, monta um sra.fq.gz reetiquetado para submissao ao SRA.
+steps:
+  input:
+    sra_prep: true
