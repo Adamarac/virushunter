@@ -49,13 +49,7 @@ def processSAM(key, wd, base, startInd, endInd, cache): # first scan to get the 
 		if not hit:
 			count1['NA']+=1
 
-		# parts=line1.strip().split('\t')
 		# (name, flag, chro, sstart, mapq, cigar)=parts[0:6]
-		# name='@'+name
-		# try: seq = parts[9]
-		# except: print line; seq='A'
-		# qual=parts[10]
-		# print >>of, '\n'.join([name, seq, '+',qual])
 	for f1 in fs1:
 		f1.close()
 
@@ -91,4 +85,4 @@ if __name__ == "__main__":
 	
 	fafile=wd+'/fastq/'+key+'.fa'
 	cache = index_headers(fafile)
-	processSAM(key, wd, base, startInd, endInd, cache) #single end
+	processSAM(key, wd, base, startInd, endInd, cache)

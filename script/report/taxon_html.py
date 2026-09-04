@@ -52,7 +52,6 @@ def printClark(countfile, htmlfile):
 		parts=line.strip().split(',')
 		key='_'.join(parts[0:3]).replace('/', '_')
 		key2=key.replace(',', '_')
-		#print line.strip()
 		try: order, clas, fam, count= parts
 		except: 
 			print(parts)
@@ -69,4 +68,3 @@ if __name__ == '__main__':
 	countfile=sys.argv[2] #input of NR filtered blast output
 	htmlfile=sys.argv[3]
 	printClark(countfile, htmlfile)
-	#plotpie(countfile1)

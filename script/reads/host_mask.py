@@ -2,7 +2,6 @@
 
 import sys
 
-	# fs1, fs2=[],[]
 
 
 def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get the mutation positions

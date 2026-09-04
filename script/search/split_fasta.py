@@ -17,7 +17,7 @@ def splitFasta(filename, nfiles, nseqs):
         fs.append(f)
     f = open(filename, 'r')
     handle =0
-    j=0 #index in handle
+    j=0
     for line in f:
         if line.strip().startswith('>'):
             j+=1

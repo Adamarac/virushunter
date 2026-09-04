@@ -23,7 +23,7 @@ def trimfqTailB(label, seqFile, f, of):
 		i+=1
 		if i%4==1:
 			id=line.strip()
-		elif i%4==2: #sequence string
+		elif i%4==2:
 			read=line.strip()
 			s,t=0, len(read)
 			if read.startswith('GGGG'):
@@ -52,7 +52,7 @@ def trimfqTailB(label, seqFile, f, of):
 						break
 		elif i%4==3:
 			qid=line.strip()
-		elif i%4==0: #quality string
+		elif i%4==0:
 			qseq=line.strip()
 			try: index = qseq.index('B')
 			except: index=len(qseq)
@@ -64,7 +64,7 @@ def trimfqTailB(label, seqFile, f, of):
 	print(seqFile, 'polyC = ', Ccount)
 	print(seqFile, 'polyG = ', Gcount)
 
-def trimfqTailS(label, seqFile, f, of, illumina, phred=10, skip_front=40): #illumina 33 or 64
+def trimfqTailS(label, seqFile, f, of, illumina, phred=10, skip_front=40):
 	i = 0
 	rlen=0
 	counter=0
@@ -74,11 +74,10 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10, skip_front=40): #illu
 		i+=1
 		if i%4==1:
 			id=line.strip()
-		elif i%4==2: #sequence string
+		elif i%4==2:
 			read=line.strip()
 			s,t=0, len(read)
-			#trim 5' polyN
-			r=0 #position
+			r=0
 			while r< (t-1):
 				if read[r]==read[r+1]:
 					r+=1
@@ -87,7 +86,7 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10, skip_front=40): #illu
 			if r>0: s=r+1
 		elif i%4==3:
 			qid=line.strip()
-		elif i%4==0: #quality string
+		elif i%4==0:
 			qseq=line.strip()
 			index=0
 			zz=0
@@ -124,7 +123,7 @@ if __name__ == '__main__':
 	except IndexError: skip_front=40
 	f = open(seqFile, 'r')
 	of = open(outfile, 'w')
-	if illumina=='B': trimfqTailB(label, seqFile, f, of) #trim by letter 'B'
+	if illumina=='B': trimfqTailB(label, seqFile, f, of)
 	else: trimfqTailS(label, seqFile, f, of, int(illumina), phred, skip_front) # trim by phred score, phred 33
 	f.close()
 	of.close()

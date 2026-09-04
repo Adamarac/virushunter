@@ -11,17 +11,12 @@ def tally(infiles, outfile, fas):
 	try:
 		for infile in infiles:
 			labels.append(infile.split('/')[-1].split('.')[0])
-		#try:
 		lab=[(x[-1],int(x[0:-1]), y) for (x,y) in zip(labels, infiles)]
-		#print lab
 		lab=sorted(lab, key=itemgetter(0, 1))
-		#print lab
 		infiles=[x[2] for x in lab]
 	except:
 		pass
 	
-	#print infiles
-	#except: pass
 	for infile in infiles:
 		f = open(infile, 'r')
 		for line in f:
@@ -37,8 +32,7 @@ def tally(infiles, outfile, fas):
 		out.append(infile.split('/')[-1].split('.')[0])
 	of.write('\t'.join(out)+'\n')
 	print('common', len(set(counts.keys()).intersection(set(fas))))
-	for contig in fas: #counts.keys():
-		#print contig
+	for contig in fas:
 		out=[contig]
 		for infile in infiles:
 			try: out.append(str(counts[contig][infile]))
@@ -52,9 +46,6 @@ def readFA(fa):
 	for line in f:
 		if line.strip().startswith('>'):
 			fas.add(line.strip().split()[0][1:])
-			#chr=line.strip().rsplit('_', 1)[0][1:]
-			#fas.add(chr)
-	#print fas
 	fas=list(fas)
 	return fas
 

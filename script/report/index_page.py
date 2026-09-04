@@ -91,7 +91,6 @@ def readstat(statfile='stats.logg'):
 			sum=0
 			for value in stats[key][name]:
 				sum+=value
-				# stats[key][name]=sum/2
 			if name in sk:
 				stats[key][name]=sum/len(stats[key][name])
 			else:
@@ -158,7 +157,6 @@ def firstpage():
 		clarktable ='clark/'+key+'.count'
 		clarktable2 ='clark/'+key+'.html'
 		clarkpng ='clark/'+key+'.count.png'
-		#Pool21-25_raw_hist.png
 		hist_raw_png1 ='hist/'+key+'_1_raw_hist.png'
 		hist_raw_png2 ='hist/'+key+'_2_raw_hist.png'
 		hist_clean_png1 ='hist/'+key+'_1_clean_hist.png'

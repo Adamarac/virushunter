@@ -4,17 +4,6 @@
 import sys
 from collections import defaultdict
 
-# def maxMat(MD):
-	# MD=MD.replace('A', ' ').replace('C', ' ').replace('G', ' ').replace('T', ' ').replace('^', ' ').replace('N', ' ')
-	# ps=MD.split()
-	# maxMatch=0
-	# for p in ps:
-		# try: 
-			# if int(p)> maxMatch:
-				# maxMatch=int(p)
-		# except:
-			# pass
-	# return maxMatch
 
 def identity(MD):
 	MD=MD.replace('A', ' ').replace('C', ' ').replace('G', ' ').replace('T', ' ').replace('^', ' ').replace('N', ' ')
@@ -44,18 +33,11 @@ def processPairedSAM(filename, countfile):
 		else: continue
 		if chro =='*' or cigar=='*':
 			continue
-		#chro=chro.rsplit('_', 1)[0]
-		#if maxMat(MD) < 100: continue
 		if identity(MD)<0.95: continue
 		mapped+=1
 		cc[name].append(line)
 		if name in appeared:
 			totalPair+=1
-			# print(cc[name][0])
-			# print(cc[name][1])
-			# print '-----------------------------------------------------------------'
-			# #sys.exit()
-			# #print name, chro
 			continue
 		appeared.add(name)
 		counts[chro]+=1

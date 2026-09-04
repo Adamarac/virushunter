@@ -35,7 +35,6 @@ fafile=sys.argv[4]
 path=sys.argv[5]
 of=open(countfile,'w')
 of2=open(countfile+'.csv','w')
-#of2=open(fafile,'r')
 cache = index_headers(fafile)
 
 index={}
@@ -45,9 +44,6 @@ for line in indexf:
 indexf.close()
 index['NA']='NA_NA_NA'
 
-# header=f1.readline()
-# header=f2.readline()
-# header=f3.readline()
 counts=defaultdict(int)
 counts2=defaultdict(list)
 for line in f1:
@@ -60,12 +56,6 @@ for line in f1:
 	counts[cat]+=1
 	category2=','.join([cat, clas, fam])
 	counts2[category2].append(seqname)
-# for line in f2:
-	# category=line.strip().split(',')[-1]
-	# counts[category]+=1
-# for line in f3:
-	# category=line.strip().split(',')[-1]
-	# counts[category]+=1
 for key in list(counts.keys()):
 	of.write(key+'\t'+str(int(counts[key]/3))+'\n')
 of2.write('category,class,family,count\n')
@@ -86,8 +76,6 @@ for key, val in sorted_x:
 	fa.close()
 # /mnt/cluster2/Vhunt/170901_EA_TIMMS_HIV_HCV/clark_out/W200315513079.csvv
 f1.close()
-# f2.close()
-# f3.close()
 of.close()
 of2.close()
 plotpie(countfile)

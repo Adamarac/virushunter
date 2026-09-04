@@ -68,11 +68,11 @@ def CacheFASTA(fname, hit_pairs):
 			end=i-1
 			if header!=None and (header in hit_pairs): 
 				cachecombine[header] = (start, end)
-			line=line[1:] #remove >
-			if line.startswith('@'): #read
+			line=line[1:]
+			if line.startswith('@'):
 				parts = line.strip().split('_')
 				header= parts[0]+'_'+parts[1]
-			else: header='' #contig, ignore
+			else: header=''
 			start=i+1
 	if header!=None and (header in hit_pairs): cachecombine[header] = (start, i)
 	print('cacheFASTA done')
@@ -100,7 +100,7 @@ def CacheLines(input):
 		i+=1
 		if i%11 == 2 and line.startswith('@'):
 			parts=line.strip().split('_')
-			if parts[1]=='1': hit_pairs.add(parts[0]+'_'+'2') #e.g s12576_1
+			if parts[1]=='1': hit_pairs.add(parts[0]+'_'+'2')
 			elif parts[1]=='2': hit_pairs.add(parts[0]+'_'+'1')
 		if i%11 == 3:
 			try: query = line.strip().split()[1]
@@ -117,7 +117,7 @@ def CacheLines(input):
 				qlen[virus]=len(query)
 			elif virus in qlen and qlen[virus]<len(query):
 				qlen[virus]=len(query)
-		elif i%11==6: #veval
+		elif i%11==6:
 			ve=float(line.split()[-1])
 			if ve<=1E-2: 
 				c2[virus]+=1
@@ -129,7 +129,7 @@ def CacheLines(input):
 				VE[virus]=ve
 			elif virus not in VE:
 				VE[virus]=ve
-		elif i%11==7: #nr eval, LVNE
+		elif i%11==7:
 			ne=line.split()[-1]
 			try: ne=float(ne)
 			except: ne=1
@@ -306,12 +306,12 @@ def OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd):
 		of2.close()
 		fain=os.path.dirname(input)+'/tmp/'+label+'.fa'
 		faout=os.path.dirname(input)+'/fasta/'+label+'.fa'
-		os.system(sys.executable+' '+dirscr+'sort_by_length.py '+fain+' '+faout+' False') #sort fa by length
+		os.system(sys.executable+' '+dirscr+'sort_by_length.py '+fain+' '+faout+' False')
 		counter+=1
 		if combine =='--':
 			#base is all_blast_filter.txt
 			cmd = sys.executable+' '+dirscr+'count_by_barcode.py '+faout+' '+countfile+' '+cwd+' '+virname
-			os.system(cmd) #sort fa by length
+			os.system(cmd)
 	vcounts={}
 	barcodes=set([])
 	if combine =='--':
@@ -345,7 +345,7 @@ if __name__ == '__main__':
 	base=sys.argv[4] #sorted inputfile
 	cwd=sys.argv[5] #cwd
 	try: outfa=sys.argv[6]; 
-	except: pass #sorted inputfileS
+	except: pass
 	allpairs={}
-	vcounts, barcodes=OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd) #individual read page
-	printVirusSummary(cache, VE, NE, tax, input, qlen, c2, c5, c10, vcounts, barcodes) #summary page
+	vcounts, barcodes=OutputVirus(cache, input, allpairs, combine, cachecombine, base, cwd)
+	printVirusSummary(cache, VE, NE, tax, input, qlen, c2, c5, c10, vcounts, barcodes)

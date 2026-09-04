@@ -125,7 +125,7 @@ if __name__ == '__main__':
 		filename=sys.argv[1]
 		outfile=sys.argv[2]
 		tmpfq=filename+'.tmp'
-		of=open(tmpfq, 'w') #clear this output file
+		of=open(tmpfq, 'w')
 		of.close()
 		split(filename)
 		comb=itertools.product(['A','C','G','T'], repeat=4)

@@ -2,7 +2,7 @@
 import sys
 
 def partition(filename, k):
-	f=open(filename, 'r') #fastq file
+	f=open(filename, 'r')
 	nchunk=0
 	buf=[]
 	nread =0
@@ -20,7 +20,7 @@ def partition(filename, k):
 			buf=[]
 	of.close()
 	f.close()
-	return nchunk+1 #number of chunks
+	return nchunk+1
 
 if __name__ == '__main__':
 	filename=sys.argv[1]

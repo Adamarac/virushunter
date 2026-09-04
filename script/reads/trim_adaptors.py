@@ -41,7 +41,7 @@ def trimAdaptorEnd(infile, outfile, ada): #input fq file and output fq file
 			seq=line.strip()
 			rval1=checkEnd(seq, ada)
 			rval2=checkEnd(seq, rada)
-			rval=max(rval1, rval2) #rval -1 and above
+			rval=max(rval1, rval2)
 			if rval>=0: partial+=1
 			if len(seq[(rval+1):])==0: of.write('A\n')
 			else: of.write(seq[(rval+1):]+'\n')
@@ -66,13 +66,13 @@ def readBlastTab(f):
 	trim_index=defaultdict(list)
 	for line in f:
 		parts=line.strip().split()
-		try: q, sub, e, qs, qe, ss, se=parts #using fasta
+		try: q, sub, e, qs, qe, ss, se=parts
 		except: print('error', line); sys.exit(1)
-		sub, q, ss, se, qs, qe = q, sub, qs, qe, ss, se #use subject db as trim
+		sub, q, ss, se, qs, qe = q, sub, qs, qe, ss, se
 		try: e = float(e)
 		except: e=1
 		q=int(q.rsplit('_', 1)[1])
-		qs, qe=int(qs)-1, int(qe)-1 #change to 0 indexed
+		qs, qe=int(qs)-1, int(qe)-1
 		if qs>qe: qs,qe=qe,qs
 		trim_index[q].append((qs, qe))
 	return trim_index
@@ -97,10 +97,10 @@ for line in f:
 		for hit in hits:
 			x,y=hit
 			mid=(x+y)/2
-			if mid>0.5*n: #right
+			if mid>0.5*n:
 				if x< minright:
 					minright=x
-			else:  #left adaptors
+			else:
 				if y>maxleft:
 					maxleft=y
 			num_adaptors+=1

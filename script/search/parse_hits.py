@@ -10,7 +10,7 @@ def print_mysterious(cachename, cache, queryset, outfile, length):
 	nmys=0
 	of=open(outfile, 'w')
 	for header in list(cache.keys()):
-		if header in queryset: #hits
+		if header in queryset:
 			continue
 		seq=sequence(cachename, cache, header)
 		if len(seq)> length:

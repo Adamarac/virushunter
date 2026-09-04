@@ -13,7 +13,7 @@ def readFa(input, output, mode):
 			id, annot=line.strip()[1:].split('dummy',1)
 			if id not in rval:
 				dup=False
-				of.write('>'+annot+':'+id+'\n') #id
+				of.write('>'+annot+':'+id+'\n')
 			else: dup =True
 			rval[id]=annot
 		elif not dup:
