@@ -27,6 +27,33 @@ SO_DIAMOND = cfg["steps.viral_search.diamond_only"]
 SO_CONTIGS = cfg["steps.skip_reads"]
 ENTRADA_FASTA = cfg["steps.input.from_fasta"]
 DEDUP = cfg["steps.dedup"]
+FAGO = cfg["steps.viral_search.phage"] == "True"
+
+# O filtro de hospedeiro alinha contra um conjunto de indices: o 0 e o humano e os
+# seguintes sao as bacterias. Quais entram depende do que se quer descartar.
+_manter_humano = cfg["steps.host_filter.keep_human"]
+_manter_bacteria = cfg["steps.host_filter.keep_bacteria"]
+_n_bacterias = cfg["databases.bacteria_index_count"]
+if _manter_humano and _manter_bacteria:
+    raise WorkflowError(
+        "keep_human e keep_bacteria ambos verdadeiros: nao sobra nada para filtrar. "
+        "O gerador antigo quebrava neste caso; escolha um dos dois."
+    )
+elif _manter_humano:
+    HOST_INICIO, HOST_FIM = 1, _n_bacterias
+elif _manter_bacteria:
+    HOST_INICIO, HOST_FIM = 0, 0
+else:
+    HOST_INICIO, HOST_FIM = 0, _n_bacterias
+HOST_INDICES = list(range(HOST_INICIO, HOST_FIM + 1))
+
+
+def indice_do_hospedeiro(n):
+    """O indice 0 e o genoma humano; de 1 em diante sao os das bacterias."""
+    n = int(n)
+    if n == 0:
+        return DB["human_bowtie_index"]
+    return f"{DB['bacteria_bowtie_prefix']}{n}"
 FILTRO_NR = cfg["steps.nr_filter"]
 
 DB = cfg.get("databases")
@@ -51,9 +78,6 @@ WEB = str(PROJETO / "web") + "/"
 # delas nao teria efeito nenhum, entao o pipeline para aqui em vez de enganar.
 NAO_IMPLEMENTADO = {
     "steps.merge_pairs": False,
-    "steps.host_filter.keep_human": False,
-    "steps.host_filter.keep_bacteria": True,
-    "steps.viral_search.phage": "False",
     "steps.mystery": False,
     "steps.hmmer": False,
     "steps.clark": False,
@@ -76,6 +100,7 @@ if _mudadas:
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
     split=r"\d+",
+    idx=r"\d+",
 
 
 # Os arquivos que o pipeline deve produzir no final; tudo o mais e feito para chegar aqui.
@@ -108,9 +133,9 @@ rule host_align:
     input:
         fastq=lambda w: FASTQ[(w.sample, w.pair)],
     output:
-        sam=temp("fastq/{sample}_{pair}_0.sam"),
+        sam=temp("fastq/{sample}_{pair}_{idx}.sam"),
     params:
-        index=DB["human_bowtie_index"],
+        index=lambda w: indice_do_hospedeiro(w.idx),
         bowtie2=TOOLS["bowtie2"],
     threads: cfg["compute.threads"]
     shell:
@@ -123,15 +148,21 @@ rule host_align:
 # identidade dela, entao remover linhas embaralharia tudo.
 rule host_filter:
     input:
-        sams=expand("fastq/{{sample}}_{pair}_0.sam", pair=PAIRS),
+        sams=expand("fastq/{{sample}}_{pair}_{idx}.sam", pair=PAIRS, idx=HOST_INDICES),
     output:
         filtered=expand("fastq/{{sample}}_{pair}.fil", pair=PAIRS),
     params:
         script=SCRIPTS + "reads/host_mask.py",
         prefix=lambda w: f"fastq/{w.sample}",
+        inicio=HOST_INICIO,
+        fim=HOST_FIM,
     shell:
-        "python {params.script} {params.prefix} 0 0 {output.filtered}"
+        "python {params.script} {params.prefix} {params.inicio} {params.fim} "
+        "{output.filtered}"
 
+
+# Sem dedup, o estagio seguinte consome o .fil direto e esta regra nem existe.
+LEITURAS_LIMPAS = "fastq/{sample}_{pair}.dup" if DEDUP else "fastq/{sample}_{pair}.fil"
 
 if DEDUP:
 
@@ -140,22 +171,11 @@ if DEDUP:
         input:
             "fastq/{sample}_{pair}.fil",
         output:
-            "fastq/{sample}_{pair}.dup",
+            LEITURAS_LIMPAS,
         params:
             script=SCRIPTS + "reads/dedup.py",
         shell:
             "python {params.script} {input} {output}"
-
-else:
-
-    # Sem remocao de duplicatas: a etapa so repassa o arquivo adiante.
-    rule dedup:
-        input:
-            "fastq/{sample}_{pair}.fil",
-        output:
-            "fastq/{sample}_{pair}.dup",
-        shell:
-            "cp {input} {output}"
 
 
 if not REMOVE_ADAPTOR:
@@ -164,7 +184,7 @@ if not REMOVE_ADAPTOR:
     # Da a cada leitura um nome curto baseado na posicao dela no arquivo.
     rule recode_ids:
         input:
-            "fastq/{sample}_{pair}.dup",
+            LEITURAS_LIMPAS,
         output:
             "fastq/{sample}_{pair}.trim",
         params:
@@ -179,7 +199,7 @@ else:
     # Converte as leituras para o formato que a busca por adaptadores exige.
     rule reads_to_fasta_for_adaptor:
         input:
-            "fastq/{sample}_{pair}.dup",
+            LEITURAS_LIMPAS,
         output:
             "fastq/{sample}_{pair}.fa",
         params:
@@ -226,7 +246,7 @@ else:
     # Corta fora os pedacos de adaptador que a busca encontrou.
     rule trim_adaptors:
         input:
-            reads="fastq/{sample}_{pair}.dup",
+            reads=LEITURAS_LIMPAS,
             hits="fastq/{sample}_{pair}.tab",
         output:
             "fastq/{sample}_{pair}.ada",
@@ -383,7 +403,7 @@ else:
             "blast_virus_out/{sample}_blast.xml_{split}",
         params:
             blastx=TOOLS["blastx"],
-            db=DB["virus_protein"],
+            db=DB["phage"] if FAGO else DB["virus_protein"],
             evalue=cfg["params.evalue"],
         threads: cfg["compute.threads"]
         shell:

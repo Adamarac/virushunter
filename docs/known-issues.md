@@ -423,3 +423,26 @@ O Snakemake substitui a seção inteira em vez de fundir. Passar
 
 Verificado imprimindo o `config` que o workflow recebe. Contornado com
 `--config routes=a,b`, que usa a fusão profunda de `virushunter.config.merge`.
+
+### K33
+
+**Duas rotas do gerador original quebram quando ligadas.** Aberta, herdada.
+
+Descoberto ao recapturar a referência de cada rota com o gerador recuperado do histórico:
+
+| Configuração | Erro |
+|---|---|
+| `host_filter.keep_human: true` com `keep_bacteria: true` (o padrão) | `UnboundLocalError: bowindex` |
+| `merge_pairs: true` com `paired_end: true` | `IndexError: list index out of range` |
+
+**`keep_human`:** as linhas 910-912 de `virus_hunter.py` cobrem três das quatro
+combinações. Falta justamente "manter os dois", em que não sobra nada contra o que alinhar,
+e `bowindex` nunca é atribuído. O workflow migrado agora recusa essa combinação com uma
+mensagem explícita, em vez de estourar.
+
+**`merge_pairs`:** depois que o FLASH funde o par, existe um arquivo só, mas a linha 870
+indexa `fqfils[1]` quando `pair` é verdadeiro. A combinação é contraditória — fundidas, as
+leituras deixam de ser um par — e o código não trata isso.
+
+As variantes que fazem sentido funcionam: `keep_human: true` com `keep_bacteria: false`
+gera 57 artefatos sem erro, e `merge_pairs` com `paired_end: false` gera 58.

@@ -1,0 +1,5 @@
+# Descarta humano e bacterias.
+steps:
+  host_filter:
+    keep_human: false
+    keep_bacteria: false

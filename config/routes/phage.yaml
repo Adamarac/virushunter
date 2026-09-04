@@ -1,0 +1,4 @@
+# Busca contra o banco de fagos, em vez do banco viral geral.
+steps:
+  viral_search:
+    phage: "True"

@@ -25,6 +25,9 @@ ela define.
 | `no-dedup` | sem remoção de duplicatas de PCR | 349 |
 | `nr-filter-blast` | filtro NR por comparação de e-values | 445 |
 | `contigs-only` | só os contigs vão à busca; use com `denovo` | — |
+| `phage` | busca contra o banco de fagos | 349 |
+| `remove-bacteria` | descarta bactérias e mantém o humano | 401 |
+| `remove-both` | descarta humano e bactérias | 403 |
 
 Rotas com o mesmo número de tarefas mudam **os comandos**, não a forma do grafo.
 `fasta-input` só tem efeito quando a entrada é de fato FASTA.
@@ -59,8 +62,6 @@ erro**, em vez de ignorar em silêncio:
 | `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
 | `steps.input.sra_prep` | SRA toolkit ausente |
 | `steps.mystery` | as regras de merge rodam sempre — era assim no original também |
-| `steps.host_filter.keep_*` | o filtro roda sempre; falta a variante |
-| `steps.viral_search.phage` | falta a variante com o banco de fagos |
 | `steps.output.*` | publicação e cópia rodam sempre |
 
 Os scripts removidos continuam recuperáveis:
@@ -72,13 +73,26 @@ git show 6961916^:script/hmmer_annot.py
 Mas recuperá-los não devolve rotas prontas: boa parte é Python 2 e precisaria da mesma
 migração que a rota principal recebeu.
 
-## Limite de verificação
+## Como as rotas são verificadas
 
-Nenhuma dessas rotas foi **executada** — faltam ferramentas e bancos
-([ADR-0009](decisions/0009-no-execution-environment.md)). O que se verifica é que o grafo
-resolve e que os comandos gerados são os esperados.
+Nenhuma foi **executada** — faltam ferramentas e bancos
+([ADR-0009](decisions/0009-no-execution-environment.md)). Mas os comandos que cada rota
+gera são conferidos contra o comportamento do gerador original, com
+`tests/capture-reference.sh`, que roda o `virus_hunter.py` recuperado do histórico dentro
+de um container.
 
-A referência congelada que validava a rota principal foi removida, e recapturá-la exigiria
-rodar o gerador antigo. Isso está bloqueado localmente: ele dispara 21 `ssh` em paralelo
-escrevendo no mesmo arquivo, o que o Windows não permite. Com o Docker Desktop ligado, ou
-com `python3` instalado no WSL, o procedimento original volta a funcionar.
+Esse procedimento foi validado: a recaptura da rota padrão sai **idêntica, byte a byte**,
+aos 56 arquivos da referência congelada que existia em `tests/reference/expected/`.
+
+O que a comparação com a referência revelou, rota a rota:
+
+| Rota | Confirmado contra a referência |
+|---|---|
+| `nucleotide` | comando `blastn` idêntico, com `-db_soft_mask 11` e o banco de DNA |
+| `phage` | só troca o banco para `phage_mask` |
+| `diamond` | `diamond blastx --sensitive` produzindo `.pre`, depois o conserto do XML |
+| `no-dedup` | o `.dup` **não é produzido**: o estágio seguinte lê o `.fil` direto |
+| `remove-bacteria` | 27 índices e a faixa `1 27` passada ao `host_mask.py` |
+
+A checagem do `no-dedup` corrigiu a minha primeira implementação, que fazia uma cópia
+`.fil` → `.dup`. A referência simplesmente pula a etapa.
