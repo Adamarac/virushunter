@@ -3,6 +3,8 @@
 
 import re
 import sys
+
+from snakemake.exceptions import WorkflowError
 from pathlib import Path
 
 sys.path.insert(0, str(Path(workflow.basedir).parent / "src"))
@@ -20,6 +22,12 @@ LIB = cfg["io.library_prefix"]
 PAIRS = ["1", "2"] if cfg["steps.paired_end"] else ["1"]
 REMOVE_ADAPTOR = cfg["steps.remove_adaptor"]
 NR_FILTER_METHOD = cfg["steps.nr_filter_method"]
+BUSCA_DNA = cfg["steps.viral_search.nucleotide"]
+SO_DIAMOND = cfg["steps.viral_search.diamond_only"]
+SO_CONTIGS = cfg["steps.skip_reads"]
+ENTRADA_FASTA = cfg["steps.input.from_fasta"]
+DEDUP = cfg["steps.dedup"]
+FILTRO_NR = cfg["steps.nr_filter"]
 
 DB = cfg.get("databases")
 PROJETO = Path(workflow.basedir).parent
@@ -39,6 +47,32 @@ TOOLS = {nome: caminho_do_projeto(valor) for nome, valor in cfg.get("tools").ite
 SCRIPTS = caminho_do_projeto(cfg["tools.scripts_dir"]).rstrip("/\\") + "/"
 WEB = str(PROJETO / "web") + "/"
 
+# Chaves que a configuracao oferece mas o workflow ainda nao implementa. Mudar uma
+# delas nao teria efeito nenhum, entao o pipeline para aqui em vez de enganar.
+NAO_IMPLEMENTADO = {
+    "steps.merge_pairs": False,
+    "steps.host_filter.keep_human": False,
+    "steps.host_filter.keep_bacteria": True,
+    "steps.viral_search.phage": "False",
+    "steps.mystery": False,
+    "steps.hmmer": False,
+    "steps.clark": False,
+    "steps.nt_route": False,
+    "steps.reassemble": False,
+    "steps.input.from_bam": False,
+    "steps.input.sra_prep": False,
+    "steps.output.blast_databases": True,
+    "steps.output.copy_fastq": True,
+}
+_mudadas = [k for k, padrao in NAO_IMPLEMENTADO.items() if cfg.get(k, padrao) != padrao]
+if _mudadas:
+    raise WorkflowError(
+        "Estas chaves ainda nao foram migradas para o workflow, entao mudar o valor "
+        "delas nao surtiria efeito: " + ", ".join(_mudadas)
+        + ". Veja docs/routes.md e volte-as ao valor padrao para continuar."
+    )
+
+
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
     split=r"\d+",
@@ -53,6 +87,20 @@ rule all:
         "report/index.html",
         expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
         "report/.published",
+
+
+if ENTRADA_FASTA:
+
+    # Quando a entrada vem em FASTA, sem qualidade, converte antes de comecar.
+    rule fasta_to_fastq:
+        input:
+            "fasta/{sample}_{pair}.fa",
+        output:
+            "fastq/{sample}_{pair}.fastq",
+        params:
+            script=SCRIPTS + "reads/fasta_to_fastq.py",
+        shell:
+            "python {params.script} {input} {output}"
 
 
 # Compara as leituras com o genoma do hospedeiro (humano, mosquito etc.).
@@ -85,16 +133,29 @@ rule host_filter:
         "python {params.script} {params.prefix} 0 0 {output.filtered}"
 
 
-# Copias identicas da mesma leitura sao lixo de PCR; sao esvaziadas, nao removidas.
-rule dedup:
-    input:
-        "fastq/{sample}_{pair}.fil",
-    output:
-        "fastq/{sample}_{pair}.dup",
-    params:
-        script=SCRIPTS + "reads/dedup.py",
-    shell:
-        "python {params.script} {input} {output}"
+if DEDUP:
+
+    # Copias identicas da mesma leitura sao lixo de PCR; sao esvaziadas, nao removidas.
+    rule dedup:
+        input:
+            "fastq/{sample}_{pair}.fil",
+        output:
+            "fastq/{sample}_{pair}.dup",
+        params:
+            script=SCRIPTS + "reads/dedup.py",
+        shell:
+            "python {params.script} {input} {output}"
+
+else:
+
+    # Sem remocao de duplicatas: a etapa so repassa o arquivo adiante.
+    rule dedup:
+        input:
+            "fastq/{sample}_{pair}.fil",
+        output:
+            "fastq/{sample}_{pair}.dup",
+        shell:
+            "cp {input} {output}"
 
 
 if not REMOVE_ADAPTOR:
@@ -230,8 +291,12 @@ rule reads_to_fasta:
 
 
 def query_parts(wildcards):
+    """O que entra na busca: leituras soltas, contigs montados, ou so os contigs."""
+    montou = cfg["steps.assembly.mode"] != "no"
+    if montou and SO_CONTIGS:
+        return [f"fastq/{wildcards.sample}_contig4"]
     parts = [f"fastq/{wildcards.sample}.fa"]
-    if cfg["steps.assembly.mode"] != "no":
+    if montou:
         parts.insert(0, f"fastq/{wildcards.sample}_contig4")
     return parts
 
@@ -260,22 +325,72 @@ rule split_query:
         "python {params.script} {input} {params.n}"
 
 
-# O coracao do pipeline: procura semelhanca com proteinas de virus conhecidos.
-rule blast_virus:
-    input:
-        "fastq/{sample}_c_{split}",
-    output:
-        "blast_virus_out/{sample}_blast.xml_{split}",
-    params:
-        blastx=TOOLS["blastx"],
-        db=DB["virus_protein"],
-        evalue=cfg["params.evalue"],
-    threads: cfg["compute.threads"]
-    shell:
-        "{params.blastx} -num_threads {threads} -evalue {params.evalue} -outfmt 5 "
-        "-dbsize 10000000 -searchsp 1000000000 -max_target_seqs 1 "
-        "-db_soft_mask 21 -best_hit_overhang 0.1 -best_hit_score_edge 0.1 "
-        "-db {params.db} -query {input} -out {output}"
+# A busca viral tem tres formas, escolhidas em steps.viral_search.
+if SO_DIAMOND:
+
+    # Busca por DIAMOND, que e muito mais rapido que o blastx.
+    rule blast_virus_diamond:
+        input:
+            "fastq/{sample}_c_{split}",
+        output:
+            temp("blast_virus_out/{sample}_blast.xml_{split}.pre"),
+        params:
+            diamond=TOOLS["diamond"],
+            db=DB["diamond_virus"],
+            evalue=cfg["params.evalue"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.diamond} blastx -d {params.db} --quiet --sensitive --threads {threads} "
+            "--evalue {params.evalue} --max-target-seqs 1 --outfmt 5 -q {input} -o {output}"
+
+    # O XML que o DIAMOND emite precisa de conserto antes de ser lido.
+    rule fix_diamond_xml:
+        input:
+            "blast_virus_out/{sample}_blast.xml_{split}.pre",
+        output:
+            "blast_virus_out/{sample}_blast.xml_{split}",
+        params:
+            script=SCRIPTS + "search/fix_diamond_xml.py",
+        shell:
+            "python {params.script} {input} {output}"
+
+elif BUSCA_DNA:
+
+    # Busca comparando DNA contra o banco de genomas virais, em vez de proteina.
+    rule blast_virus:
+        input:
+            "fastq/{sample}_c_{split}",
+        output:
+            "blast_virus_out/{sample}_blast.xml_{split}",
+        params:
+            blastn=TOOLS["blastn"],
+            db=DB["virus_dna"],
+            evalue=cfg["params.evalue"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.blastn} -num_threads {threads} -evalue {params.evalue} -outfmt 5 "
+            "-dbsize 10000000 -searchsp 1000000000 -max_target_seqs 1 "
+            "-db_soft_mask 11 -best_hit_overhang 0.1 -best_hit_score_edge 0.1 "
+            "-db {params.db} -query {input} -out {output}"
+
+else:
+
+    # O coracao do pipeline: procura semelhanca com proteinas de virus conhecidos.
+    rule blast_virus:
+        input:
+            "fastq/{sample}_c_{split}",
+        output:
+            "blast_virus_out/{sample}_blast.xml_{split}",
+        params:
+            blastx=TOOLS["blastx"],
+            db=DB["virus_protein"],
+            evalue=cfg["params.evalue"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.blastx} -num_threads {threads} -evalue {params.evalue} -outfmt 5 "
+            "-dbsize 10000000 -searchsp 1000000000 -max_target_seqs 1 "
+            "-db_soft_mask 21 -best_hit_overhang 0.1 -best_hit_score_edge 0.1 "
+            "-db {params.db} -query {input} -out {output}"
 
 
 # Separa o que pareceu viral do que nao pareceu nada conhecido.

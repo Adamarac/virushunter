@@ -1,0 +1,3 @@
+# Filtro contra o NR por comparacao de e-values, em vez de lista negra.
+steps:
+  nr_filter_method: "blast"

@@ -5,7 +5,6 @@ mínimos para conferir **à mão** que o workflow ainda resolve.
 
 ```
 fixture/fastq/   4 FASTQ + samples.txt, com a convencao de nomes do sequenciador
-configs/         3 sobreposicoes de configuracao, uma por rota
 ```
 
 ## Como verificar
@@ -13,7 +12,7 @@ configs/         3 sobreposicoes de configuracao, uma por rota
 ```sh
 export PYTHONPATH=src
 snakemake -n -s workflow/Snakefile --directory tests/fixture
-snakemake -n -s workflow/Snakefile --directory tests/fixture --configfile "$PWD/tests/configs/paired.yaml"
+snakemake -n -s workflow/Snakefile --directory tests/fixture --config routes=paired-end
 ```
 
 O número de tarefas de cada rota deve ser:
@@ -21,11 +20,18 @@ O número de tarefas de cada rota deve ser:
 | Rota | Tarefas |
 |---|---|
 | padrão | 349 |
-| paired-end | 355 |
-| remoção de adaptador | 357 |
-| montagem denovo | 369 |
-| `nr_filter_method: "blast"` | 445 |
+| `paired-end` | 355 |
+| `adaptor` | 357 |
+| `denovo` | 369 |
+| `nucleotide` | 349 |
+| `diamond` | 449 |
+| `fasta-input` | 349 |
+| `no-dedup` | 349 |
+| `nr-filter-blast` | 445 |
 | `config/cluster-legacy.yaml` | 349 |
+
+As rotas estão em `config/routes/` e se escolhem com `--config routes=<nome>`.
+Ver [docs/routes.md](../docs/routes.md).
 
 **Nada guarda esses números automaticamente.** Quem mexer no `Snakefile` precisa rodar as
 seis à mão.

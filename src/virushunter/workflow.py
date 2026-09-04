@@ -7,7 +7,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from virushunter.config import Config, ConfigError
+import yaml
+
+from virushunter.config import Config, ConfigError, merge
 from virushunter.config import load as load_config
 
 # Dois jeitos de nomear FASTQ que aparecem na pratica: o padrao das maquinas
@@ -68,9 +70,30 @@ def discover_samples(fastq_dir: str | Path) -> list[str]:
     return sorted({sample for sample, _ in fastq_files(fastq_dir)})
 
 
+def load_routes(names: str, project_dir: str | Path) -> dict[str, Any]:
+    """Junta os arquivos de config/routes/ pedidos, na ordem, com fusao profunda."""
+    merged: dict[str, Any] = {}
+    for name in [n.strip() for n in names.split(",") if n.strip()]:
+        path = Path(project_dir) / "config" / "routes" / f"{name}.yaml"
+        if not path.is_file():
+            disponiveis = sorted(
+                p.stem for p in (Path(project_dir) / "config" / "routes").glob("*.yaml")
+            )
+            raise ConfigError(
+                f"rota desconhecida: {name!r}. Disponiveis: {', '.join(disponiveis)}"
+            )
+        merged = merge(merged, yaml.safe_load(path.read_text(encoding="utf-8")) or {})
+    return merged
+
+
 def resolve_config(snakemake_config: dict[str, Any], workflow_dir: str | Path) -> Config:
     """Junta o que veio pela linha de comando do Snakemake com a configuracao padrao."""
     overrides = dict(snakemake_config or {})
+    # --config routes=a,b combina varias rotas; varios --configfile nao combinam,
+    # porque o Snakemake substitui a secao inteira em vez de fundir.
+    rotas = overrides.pop("routes", None)
+    if rotas:
+        overrides = merge(load_routes(str(rotas), Path(workflow_dir).parent), overrides)
     io = {
         "fastq_dir": "fastq",
         # Sem nome definido, usa o nome da pasta de trabalho como prefixo das bibliotecas.

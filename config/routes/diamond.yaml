@@ -1,0 +1,4 @@
+# Busca viral pelo DIAMOND, muito mais rapido que o blastx.
+steps:
+  viral_search:
+    diamond_only: true

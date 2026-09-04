@@ -401,3 +401,25 @@ Causa raiz corrigida: `!tests/fixture/fastq/**` abre a exceção, e a checagem
 primeira foi o commit `1a9ce92`, que corrigiu a exclusão da referência congelada. A lição
 que ficou: depois de qualquer `git mv` ou `git rm` numa pasta, conferir que ela estava
 rastreada **antes** de remover qualquer coisa do disco.
+
+### K31
+
+**`fasta_to_fastq.py` escreve a última sequência errada.** Aberta.
+
+Depois do laço, o script repete o bloco de escrita usando `id` e `seq1` — mas `seq1` só é
+atribuído dentro do `if`, então guarda a sequência **anterior**, enquanto a última fica em
+`seq` e nunca é usada. O último registro do arquivo sai duplicando o penúltimo.
+
+Encontrado ao restaurar a rota `fasta-input` do histórico. **Não corrigido:** é alteração
+de comportamento numa rota que nunca foi exercida, e a decisão de mudar a saída é sua.
+
+### K32
+
+**Vários `--configfile` não se combinam.** Contornada em 2026-08-15.
+
+O Snakemake substitui a seção inteira em vez de fundir. Passar
+`--configfile denovo.yaml --configfile contigs-only.yaml` faz o pipeline enxergar apenas
+`{"skip_reads": true}` — a montagem some **sem nenhum aviso**.
+
+Verificado imprimindo o `config` que o workflow recebe. Contornado com
+`--config routes=a,b`, que usa a fusão profunda de `virushunter.config.merge`.

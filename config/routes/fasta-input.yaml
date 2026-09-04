@@ -1,0 +1,4 @@
+# Entrada em FASTA, sem qualidade: convertida para FASTQ antes de comecar.
+steps:
+  input:
+    from_fasta: true

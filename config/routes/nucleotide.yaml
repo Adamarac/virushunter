@@ -1,0 +1,4 @@
+# Busca comparando DNA contra o banco de genomas virais, em vez de proteina.
+steps:
+  viral_search:
+    nucleotide: true

@@ -1,0 +1,3 @@
+# Sem remocao de duplicatas de PCR.
+steps:
+  dedup: false

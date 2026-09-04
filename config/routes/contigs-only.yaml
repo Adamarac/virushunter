@@ -1,0 +1,4 @@
+# So os contigs montados vao para a busca; as leituras soltas ficam de fora.
+# Exige montagem ligada, entao use junto com denovo.yaml.
+steps:
+  skip_reads: true
