@@ -65,6 +65,7 @@ tools:
   bowtie2: "tools/bin/bowtie2"
   diamond: "tools/bin/diamond.exe"
   hmmsearch: "hmmsearch"
+  clark: "CLARK"
   spades_dir: ""
   cap3: "cap3"
   soapdenovo: "SOAPdenovo-63mer"
@@ -97,3 +98,8 @@ databases:
   bacteria_index_count: 27
   nt_bowtie_prefix: "db/nt_"
   nt_index_count: 14
+  # CLARK divide a taxonomia em varios bancos, numerados a partir de 1.
+  clark_db_prefix: "db/CLARK_DB"
+  clark_target_prefix: "db/target"
+  clark_db_count: 3
+  species_index: "db/species_index.txt"

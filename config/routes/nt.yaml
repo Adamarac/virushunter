@@ -1,0 +1,4 @@
+# Contagem por taxon alinhando contra o banco nt.
+# ATENCAO: as contagens desta rota nao sao confiaveis, ver K2 em docs/known-issues.md.
+steps:
+  nt_route: true

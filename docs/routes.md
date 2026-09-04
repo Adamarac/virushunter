@@ -28,6 +28,12 @@ ela define.
 | `phage` | busca contra o banco de fagos | 349 |
 | `remove-bacteria` | descarta bactérias e mantém o humano | 401 |
 | `remove-both` | descarta humano e bactérias | 403 |
+| `clark` | classificação taxonômica pelo CLARK | 361 |
+| `nt` | contagem por taxon contra o banco nt — [K2](known-issues.md), contagens não confiáveis | 381 |
+
+`clark` e `nt` **não podem ser combinadas**: escrevem a mesma contagem por taxon. No
+gerador antigo uma sobrescrevia a outra em silêncio; aqui o workflow recusa com uma
+mensagem.
 
 Rotas com o mesmo número de tarefas mudam **os comandos**, não a forma do grafo.
 `fasta-input` só tem efeito quando a entrada é de fato FASTA.
@@ -55,8 +61,6 @@ erro**, em vez de ignorar em silêncio:
 | Chave | O que falta |
 |---|---|
 | `steps.hmmer` | `hmmsearch` não tem build para Windows; scripts no histórico |
-| `steps.clark` | CLARK não está instalado nem tem chave em `tools:` |
-| `steps.nt_route` | scripts no histórico; carrega o [K2](known-issues.md), contagens não confiáveis |
 | `steps.reassemble` | 415 linhas em Python 2 no histórico, mais os montadores ausentes |
 | `steps.merge_pairs` | FLASH ausente, e sem chave em `tools:` |
 | `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
@@ -93,6 +97,8 @@ O que a comparação com a referência revelou, rota a rota:
 | `diamond` | `diamond blastx --sensitive` produzindo `.pre`, depois o conserto do XML |
 | `no-dedup` | o `.dup` **não é produzido**: o estágio seguinte lê o `.fil` direto |
 | `remove-bacteria` | 27 índices e a faixa `1 27` passada ao `host_mask.py` |
+| `clark` | `-k 20 -n 48 -T target{i}.txt -D CLARK_DB{i}/`, três bancos, mesma ordem de argumentos |
+| `nt` | 14 índices e `nt_counts.py <amostra> . report 1 14` |
 
 A checagem do `no-dedup` corrigiu a minha primeira implementação, que fazia uma cópia
 `.fil` → `.dup`. A referência simplesmente pula a etapa.

@@ -16,6 +16,7 @@ tools:
   bowtie2: /mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2
   diamond: /mnt/cluster/xdeng/tools/diamond/diamond
   hmmsearch: /mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch
+  clark: /mnt/cluster/tools/CLARKSCV1.2.3.2/exe/CLARK
   spades_dir: /mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/
   cap3: /mnt/cluster/xdeng/tools/CAP3/cap3
   soapdenovo: /mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer
@@ -46,6 +47,10 @@ databases:
   bacteria_index_count: 27
   nt_bowtie_prefix: /mnt/cluster/xdeng/taxon/nt_
   nt_index_count: 14
+  clark_db_prefix: /mnt/cluster/xdeng/taxon/CLARK_DB
+  clark_target_prefix: /mnt/cluster/xdeng/taxon/target
+  clark_db_count: 3
+  species_index: /mnt/cluster/xdeng/taxon/species_index.txt
 cluster:
   enabled: true
   nodes:

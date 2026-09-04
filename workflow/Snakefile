@@ -28,6 +28,15 @@ SO_CONTIGS = cfg["steps.skip_reads"]
 ENTRADA_FASTA = cfg["steps.input.from_fasta"]
 DEDUP = cfg["steps.dedup"]
 FAGO = cfg["steps.viral_search.phage"] == "True"
+CLARK = cfg["steps.clark"]
+ROTA_NT = cfg["steps.nt_route"]
+if CLARK and ROTA_NT:
+    raise WorkflowError(
+        "clark e nt_route escrevem a mesma contagem por taxon e nao podem rodar juntas. "
+        "No gerador antigo uma sobrescrevia a outra em silencio; escolha uma."
+    )
+CLARK_DBS = list(range(1, cfg["databases.clark_db_count"] + 1))
+NT_INDICES = list(range(1, cfg["databases.nt_index_count"] + 1))
 
 # O filtro de hospedeiro alinha contra um conjunto de indices: o 0 e o humano e os
 # seguintes sao as bacterias. Quais entram depende do que se quer descartar.
@@ -80,8 +89,6 @@ NAO_IMPLEMENTADO = {
     "steps.merge_pairs": False,
     "steps.mystery": False,
     "steps.hmmer": False,
-    "steps.clark": False,
-    "steps.nt_route": False,
     "steps.reassemble": False,
     "steps.input.from_bam": False,
     "steps.input.sra_prep": False,
@@ -104,14 +111,24 @@ wildcard_constraints:
 
 
 # Os arquivos que o pipeline deve produzir no final; tudo o mais e feito para chegar aqui.
-rule all:
-    input:
-        expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
+def alvos_finais():
+    """Os arquivos que o pipeline deve produzir; as rotas opcionais acrescentam os seus."""
+    alvos = [
+        *expand("blast_filter_out/{sample}_blast_filter.html", sample=SAMPLES),
         "blast_filter_out/all_blast_filter.html",
         "report/hitTable",
         "report/index.html",
-        expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
+        *expand("report/pie/{sample}_blast_filter.png", sample=SAMPLES),
         "report/.published",
+    ]
+    if CLARK or ROTA_NT:
+        alvos += expand("report/clark/{sample}.html", sample=SAMPLES)
+    return alvos
+
+
+rule all:
+    input:
+        alvos_finais(),
 
 
 if ENTRADA_FASTA:
@@ -941,6 +958,97 @@ rule blastdb_alias:
         "logs/blastdb_alias.log",
     shell:
         "python {params.script} report report/blast/ {params.aliastool} > {log} 2>&1"
+
+
+if CLARK:
+
+    # Classificacao taxonomica pelo CLARK, contra cada um dos bancos.
+    rule clark_classify:
+        input:
+            "fastq/{sample}.fa",
+        output:
+            "clark_out/{sample}_clark{db}.csv",
+        params:
+            clark=TOOLS["clark"],
+            alvo=lambda w: f"{DB['clark_target_prefix']}{w.db}.txt",
+            banco=lambda w: f"{DB['clark_db_prefix']}{w.db}/",
+            saida=lambda w: f"clark_out/{w.sample}_clark{w.db}",
+        threads: cfg["compute.threads"]
+        shell:
+            "mkdir -p clark_out && {params.clark} -k 20 -n {threads} -T {params.alvo} "
+            "-D {params.banco} -O {input} -R {params.saida}"
+
+    # Junta a saida dos varios bancos numa tabela so.
+    rule clark_merge:
+        input:
+            expand("clark_out/{{sample}}_clark{db}.csv", db=CLARK_DBS),
+        output:
+            "clark_out/{sample}.csvv",
+        shell:
+            "cat {input} > {output}"
+
+    # Conta quantas leituras cairam em cada especie.
+    rule clark_counts:
+        input:
+            csvv="clark_out/{sample}.csvv",
+            reads="fastq/{sample}.fa",
+        output:
+            "report/clark/{sample}.count",
+        params:
+            script=SCRIPTS + "report/clark_counts.py",
+            indice=DB["species_index"],
+            base="report",
+        shell:
+            "mkdir -p report/clark && python {params.script} {params.indice} {input.csvv} "
+            "{output} {input.reads} {params.base}"
+
+
+if ROTA_NT:
+
+    # Alinha contra os indices do banco nt, um por vez.
+    rule nt_align:
+        input:
+            "fastq/{sample}.fa",
+        output:
+            temp("NT/{sample}_{idx}.sam"),
+        params:
+            bowtie2=TOOLS["bowtie2"],
+            indice=lambda w: f"{DB['nt_bowtie_prefix']}{w.idx}",
+        threads: cfg["compute.threads"]
+        shell:
+            "mkdir -p NT && {params.bowtie2} --quiet --local --very-fast-local --no-hd "
+            "--reorder -p {threads} -x {params.indice} -f {input} -S {output}"
+
+    # Conta as leituras por taxon a partir desses alinhamentos.
+    # As contagens desta rota nao sao confiaveis, ver K2 em docs/known-issues.md.
+    rule nt_counts:
+        input:
+            expand("NT/{{sample}}_{idx}.sam", idx=NT_INDICES),
+        output:
+            "report/clark/{sample}.count",
+        params:
+            script=SCRIPTS + "report/nt_counts.py",
+            base="report",
+            primeiro=NT_INDICES[0],
+            ultimo=NT_INDICES[-1],
+        shell:
+            "mkdir -p report/clark && python {params.script} {wildcards.sample} . "
+            "{params.base} {params.primeiro} {params.ultimo}"
+
+
+if CLARK or ROTA_NT:
+
+    # A pagina HTML com a contagem por especie, usada pelas duas rotas.
+    rule taxon_html:
+        input:
+            "report/clark/{sample}.count",
+        output:
+            html="report/clark/{sample}.html",
+            csv="report/clark/{sample}.count.csv",
+        params:
+            script=SCRIPTS + "report/taxon_html.py",
+        shell:
+            "python {params.script} {input} {output.csv} {output.html}"
 
 
 # Copia os relatorios prontos para a pasta que o site publica.

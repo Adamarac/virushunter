@@ -1,0 +1,3 @@
+# Classificacao taxonomica pelo CLARK, em paralelo a busca viral.
+steps:
+  clark: true
