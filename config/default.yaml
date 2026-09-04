@@ -96,30 +96,3 @@ databases:
   bacteria_index_count: 27
   nt_bowtie_prefix: "db/nt_"
   nt_index_count: 14
-
-# Sobra do cluster antigo; local, so high_memory_nodes ainda e lido.
-cluster:
-  enabled: false
-  nodes:
-    - bsidna4
-    - bsidna5
-    - bsidna6
-    - bsidna7
-    - bsidna8
-    - bsidna9
-    - bsidna10
-    - bsidna11
-    - bsidna14
-    - bsidna15
-    - bsidna19
-    - bsidna20
-    - bsidna23
-    - bsidna24
-    - bsidna25
-    - bsidna26
-    - bsidna27
-    - bsidna28
-    - bsidna29
-    - bsidna30
-  high_memory_nodes:
-    - bsidna35

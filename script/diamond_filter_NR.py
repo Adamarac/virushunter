@@ -19,18 +19,6 @@ def CacheLines(fname):
 	if header!=None: cache[header] = (start, i)
 	return cache
 
-def readVirusGI():
-	f=open('/mnt/cluster/xdeng/blastdb/virus.fa', 'r')
-	virusGIs=[]
-	for line in f:
-		if line.strip().startswith('>'):
-			try: 
-				gi = line.strip().split('|')[1]
-				virusGIs.append('GI|'+gi+'|')
-			except:
-				pass
-	return set(virusGIs)
-
 def getSeq(cachename, cache, header):
 	seq=[]
 	start, end = cache[header]
@@ -121,7 +109,6 @@ if __name__ == '__main__':
 	print('hsp_only', hsp_only)
 	cache={}
 	cache = CacheLines(cachename)
-	virusGIs = readVirusGI()
 	virusE, virusID = readVirusXML1(virusxml)
 	try: nrE = readDiamondNR(nrDiamond)
 	except: nrE=set([]); print('no diamond')

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from Bio.Blast import NCBIXML
 import sys
+
+from virushunter.config import load as load_config
 import linecache
 import re
 
@@ -21,7 +23,7 @@ def CacheLines(fname):
 	return cache
 
 def readVirusGI():
-	f=open('/mnt/cluster/xdeng/blastdb/virus/virus.fa', 'r')
+	f=open(load_config()['databases.virus_fasta'], 'r')
 	virusGIs=[]
 	for line in f:
 		if line.strip().startswith('>'):

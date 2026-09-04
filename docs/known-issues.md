@@ -309,3 +309,40 @@ correctness of bioinformatics workflows"), três anos depois do artigo do pipeli
 
 **Correção requer decisão científica**, não técnica: subir `-max_target_seqs` (o BLAST
 sugere 5 ou mais) muda o resultado de todas as buscas. Fica registrado, não corrigido.
+
+### K27
+
+**Caminhos de cluster fixos dentro dos filtros NR.** Corrigida em 2026-08-15.
+
+Os dois filtros abriam o FASTA viral por caminho absoluto, apesar de a configuração já
+trazer o valor em `databases.virus_fasta`:
+
+```python
+# diamond_filter_NR.py
+f = open('/mnt/cluster/xdeng/blastdb/virus.fa', 'r')
+# blast_filter_NR.py -- caminho diferente, para o mesmo arquivo
+f = open('/mnt/cluster/xdeng/blastdb/virus/virus.fa', 'r')
+```
+
+Nenhuma das duas chamadas tinha proteção, então em qualquer máquina sem `/mnt/cluster` o
+filtro morria com `FileNotFoundError`. Como `diamond_filter_NR.py` é o filtro ativo por
+padrão, **a rota padrão inteira não chegava ao fim** — o defeito ficou escondido enquanto o
+pipeline só rodou no cluster de origem.
+
+Os dois casos exigiam correções diferentes:
+
+- **`diamond_filter_NR.py`:** o retorno de `readVirusGI()` **nunca era usado**. A função
+  lia um arquivo grande, montava um conjunto de GIs e o descartava. Removidas a função e a
+  chamada — a saída é a mesma, sem o arquivo e sem o custo.
+- **`blast_filter_NR.py`:** ali o conjunto **é** usado, passado a `readNRXML` para impedir
+  que um hit viral entre no conjunto "não viral" e seja usado contra si mesmo. Passou a ler
+  `databases.virus_fasta` da configuração.
+
+Descoberto ao investigar por que a seção `cluster:` continuava em `config/default.yaml`.
+A seção foi removida no mesmo commit: nada a lia depois que `virus_hunter.py` saiu da
+árvore ([ADR-0020](decisions/0020-prune-to-the-migrated-version.md)). Os valores originais
+seguem em `config/cluster-legacy.yaml`.
+
+**Não verificado:** por que os dois caminhos diferiam (`blastdb/virus.fa` e
+`blastdb/virus/virus.fa`). Se apontavam para arquivos diferentes, as duas rotas do filtro
+nunca compararam contra o mesmo conjunto viral.
