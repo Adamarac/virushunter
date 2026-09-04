@@ -17,6 +17,7 @@ tools:
   diamond: /mnt/cluster/xdeng/tools/diamond/diamond
   hmmsearch: /mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch
   clark: /mnt/cluster/tools/CLARKSCV1.2.3.2/exe/CLARK
+  flash: /mnt/cluster/xdeng/tools/FLASH-1.2.11/flash
   spades_dir: /mnt/cluster/tools/SPAdes-3.11.1-Linux/bin/
   cap3: /mnt/cluster/xdeng/tools/CAP3/cap3
   soapdenovo: /mnt/cluster/xdeng/tools/SOAPdenovo2-src-r240/SOAPdenovo-63mer

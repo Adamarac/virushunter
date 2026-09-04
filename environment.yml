@@ -1,0 +1,29 @@
+# Ambiente com todas as ferramentas externas do pipeline, nas versoes que foram
+# resolvidas em 2026-08-15. Cria e ativa com:
+#
+#   conda env create -f environment.yml
+#   conda activate virushunter
+#
+# Depois disso as ferramentas ficam no PATH e config/default.yaml as encontra
+# pelos nomes simples. Ver tools/README.md.
+name: virushunter
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.10
+  - biopython>=1.81
+  - pyyaml>=6
+  - snakemake>=8
+  - abyss=2.3.7
+  - blast=2.16.0
+  - bowtie2=2.5.4
+  - cap3=10.2011
+  - diamond=2.1.12
+  - flash=1.2.11
+  - hmmer=3.4
+  - picard=3.5.0.
+  - samtools>=1.19
+  - soapdenovo2=2.40
+  - sra-tools=3.4.1
+  - velvet=1.2.10

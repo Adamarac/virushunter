@@ -10,6 +10,7 @@ params:
   contig_length_pre_cap3: 300    # tamanho minimo para entrar na montagem
   contig_length_post_cap3: 1500  # tamanho minimo para ser pesquisado
   mystery_min_length: 1000       # acima disso vira candidato a virus novo
+  flash_max_overlap: 250         # sobreposicao maxima ao fundir os pares
   quality_skip_front: 40         # inicio da leitura nao avaliado no corte por qualidade
   hsp_only: "NO"                 # "YES" mostra so o trecho semelhante
 
@@ -57,15 +58,16 @@ steps:
 # Sem caminho = nao existe para Windows, ver tools/README.md.
 tools:
   scripts_dir: "script/"
-  blastn: "tools/bin/blastn.exe"
-  makeblastdb: "tools/bin/makeblastdb.exe"
-  blastdb_aliastool: "tools/bin/blastdb_aliastool.exe"
-  blastx: "tools/bin/blastx.exe"
-  dustmasker: "tools/bin/dustmasker.exe"
-  bowtie2: "tools/bin/bowtie2"
-  diamond: "tools/bin/diamond.exe"
+  blastn: "blastn"
+  makeblastdb: "makeblastdb"
+  blastdb_aliastool: "blastdb_aliastool"
+  blastx: "blastx"
+  dustmasker: "dustmasker"
+  bowtie2: "bowtie2"
+  diamond: "diamond"
   hmmsearch: "hmmsearch"
   clark: "CLARK"
+  flash: "flash"
   spades_dir: ""
   cap3: "cap3"
   soapdenovo: "SOAPdenovo-63mer"

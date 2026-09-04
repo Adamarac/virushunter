@@ -29,7 +29,8 @@ ela define.
 | `remove-bacteria` | descarta bactérias e mantém o humano | 401 |
 | `remove-both` | descarta humano e bactérias | 403 |
 | `clark` | classificação taxonômica pelo CLARK | 361 |
-| `nt` | contagem por taxon contra o banco nt — [K2](known-issues.md), contagens não confiáveis | 381 |
+| `nt` | contagem por taxon contra o banco nt | 382 |
+| `merge-pairs` | funde as duas leituras de cada par com o FLASH | 354 |
 
 `clark` e `nt` **não podem ser combinadas**: escrevem a mesma contagem por taxon. No
 gerador antigo uma sobrescrevia a outra em silêncio; aqui o workflow recusa com uma
@@ -62,7 +63,6 @@ erro**, em vez de ignorar em silêncio:
 |---|---|
 | `steps.hmmer` | **a rota nunca funcionou** — o gerador manda executar 7 arquivos que ele mesmo não cria, e o passo que roda o HMMER não é executado. Ver [K34](known-issues.md) |
 | `steps.reassemble` | 415 linhas em Python 2 no histórico, mais os montadores ausentes |
-| `steps.merge_pairs` | FLASH ausente, e sem chave em `tools:` |
 | `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
 | `steps.input.sra_prep` | SRA toolkit ausente |
 

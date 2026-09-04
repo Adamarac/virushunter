@@ -66,6 +66,12 @@ def indice_do_hospedeiro(n):
 FILTRO_NR = cfg["steps.nr_filter"]
 BANCOS_DE_SAIDA = cfg["steps.output.blast_databases"]
 COPIAR_FASTQ = cfg["steps.output.copy_fastq"]
+FUNDIR_PARES = cfg["steps.merge_pairs"]
+if FUNDIR_PARES and cfg["steps.paired_end"]:
+    raise WorkflowError(
+        "merge_pairs com paired_end nao faz sentido: depois de fundido o par vira um "
+        "arquivo so. O gerador antigo estourava com IndexError aqui (K33); desligue um."
+    )
 
 DB = cfg.get("databases")
 PROJETO = Path(workflow.basedir).parent
@@ -88,7 +94,6 @@ WEB = str(PROJETO / "web") + "/"
 # Chaves que a configuracao oferece mas o workflow ainda nao implementa. Mudar uma
 # delas nao teria efeito nenhum, entao o pipeline para aqui em vez de enganar.
 NAO_IMPLEMENTADO = {
-    "steps.merge_pairs": False,
     "steps.hmmer": False,
     "steps.reassemble": False,
     "steps.input.from_bam": False,
@@ -146,6 +151,39 @@ if COPIAR_FASTQ:
             "mkdir -p report/fastq && cp -r fastq/*.fastq* report/fastq/ 2>/dev/null || true"
 
 
+if FUNDIR_PARES:
+
+    # Funde as duas leituras de um mesmo fragmento numa sequencia so, quando elas se
+    # sobrepoem. O que sobra segue como leitura unica.
+    rule merge_pairs:
+        input:
+            r1=lambda w: FASTQ[(w.sample, "1")],
+            r2=lambda w: FASTQ[(w.sample, "2")],
+        output:
+            fundidas=temp("fastq/{sample}.extendedFrags.fastq"),
+            sobra1=temp("fastq/{sample}.notCombined_1.fastq"),
+            sobra2=temp("fastq/{sample}.notCombined_2.fastq"),
+        params:
+            flash=TOOLS["flash"],
+            max_overlap=cfg["params.flash_max_overlap"],
+            saida="fastq/",
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.flash} -M {params.max_overlap} -t {threads} -o {wildcards.sample} "
+            "-d {params.saida} {input.r1} {input.r2}"
+
+    # O que sobrou sem fundir volta para a mesma pilha, como leitura unica.
+    rule merge_pairs_join:
+        input:
+            fundidas="fastq/{sample}.extendedFrags.fastq",
+            sobra1="fastq/{sample}.notCombined_1.fastq",
+            sobra2="fastq/{sample}.notCombined_2.fastq",
+        output:
+            "fastq/{sample}_flash.fq",
+        shell:
+            "cat {input.sobra1} {input.sobra2} {input.fundidas} > {output}"
+
+
 if ENTRADA_FASTA:
 
     # Quando a entrada vem em FASTA, sem qualidade, converte antes de comecar.
@@ -163,7 +201,8 @@ if ENTRADA_FASTA:
 # Compara as leituras com o genoma do hospedeiro (humano, mosquito etc.).
 rule host_align:
     input:
-        fastq=lambda w: FASTQ[(w.sample, w.pair)],
+        fastq=lambda w: ("fastq/%s_flash.fq" % w.sample) if FUNDIR_PARES
+        else FASTQ[(w.sample, w.pair)],
     output:
         sam=temp("fastq/{sample}_{pair}_{idx}.sam"),
     params:

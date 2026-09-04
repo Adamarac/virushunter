@@ -1,0 +1,5 @@
+# Funde as duas leituras de cada par com o FLASH antes de comecar.
+# Nao combine com paired-end: depois de fundido, o par vira um arquivo so.
+steps:
+  merge_pairs: true
+  paired_end: false

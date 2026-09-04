@@ -77,7 +77,7 @@ dist/
 .snakemake/
 
 # Executaveis das ferramentas externas, baixados e nao versionados.
-# O README fica: e ele que explica o que baixar e o que nao existe para Windows.
+# O README fica: e ele que explica como obter as ferramentas.
 tools/*
 !tools/README.md
 
