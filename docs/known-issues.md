@@ -145,7 +145,7 @@ resultado diferente sem nenhuma mudança de código.
 `current`; `MANIFEST.json` com data, origem, checksum, número de sequências e versão da
 taxonomia; registrar o caminho **resolvido** em cada saída.
 
-### K7 — Não-determinismo dependente do nó de execução
+### ~~K7~~ — Não-determinismo dependente do nó de execução — **RESOLVIDO**
 
 **Evidência.** `virus_hunter.py:1680`:
 
@@ -164,8 +164,13 @@ Outras fontes: ordem de iteração de dicionário em Python 2 (afeta atribuiçã
 índices de fatia e ordem de concatenação); reexecução dupla do `schedule2.py`; mutação de
 banco in-place; não-determinismo dos assemblers multi-thread.
 
-**Recomendação.** Fixar o limite de memória na configuração, nunca derivá-lo do nó.
-Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada execução.
+**Resolução.** A causa saiu com `virus_hunter.py`: nenhuma regra do workflow deriva
+limite de memória do nó — a varredura por `SI[servers` no código vivo dá zero. As amostras
+são descobertas em ordem alfabética por `discover_samples()`, e o Snakemake resolve o grafo
+por dependência, não por ordem de dicionário.
+
+**Segue valendo** a parte que não era do gerador: registrar versões em cada execução, e o
+não-determinismo dos próprios montadores multi-thread.
 
 ---
 
@@ -174,12 +179,12 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | # | Problema | Evidência | Impacto |
 |---|---|---|---|
 | ~~K8~~ | ~~Cinco forks do orquestrador~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | [`orchestrators.md`](orchestrators.md) | Os quatro legados foram removidos; recuperáveis na tag `legacy-2020` |
-| K9 | Configuração dentro do código | `virus_hunter.py:1950-1992` | Cada análise é um patch no fonte; parâmetros não versionáveis com o resultado |
+| ~~K9~~ | ~~Configuração dentro do código~~ — **resolvido** ([ADR-0015](decisions/0015-declarative-configuration.md)) | `config/default.yaml` | Os 65 literais viraram configuração; `virus_hunter.py` saiu da árvore |
 | ~~K24~~ | ~~Legados passam argumento errado ao filtro NR~~ — **resolvido** ([ADR-0008](decisions/0008-repository-scope.md)) | — | Os arquivos afetados foram removidos |
 | ~~K10~~ | ~~`serverInfo()` em tempo de import~~ — **resolvido** ([ADR-0006](decisions/0006-no-import-side-effects.md)) | era `virus_hunter.py:205` | Chamada movida para `__main__`; guardado por `tests/check_no_import_side_effects.py` |
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
-| K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
-| K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |
+| ~~K12~~ | ~~Python 2 sem suporte~~ — **resolvido** | verificado por `ast.parse` | Os 31 scripts restantes analisam em Python 3. Compilar não bastava, ver [K28](#k28) |
+| ~~K13~~ | ~~Caminhos absolutos divergentes~~ — **resolvido** junto com [K27](#k27) | — | Zero `/mnt/cluster` no código; os filtros foram fundidos e leem da configuração |
 | ~~K14~~ | ~~`argv[4]` usado duas vezes~~ — **resolvido** | `report/build_report.py` | `cwd` passou a ler `argv[5]`. Sem efeito prático: a referência sempre passou o mesmo valor duas vezes (`work work`), então a armadilha era latente |
 | ~~K15~~ | ~~Duplicação de `CacheLines()` e `Node`~~ — **resolvido** | `src/virushunter/fasta.py` | `Node` saiu com a poda. `CacheLines`/`getSeq` viraram `index_headers`/`sequence`, importados pelos 4 scripts que os usavam |
 
@@ -244,14 +249,14 @@ tem como se reproduzir.
 
 | # | Problema | Evidência |
 |---|---|---|
-| K16 | ~68% dos `.py` são de outros domínios | [`architecture.md`](architecture.md) |
-| K17 | Nenhuma dependência declarada | Biopython, R e ~17 ferramentas externas sem manifesto |
+| ~~K16~~ | ~~68% dos `.py` são de outros domínios~~ — **resolvido** ([ADR-0020](decisions/0020-prune-to-the-migrated-version.md)) | restam 31 scripts, todos alcançáveis pelo `Snakefile` |
+| ~~K17~~ | ~~Nenhuma dependência declarada~~ — **resolvido** | `pyproject.toml` declara as duas bibliotecas importadas; `environment.yml` fixa as 12 ferramentas externas |
 | K18 | Nenhum teste ou dado de exemplo | Repositório inteiro |
 | ~~K19~~ | ~~`readVirusGI()` lê o FASTA viral e o resultado é descartado~~ — **resolvido** junto com [K27](#k27) | a chamada morta foi removida da rota `diamond`; na rota `blast` o conjunto **é** usado |
 | ~~K20~~ | ~~`gzip.sopen` — método inexistente~~ — **resolvido** ([ADR-0012](decisions/0012-gzip-text-mode.md)) | era `dedup.py:113`; a deduplicação silenciosamente não ocorria com entrada `.gz` |
-| K21 | `clean_dir()` apaga todo arquivo não-`.gz` | `virus_hunter.py:797-801` |
+| ~~K21~~ | ~~`clean_dir()` apaga todo arquivo não-`.gz`~~ — **resolvido** | a função saiu com `virus_hunter.py`; o workflow não apaga nada por conta própria |
 | ~~K22~~ | ~~Constante mágica `if zz<40` no trim de qualidade~~ — **resolvido** | virou `params.quality_skip_front`, com o padrão 40 preservado |
-| K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | `virus_hunter.py:1667` |
+| ~~K23~~ | ~~Nomenclatura enganosa (`trinity` executa SPAdes)~~ — **documentado** | `config/default.yaml` diz `"trinity" (usa SPAdes)` na própria linha |
 
 ## Baixas
 
