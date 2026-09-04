@@ -33,6 +33,7 @@ ela define.
 | `merge-pairs` | funde as duas leituras de cada par com o FLASH | 354 |
 | `from-bam` | entrada em BAM, extraida pelo picard | 350 |
 | `sra-prep` | monta um `sra.fq.gz` reetiquetado para submissao | 351 |
+| `reassemble` | consenso entre amostras e abundância por contig; já liga `denovo` | 385 |
 
 `clark` e `nt` **não podem ser combinadas**: escrevem a mesma contagem por taxon. No
 gerador antigo uma sobrescrevia a outra em silêncio; aqui o workflow recusa com uma
@@ -64,7 +65,6 @@ erro**, em vez de ignorar em silêncio:
 | Chave | O que falta |
 |---|---|
 | `steps.hmmer` | **a rota nunca funcionou** — o gerador manda executar 7 arquivos que ele mesmo não cria, e o passo que roda o HMMER não é executado. Ver [K34](known-issues.md) |
-| `steps.reassemble` | 415 linhas em Python 2 no histórico, mais os montadores ausentes |
 
 Os scripts removidos continuam recuperáveis:
 

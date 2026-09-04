@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+# Anota cada contig com o virus que ele acertou, se acertou.
+
+import sys
+
+def readFa(input, output, mode):
+	f=open(input, 'r')
+	of = open(output, mode)
+	rval={}
+	dup=False
+	for line in f:
+		if line.strip().startswith('>'):
+			id, annot=line.strip()[1:].split('dummy',1)
+			if id not in rval:
+				dup=False
+				of.write('>'+annot+':'+id+'\n') #id
+			else: dup =True
+			rval[id]=annot
+		elif not dup:
+			of.write(line)
+	return rval
+	
+def annotate(tally, hits, mystery, out, hitfa, mysteryfa): 
+	f1 =open(tally, 'r')
+	hitid=readFa(hits, hitfa, 'w')
+	print('hitid', len(hitid))
+	mysid=readFa(mystery, mysteryfa, 'w')
+	print('mysid', len(mysid))
+	of =open(out, 'w')
+	nhit,nmys=0,0
+	header=f1.readline()
+	of.write('type\t'+header)
+	for line in f1:
+		id=line.strip().split()[0].split('dummy',1)[0]
+		print(id)
+		if id in hitid:
+			of.write(hitid[id]+'\t'+line.strip().replace('_dummy','')+'\n')
+			nhit+=1
+		elif id in mysid:
+			of.write('mysterious\t'+line.strip().replace('_dummy','')+'\n')
+			nmys+=1
+	f1.close()
+	of.close()
+	print('nhit', nhit, 'nmys', nmys)
+
+if __name__ == '__main__':
+	tally, hits, mystery, out, hitfa, mysteryfa = sys.argv[1:]
+	annotate(tally, hits, mystery, out, hitfa, mysteryfa )

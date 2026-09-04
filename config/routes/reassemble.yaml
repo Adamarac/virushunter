@@ -1,0 +1,7 @@
+# Junta os contigs de todas as amostras, faz um consenso unico e mapeia cada
+# amostra de volta para medir abundancia. Exige montagem, entao ja liga denovo.
+steps:
+  reassemble: true
+  paired_end: true
+  assembly:
+    mode: "denovo"

@@ -69,6 +69,12 @@ COPIAR_FASTQ = cfg["steps.output.copy_fastq"]
 FUNDIR_PARES = cfg["steps.merge_pairs"]
 ENTRADA_BAM = cfg["steps.input.from_bam"]
 PREPARAR_SRA = cfg["steps.input.sra_prep"]
+REMONTAR = cfg["steps.reassemble"]
+if REMONTAR and cfg["steps.assembly.mode"] == "no":
+    raise WorkflowError(
+        "reassemble parte dos contigs de cada amostra, entao exige montagem ligada. "
+        "Use junto com a rota denovo."
+    )
 
 
 def etiqueta_sra(indice_amostra, par):
@@ -104,7 +110,6 @@ WEB = str(PROJETO / "web") + "/"
 # delas nao teria efeito nenhum, entao o pipeline para aqui em vez de enganar.
 NAO_IMPLEMENTADO = {
     "steps.hmmer": False,
-    "steps.reassemble": False,
 }
 _mudadas = [k for k, padrao in NAO_IMPLEMENTADO.items() if cfg.get(k, padrao) != padrao]
 if _mudadas:
@@ -140,6 +145,8 @@ def alvos_finais():
         alvos.append("report/fastq/.copiado")
     if PREPARAR_SRA:
         alvos.append("sra.fq.gz")
+    if REMONTAR:
+        alvos.append("report/reAssemble/tally.txt")
     return alvos
 
 
@@ -1149,6 +1156,94 @@ if CLARK or ROTA_NT:
             script=SCRIPTS + "report/taxon_html.py",
         shell:
             "python {params.script} {input} {output.csv} {output.html}"
+
+
+if REMONTAR:
+
+    # Junta os contigs de todas as amostras e faz um consenso unico entre elas.
+    rule reassemble_pool:
+        input:
+            expand("fastq/{sample}_contig4", sample=SAMPLES),
+        output:
+            temp("bowtieContig/all.cap3"),
+        shell:
+            "mkdir -p bowtieContig && cat {input} > {output}"
+
+    rule reassemble_consensus:
+        input:
+            "bowtieContig/all.cap3",
+        output:
+            contigs=temp("bowtieContig/all.cap3.cap.contigs"),
+            singlets=temp("bowtieContig/all.cap3.cap.singlets"),
+        params:
+            cap3=TOOLS["cap3"],
+        shell:
+            "{params.cap3} {input} -o 25 -p 85 -h 40"
+
+    # So os contigs longos viram referencia para o mapeamento.
+    rule reassemble_reference:
+        input:
+            contigs="bowtieContig/all.cap3.cap.contigs",
+            singlets="bowtieContig/all.cap3.cap.singlets",
+        output:
+            "ref.fasta",
+        params:
+            script=SCRIPTS + "assembly/filter_contig_length.py",
+            min_length=cfg["params.reassemble_min_length"],
+        shell:
+            "cat {input.singlets} {input.contigs} > bowtieContig/all.cap3cap3 && "
+            "python {params.script} bowtieContig/all.cap3cap3 {output} "
+            "{params.min_length} dummy"
+
+    rule reassemble_index:
+        input:
+            "ref.fasta",
+        output:
+            multiext("bowtieContig/allbow", ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                     ".rev.1.bt2", ".rev.2.bt2"),
+        params:
+            bowtie2_build=TOOLS["bowtie2_build"],
+        shell:
+            "{params.bowtie2_build} {input} bowtieContig/allbow"
+
+    # Cada amostra volta a ser alinhada contra o consenso, para medir abundancia.
+    rule reassemble_align:
+        input:
+            indice="bowtieContig/allbow.1.bt2",
+            r1=lambda w: FASTQ[(w.sample, "1")],
+            r2=lambda w: FASTQ[(w.sample, "2")],
+        output:
+            temp("bowtieContig/{sample}.sam"),
+        params:
+            bowtie2=TOOLS["bowtie2"],
+        threads: cfg["compute.threads"]
+        shell:
+            "{params.bowtie2} --fast-local --quiet --local --no-hd --reorder "
+            "-p {threads} -L 30 -x bowtieContig/allbow -1 {input.r1} -2 {input.r2} "
+            "-S {output}"
+
+    rule reassemble_counts:
+        input:
+            "bowtieContig/{sample}.sam",
+        output:
+            "bowtieContig/{sample}.count",
+        params:
+            script=SCRIPTS + "report/contig_counts.py",
+        shell:
+            "python {params.script} {input} {output}"
+
+    # A tabela final: um contig por linha, uma amostra por coluna.
+    rule reassemble_table:
+        input:
+            ref="ref.fasta",
+            counts=expand("bowtieContig/{sample}.count", sample=SAMPLES),
+        output:
+            "report/reAssemble/tally.txt",
+        params:
+            script=SCRIPTS + "report/contig_table.py",
+        shell:
+            "mkdir -p report/reAssemble && python {params.script} {input.ref} "
+            "{input.counts} {output}"
 
 
 # Copia os relatorios prontos para a pasta que o site publica.

@@ -517,3 +517,24 @@ com a chave ligada ou desligada. Confirmado na referência: `blast_output_merge.
 A chave saiu da configuração. As saídas continuam sendo produzidas, como no original.
 Mantê-la seria oferecer um interruptor ligado a nada.
 
+### K36
+
+**A montagem da pseudo-amostra da rota `reassemble` lê um arquivo que ninguém escreve.**
+Aberta, herdada.
+
+Ao capturar a referência da rota, o `soap_config/reAssemble_soap.config` aponta para
+`fastq/reAssemble_1_sequence.txt`. Mas o `fq_clean.sh` da mesma captura produz apenas
+`S1_1_sequence.txt` e `S2_1_sequence.txt` — o arquivo da pseudo-amostra **nunca é criado**.
+
+A causa está na ordem do gerador: depois de `reAssemble()`, a linha `seeds={'reAssemble':[]}`
+substitui o conjunto de amostras por uma pseudo-amostra **com lista de arquivos vazia**.
+Os scripts de montagem escritos em seguida referem-se a ela, mas nada gera as leituras.
+
+**Diferença para o [K34](#k34):** ali a rota inteira era inexecutável. Aqui só essa parte
+é. O núcleo da rota — juntar os contigs de todas as amostras, fazer o consenso com CAP3,
+mapear cada amostra de volta e contar — parte de `fastq/{amostra}_contig4`, que existe, e
+funciona.
+
+Foi isso que se migrou. A montagem espúria da pseudo-amostra ficou de fora, por não ter
+entrada. Quem quiser uma remontagem de leituras, e não de contigs, precisa defini-la — não
+há comportamento original a preservar.

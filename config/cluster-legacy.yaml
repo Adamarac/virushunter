@@ -14,6 +14,7 @@ tools:
   blastx: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/blastx
   dustmasker: /mnt/cluster/xdeng/tools/ncbi-blast-2.2.31+/bin/dustmasker
   bowtie2: /mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2
+  bowtie2_build: /mnt/cluster/xdeng/tools/bowtie2-2.2.4/bowtie2-build
   diamond: /mnt/cluster/xdeng/tools/diamond/diamond
   hmmsearch: /mnt/cluster/xdeng/tools/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmsearch
   clark: /mnt/cluster/tools/CLARKSCV1.2.3.2/exe/CLARK
