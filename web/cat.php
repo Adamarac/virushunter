@@ -66,7 +66,7 @@ foreach ($c1 as &$value) {
 fwrite($aln, '</table></html>');
 fclose($aln);
 fclose($fa);
-$cmd='E:\\wamp64\\www\\catAlignFA.py '.$e1.' '.$e2.' '.$exaln.' '.$exfa.' '.$sortaln.' '.$sortfa;
+$cmd='python '.__DIR__.'/catAlignFA.py '.$e1.' '.$e2.' '.$exaln.' '.$exfa.' '.$sortaln.' '.$sortfa;
 // echo $cmd.'<br>';
 system($cmd);
 echo 'Download Selected <a href="'.'../tmp/sort.'.$stamp.'.html'.'">Hits</a> ';

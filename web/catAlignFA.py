@@ -29,7 +29,7 @@ for line in f:
 	elif not line.strip().startswith('</table></html>'):
 		header.append(line.strip())
 		offset+=1
-		print >>sortaln, line
+		print(line, file=sortaln)
 	
 
 index=sorted(index, key=itemgetter(1))

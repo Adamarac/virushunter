@@ -37,6 +37,7 @@ def caminho_do_projeto(valor):
 
 TOOLS = {nome: caminho_do_projeto(valor) for nome, valor in cfg.get("tools").items()}
 SCRIPTS = caminho_do_projeto(cfg["tools.scripts_dir"]).rstrip("/\\") + "/"
+WEB = str(PROJETO / "web") + "/"
 
 wildcard_constraints:
     sample="|".join(re.escape(s) for s in SAMPLES),
@@ -820,8 +821,8 @@ rule publish:
     output:
         touch("report/.published"),
     params:
-        php=SCRIPTS + "*.php",
-        assets=SCRIPTS + "tablestyle.css " + SCRIPTS + "wait.gif",
+        php=WEB + "*.php",
+        assets=WEB + "tablestyle.css " + WEB + "wait.gif",
     shell:
         "cp -r blast_filter_out/aln blast_filter_out/fasta report/ 2>/dev/null || true; "
         "cp blast_filter_out/*.html blast_filter_out/*.xls report/ 2>/dev/null || true; "
