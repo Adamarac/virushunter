@@ -46,7 +46,7 @@ falhava antes e passa agora. A verificação dos pontos de chamada revelou [K24]
 Segue pendente: as chamadas DIAMOND não passam `--evalue`, então nessa rota o limiar
 efetivo ainda é o padrão da ferramenta. Decisão separada, registrada na ADR-0007.
 
-### K2 — `samNT.py` dessincroniza os arquivos SAM
+### ~~K2~~ — `samNT.py` dessincroniza os arquivos SAM — **RESOLVIDO**
 
 **Evidência.** `samNT.py:56-69` — o `break` no primeiro
 acerto deixa os demais handles sem avançar. Viola
@@ -57,10 +57,21 @@ desalinhados e leituras diferentes passam a ser comparadas entre si. **As contag
 taxonômicas da rota NT são não confiáveis.** A rota está desligada no estado commitado,
 mas o código sugere que já foi usada.
 
-**Recomendação.** Ler uma linha de **todos** os handles antes de avaliar acertos; só então
-decidir. Acrescentar verificação de que todos os SAMs têm a mesma contagem de linhas.
+**Resolução.** Corrigido em `report/nt_counts.py` (2026-08-15): todos os handles avançam
+juntos antes de qualquer avaliação, e o primeiro acerto continua vencendo. Acrescentada a
+verificação de contagem de linhas — SAMs de tamanhos diferentes agora abortam com mensagem.
 
-### K3 — Troca silenciosa de modo de análise
+Demonstrado com três SAM sintéticos, onde só o primeiro classifica a leitura 1 e só o
+terceiro classifica a leitura 3:
+
+| Versão | Saída |
+|---|---|
+| antes | `Bacteria 1, NA 3` — **o acerto viral foi perdido** |
+| depois | `Bacteria 1, NA 1, Virus 1` |
+
+Some-se que o código antigo contava um `NA` extra ao chegar no fim dos arquivos.
+
+### ~~K3~~ — Troca silenciosa de modo de análise — **RESOLVIDO**
 
 **Evidência.** [`sam2fq_bac.py:152-153`](../script/reads/host_mask.py#L152-L153):
 
@@ -73,7 +84,18 @@ except: processSingleBacSAM(...)    # single-end
 defeito no código — **troca o modo de análise**, possivelmente depois de já ter escrito
 parte da saída. Não há registro algum da troca.
 
-**Recomendação.** Decidir o modo por parâmetro explícito e falhar alto em erro.
+**Resolução.** Corrigido em `reads/host_mask.py` (2026-08-15): o modo vem de
+`len(sys.argv)`, e qualquer erro dentro do modo par agora propaga.
+
+A correção expôs um segundo defeito no mesmo arquivo: os tratadores faziam
+`except: print(line)`, mas a variável se chama `line1`/`line2` — **o próprio tratador
+estourava com `NameError`**. Um registro SAM curto, que deveria ser tolerado, virava
+exceção; e com o código antigo essa exceção causava justamente a troca silenciosa de modo.
+Os dois pontos foram corrigidos para a variável certa, conferindo qual `parts` cada um
+trata.
+
+Encontrado por varredura de nomes indefinidos com `ast` — o compilador não pega isso, a
+mesma lição do [K28](#k28). A varredura hoje acusa zero ocorrências em `script/`.
 
 ### K4 — Credenciais em texto claro e `chmod 777`
 
@@ -158,7 +180,7 @@ Ordenar `seeds` deterministicamente. Registrar nó, semente e versões em cada e
 | K11 | Formato posicional de 11 linhas | [I4](invariants.md#i4--um-resultado-é-um-bloco-posicional-de-exatamente-11-linhas) | Corrupção silenciosa a qualquer mudança de formato |
 | K12 | Python 2 sem suporte desde 01/01/2020 | 119 de 155 arquivos usam `print` statement | Sem patches; **K1 só é possível por causa da semântica do Py2** |
 | K13 | Caminhos absolutos divergentes entre workers | `blast_filter_NR.py:28` vs `diamond_filter_NR.py:28` | Possível uso de referências diferentes pelos dois filtros |
-| K14 | `argv[4]` usado duas vezes | [`blast_output_sort.py:427-428`](../script/report/build_report.py#L427-L428) | `cwd` recebe o valor de `base`; afeta rótulos na tabela final |
+| ~~K14~~ | ~~`argv[4]` usado duas vezes~~ — **resolvido** | `report/build_report.py` | `cwd` passou a ler `argv[5]`. Sem efeito prático: a referência sempre passou o mesmo valor duas vezes (`work work`), então a armadilha era latente |
 | K15 | Duplicação de `CacheLines()` e `Node` | 5 cópias de `CacheLines`; `Node` divergente entre `acc_tax.py:16` e `nr_virus3.py:42` | Correção precisa ser aplicada N vezes |
 
 **Progresso.** K10 foi resolvido — era o bloqueador de toda validação local, porque
@@ -225,10 +247,10 @@ tem como se reproduzir.
 | K16 | ~68% dos `.py` são de outros domínios | [`architecture.md`](architecture.md) |
 | K17 | Nenhuma dependência declarada | Biopython, R e ~17 ferramentas externas sem manifesto |
 | K18 | Nenhum teste ou dado de exemplo | Repositório inteiro |
-| K19 | `readVirusGI()` lê o FASTA viral e o resultado é descartado | [`diamond_filter_NR.py:139`](../script/search/filter_nr.py) |
+| ~~K19~~ | ~~`readVirusGI()` lê o FASTA viral e o resultado é descartado~~ — **resolvido** junto com [K27](#k27) | a chamada morta foi removida da rota `diamond`; na rota `blast` o conjunto **é** usado |
 | ~~K20~~ | ~~`gzip.sopen` — método inexistente~~ — **resolvido** ([ADR-0012](decisions/0012-gzip-text-mode.md)) | era `dedup.py:113`; a deduplicação silenciosamente não ocorria com entrada `.gz` |
 | K21 | `clean_dir()` apaga todo arquivo não-`.gz` | `virus_hunter.py:797-801` |
-| K22 | Constante mágica `if zz<40` no trim de qualidade | [`trim_quality.py:127`](../script/reads/trim_quality.py#L127) |
+| ~~K22~~ | ~~Constante mágica `if zz<40` no trim de qualidade~~ — **resolvido** | virou `params.quality_skip_front`, com o padrão 40 preservado |
 | K23 | Nomenclatura enganosa (`trinity` executa SPAdes) | `virus_hunter.py:1667` |
 
 ## Baixas
@@ -237,8 +259,7 @@ tem como se reproduzir.
 ([`blast_output_sort.py:239`](../script/report/build_report.py#L239)) · ativos front-end
 referenciados mas ausentes (`sorttable.js`, `ajax_select.js`, `DataTables-1.9.4/`), de modo
 que os relatórios HTML não renderizam só com este repositório · ~30% de
-`virus_hunter.py` é código comentado · indentação mista · typo `cahche` em
-`samNT.py:40` · imports duplicados.
+`virus_hunter.py` é código comentado · indentação mista · imports duplicados.
 
 ---
 

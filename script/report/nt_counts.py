@@ -34,7 +34,7 @@ def getSeq(cachename, cache, header):
 		seq.append(linecache.getline(cachename, i).strip())
 	return ''.join(seq)
 
-def processSAM(key, wd, base, startInd, endInd, cahche): # first scan to get the mutation positions
+def processSAM(key, wd, base, startInd, endInd, cache): # first scan to get the mutation positions
 	countfile=wd+'/'+base+'/clark/'+key+'.count'
 	of=open(countfile,'w')
 	of2=open(countfile+'.csv','w')
@@ -47,29 +47,29 @@ def processSAM(key, wd, base, startInd, endInd, cahche): # first scan to get the
 	count1=defaultdict(int)
 	counts2=defaultdict(list)
 
-	end = False
 	while 1:
-		hit=False
-		for f1 in fs1:
-			line1 = f1.readline() 
-			if not line1: end=True; break
-			parts=line1.strip().split('\t')
+		# Todos os SAM avancam juntos: eles descrevem a MESMA leitura em cada
+		# posicao, entao parar num acerto deixaria os demais para tras e, dali em
+		# diante, leituras diferentes seriam comparadas entre si (K2).
+		linhas = [f1.readline() for f1 in fs1]
+		if not all(linhas):
+			if any(linhas):
+				sys.exit('SAM com numero de linhas diferente na amostra ' + key)
+			break
+		hit = False
+		for line1 in linhas:
+			parts=line1.strip().split('	')
 			name, chro, seq=parts[0], parts[2], parts[9]
 			if chro !='*' and len(seq)>20:
 				chro=chro.replace(',','')
 				cat, clas, fam, species=chro.split('$')
-				#if ',' in species: print chro
 				count1[cat]+=1
 				category2=chro.replace('$', ',')
 				counts2[category2].append(name)
 				hit=True
 				break
 		if not hit:
-			#cat, clas, fam, species=chro.split('$')
 			count1['NA']+=1
-			#count2['NA$NA$NA$NA']+=1
-
-		if end: break
 
 		# parts=line1.strip().split('\t')
 		# (name, flag, chro, sstart, mapq, cigar)=parts[0:6]

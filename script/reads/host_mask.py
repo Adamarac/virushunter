@@ -58,7 +58,7 @@ def processBacSAM(samindex, start, end, outfile,outfile2): # first scan to get t
 		name='@'+name
 		name2='@'+name2
 		try: seq = parts[9]
-		except: print(line); seq='A'
+		except: print(line1); seq='A'
 		try: seq2 = parts2[9]
 		except: print(line2); seq2='A'
 		qual=parts[10]
@@ -110,7 +110,7 @@ def processSingleBacSAM(samindex, start, end, outfile): # first scan to get the 
 		(name, flag, chro, sstart, mapq, cigar)=parts[0:6]
 		name='@'+name
 		try: seq = parts[9]
-		except: print(line); seq='A'
+		except: print(line1); seq='A'
 		qual=parts[10]
 		print('\n'.join([name, seq, '+',qual]), file=of)
 	for f1 in fs1:
@@ -121,5 +121,10 @@ def processSingleBacSAM(samindex, start, end, outfile): # first scan to get the 
 
 
 if __name__ == "__main__":
-	try: processBacSAM(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4], sys.argv[5]) #pair end
-	except: processSingleBacSAM(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]) #single end
+	# O modo vem do numero de argumentos, nao de uma excecao: antes, qualquer erro
+	# dentro do modo par -- ate um defeito de codigo -- virava silenciosamente uma
+	# analise single-end, possivelmente depois de ja ter escrito parte da saida (K3).
+	if len(sys.argv) > 5:
+		processBacSAM(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4], sys.argv[5])
+	else:
+		processSingleBacSAM(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4])

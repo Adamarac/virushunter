@@ -285,9 +285,11 @@ else:
         params:
             script=SCRIPTS + "reads/trim_quality.py",
             phred_offset=33,
+            phred=10,
+            skip_front=cfg["params.quality_skip_front"],
         shell:
             "python {params.script} {input.trimmed} {output} {params.phred_offset} "
-            "{input.raw}"
+            "{input.raw} {params.phred} {params.skip_front}"
 
 
 # Joga fora leituras curtas demais para servir. E aqui que as leituras esvaziadas

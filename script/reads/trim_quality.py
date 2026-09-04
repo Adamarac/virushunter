@@ -64,7 +64,7 @@ def trimfqTailB(label, seqFile, f, of):
 	print(seqFile, 'polyC = ', Ccount)
 	print(seqFile, 'polyG = ', Gcount)
 
-def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
+def trimfqTailS(label, seqFile, f, of, illumina, phred=10, skip_front=40): #illumina 33 or 64
 	i = 0
 	rlen=0
 	counter=0
@@ -93,7 +93,9 @@ def trimfqTailS(label, seqFile, f, of, illumina, phred=10): #illumina 33 or 64
 			zz=0
 			for x in qseq:
 				zz+=1
-				if zz<40: pass #do not check front of read
+				# O inicio da leitura nao e avaliado: e onde a qualidade costuma
+				# oscilar sem indicar problema real.
+				if zz<skip_front: pass
 				elif ord(x)-illumina <= phred:
 					break
 				index+=1
@@ -117,10 +119,12 @@ if __name__ == '__main__':
 	illumina=sys.argv[3] #33 or 64 or B
 	label=sys.argv[4] #label of input file library
 	try: phred= int(sys.argv[5])
-	except: phred=10
+	except IndexError: phred=10
+	try: skip_front= int(sys.argv[6])
+	except IndexError: skip_front=40
 	f = open(seqFile, 'r')
 	of = open(outfile, 'w')
 	if illumina=='B': trimfqTailB(label, seqFile, f, of) #trim by letter 'B'
-	else: trimfqTailS(label, seqFile, f, of, int(illumina), phred) # trim by phred score, phred 33
+	else: trimfqTailS(label, seqFile, f, of, int(illumina), phred, skip_front) # trim by phred score, phred 33
 	f.close()
 	of.close()

@@ -343,7 +343,7 @@ if __name__ == '__main__':
 	try: cachecombine=CacheFASTA(combine, hit_pairs) #combined fasta file cache
 	except: cachecombine ={}
 	base=sys.argv[4] #sorted inputfile
-	cwd=sys.argv[4] #cwd
+	cwd=sys.argv[5] #cwd
 	try: outfa=sys.argv[6]; 
 	except: pass #sorted inputfileS
 	allpairs={}

@@ -10,6 +10,7 @@ params:
   contig_length_pre_cap3: 300    # tamanho minimo para entrar na montagem
   contig_length_post_cap3: 1500  # tamanho minimo para ser pesquisado
   mystery_min_length: 1000       # acima disso vira candidato a virus novo
+  quality_skip_front: 40         # inicio da leitura nao avaliado no corte por qualidade
   hsp_only: "NO"                 # "YES" mostra so o trecho semelhante
 
   kmers:
