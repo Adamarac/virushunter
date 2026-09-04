@@ -446,3 +446,37 @@ leituras deixam de ser um par — e o código não trata isso.
 
 As variantes que fazem sentido funcionam: `keep_human: true` com `keep_bacteria: false`
 gera 57 artefatos sem erro, e `merge_pairs` com `paired_end: false` gera 58.
+
+### K34
+
+**A rota HMMER/vFam nunca funcionou.** Aberta, herdada. Descoberta em 2026-08-15.
+
+Ao capturar a referência da rota com `steps.hmmer: true` e `steps.mystery: true`, o
+`pipeline_run.sh` gerado manda executar **sete arquivos que o gerador nunca cria**:
+
+```
+dna2protmys.sh   hmmer_nr_filter.sh   hmmer_nr_mystery.txt
+hmmer_nr_mystery_filter.sh   hmmer_output_sort.sh   hmmer_virus.txt
+hmmer_virus_parser.sh
+```
+
+Na rota padrão, esse mesmo teste não acusa nenhum ausente — o problema é específico da
+rota.
+
+Cada um desses nomes aparece **uma única vez** em `virus_hunter.py`: na linha
+`sf.write('source X.sh...')` que o coloca dentro do `pipeline_run.sh`. Não existe, em
+lugar nenhum do arquivo, código que os escreva. A execução falharia na primeira linha,
+com "No such file or directory".
+
+Pior: dos três scripts que a rota **de fato** produz, o que roda o HMMER —
+`vfam.sh`, com a chamada `hmmsearch --cpu 48 -E 0.001 -A ... --tblout ...` — **não é
+executado** pelo `pipeline_run.sh`. São executados apenas `dna2prot.sh`, que só prepara a
+entrada, e `vfam_annot.sh`, que anota uma saída que nunca foi produzida.
+
+**Consequência para a migração:** não há comportamento original a preservar. Migrar esta
+rota seria **escrever uma rota nova**, não portar uma existente — decisão científica, não
+técnica, e portanto de quem conhece o método. Fica como está: a chave `steps.hmmer`
+continua na guarda de não implementadas.
+
+Some-se a isso que `hmmsearch` não tem build para Windows e o banco vFam não está
+disponível, então nem haveria como conferir o resultado.

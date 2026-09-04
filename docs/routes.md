@@ -60,7 +60,7 @@ erro**, em vez de ignorar em silêncio:
 
 | Chave | O que falta |
 |---|---|
-| `steps.hmmer` | `hmmsearch` não tem build para Windows; scripts no histórico |
+| `steps.hmmer` | **a rota nunca funcionou** — o gerador manda executar 7 arquivos que ele mesmo não cria, e o passo que roda o HMMER não é executado. Ver [K34](known-issues.md) |
 | `steps.reassemble` | 415 linhas em Python 2 no histórico, mais os montadores ausentes |
 | `steps.merge_pairs` | FLASH ausente, e sem chave em `tools:` |
 | `steps.input.from_bam` | `samtools`/`picard` sem build para Windows |
