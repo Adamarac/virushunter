@@ -22,8 +22,9 @@ dependencies:
   - diamond=2.1.12
   - flash=1.2.11
   - hmmer=3.4
-  - picard=3.5.0.
-  - samtools>=1.19
+  - picard=3.5.0
+  # soapdenovo2 fixa samtools==0.1.19. Sem conflito porque samtools nao entra
+  # aqui: nenhuma regra nem script do pipeline o usa.
   - soapdenovo2=2.40
   - sra-tools=3.4.1
   - velvet=1.2.10
