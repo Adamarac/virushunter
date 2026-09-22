@@ -1,0 +1,4 @@
+# Nao compara os candidatos contra o NR. Serve para quem nao tem o banco do
+# DIAMOND, que passa de 500 GB. Sem ele sobram mais falsos positivos.
+steps:
+  nr_filter: false

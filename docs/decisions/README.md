@@ -66,3 +66,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0021](0021-organize-scripts-by-stage.md) | Organizar `script/` por etapa do pipeline | Aceita |
 | [0022](0022-migrate-taxonomy-split.md) | Migrar o separador por taxonomia | Aceita |
 | [0023](0023-herv-by-default.md) | O `HERVaa.fasta` passa a ser montado por padrão | Aceita |
+| [0024](0024-optional-nr-filter.md) | O filtro contra o NR passa a ser opcional de verdade | Aceita |

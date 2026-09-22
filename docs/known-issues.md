@@ -562,3 +562,36 @@ acerto fica ambíguo.
 
 Corrigir é mudança de comportamento — os identificadores do banco mudariam — e portanto
 decisão de quem vai usar o resultado.
+
+### ~~K38~~ — `steps.nr_filter` não desligava nada — **RESOLVIDO**
+
+A chave existia no `default.yaml` desde a ADR-0015, era lida na linha 66 do `Snakefile`
+para a variável `FILTRO_NR`, e **nunca era usada em lugar nenhum**. Pôr `false` não mudava
+uma única tarefa do DAG: a busca contra o NR acontecia sempre.
+
+Ficou escondida porque o levantamento anterior de chaves inertes procurou chaves sem
+menção no `Snakefile`, e esta *era* mencionada — só não surtia efeito. Uma chave lida e
+ignorada é pior que uma nunca lida: parece funcionar.
+
+Descoberta ao procurar como rodar o pipeline numa máquina com 425 GB livres, onde o banco
+do DIAMOND (mais de 500 GB) não cabe.
+
+**Resolvido** na [ADR-0024](decisions/0024-optional-nr-filter.md): `false` agora remove do
+DAG a busca contra o NR e o passo que a alimenta, e o filtro passa a operar em modo
+`nenhum`, que não descarta nada. Verificado: 350 → 346 tarefas, e as outras dezenove rotas
+mantêm a contagem de antes.
+
+### K39 — O `except` nu disfarçou um erro de tipo de "XML mal formado"
+
+Ao implementar o modo `nenhum`, o campo `LNVNRE` caiu num ramo que chamava `.get()` sobre
+um **conjunto**. O `AttributeError` resultante foi capturado pelo `except Exception:` do
+`OutputVirus`, que imprimiu `XML format bad` e seguiu — produzindo um arquivo vazio com a
+mensagem `n_hits = 1` na tela.
+
+A mensagem apontava para o arquivo errado: o XML estava perfeito, verificado com um parser
+independente. Foram quatro tentativas de diagnóstico até instrumentar o código e ver o erro
+real.
+
+É a demonstração concreta do custo do [K5](#k5--falha-é-indistinguível-de-sucesso), num
+caso em que o defeito era meu e recente. Num dado científico o mesmo `except` transformaria
+um erro de leitura em "nenhum vírus encontrado".

@@ -567,8 +567,9 @@ rule merge_significant:
 
 # Compara os candidatos com um banco de tudo que nao e virus. Se a sequencia se
 # parece mais com uma bacteria do que com um virus, provavelmente nao e virus.
-# Ha dois metodos, escolhidos em steps.nr_filter_method.
-if NR_FILTER_METHOD == "diamond":
+# Ha dois metodos, escolhidos em steps.nr_filter_method. Com steps.nr_filter
+# desligado nenhuma busca acontece e nada e descartado.
+if FILTRO_NR and NR_FILTER_METHOD == "diamond":
 
     # Metodo rapido: o DIAMOND diz qual e o parente mais proximo de cada candidato.
     rule diamond_nr:
@@ -586,7 +587,7 @@ if NR_FILTER_METHOD == "diamond":
             "--max-target-seqs 1 --outfmt 6 "
             "-d {params.db} -q {input} -o {output}"
 
-else:
+elif FILTRO_NR:
 
     # Metodo lento: busca completa contra o banco nao viral, que devolve o quanto
     # cada semelhanca foi boa e nao apenas quem foi o parente mais proximo.
@@ -608,7 +609,10 @@ else:
 
 
 def resultado_do_nr(wildcards):
-    """Onde esta a busca contra o NR: um .m8 por amostra, ou um XML por fatia."""
+    """Onde esta a busca contra o NR: um .m8 por amostra, ou um XML por fatia.
+    Desligado o filtro, nao ha arquivo nenhum e a regra nao espera por nada."""
+    if not FILTRO_NR:
+        return []
     if NR_FILTER_METHOD == "diamond":
         return f"diamond_nr_out/{wildcards.sample}.m8"
     return f"blast_nr_out/{wildcards.sample}_nr.xml_{wildcards.split}"
@@ -625,11 +629,13 @@ rule filter_against_nr:
         "blast_filter_out/{sample}_blast_filter.txt_{split}",
     params:
         script=SCRIPTS + "search/filter_nr.py",
-        metodo=NR_FILTER_METHOD,
+        # Sem filtro nao ha arquivo; o "-" so mantem a posicao do argumento.
+        nr=lambda w: resultado_do_nr(w) or "-",
+        metodo=NR_FILTER_METHOD if FILTRO_NR else "nenhum",
         evalue=cfg["params.evalue"],
         hsp=cfg["params.hsp_only"],
     shell:
-        "python {params.script} {input.xml} {input.nr} {input.query} {output} "
+        "python {params.script} {input.xml} {params.nr} {input.query} {output} "
         "{params.evalue} {params.hsp} {params.metodo}"
 
 

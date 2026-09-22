@@ -39,7 +39,7 @@ steps:
     nucleotide: false        # compara DNA em vez de proteina
     phage: "False"           # "False" | "True" | "Both"
 
-  nr_filter: true
+  nr_filter: true              # false dispensa o banco do NR, mas deixa passar falsos positivos
   nr_filter_method: "diamond"  # "diamond" e rapido; "blast" compara e-values
   hmmer: false
   clark: false

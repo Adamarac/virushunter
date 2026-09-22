@@ -15,20 +15,21 @@ ela define.
 
 | Nome | O que muda | Tarefas |
 |---|---|---|
-| *(nenhuma)* | padrão: blastx contra proteínas virais, sem montagem | 349 |
-| `paired-end` | usa as duas leituras de cada par | 355 |
-| `adaptor` | remove adaptador por blastn e apara por qualidade | 357 |
-| `denovo` | montagem por três programas mais consenso | 369 |
-| `nucleotide` | busca comparando DNA em vez de proteína | 349 |
-| `diamond` | busca pelo DIAMOND, muito mais rápido que o blastx | 449 |
-| `fasta-input` | entrada em FASTA, convertida para FASTQ antes | 349 |
-| `no-dedup` | sem remoção de duplicatas de PCR | 349 |
-| `nr-filter-blast` | filtro NR por comparação de e-values | 445 |
-| `contigs-only` | só os contigs vão à busca; use com `denovo` | — |
-| `phage` | busca contra o banco de fagos | 349 |
-| `remove-bacteria` | descarta bactérias e mantém o humano | 401 |
-| `remove-both` | descarta humano e bactérias | 403 |
-| `clark` | classificação taxonômica pelo CLARK | 361 |
+| *(nenhuma)* | padrão: blastx contra proteínas virais, sem montagem | 350 |
+| `paired-end` | usa as duas leituras de cada par | 356 |
+| `adaptor` | remove adaptador por blastn e apara por qualidade | 358 |
+| `denovo` | montagem por três programas mais consenso | 370 |
+| `nucleotide` | busca comparando DNA em vez de proteína | 350 |
+| `diamond` | busca pelo DIAMOND, muito mais rápido que o blastx | 450 |
+| `fasta-input` | entrada em FASTA, convertida para FASTQ antes | 350 |
+| `no-dedup` | sem remoção de duplicatas de PCR | 348 |
+| `nr-filter-blast` | filtro NR por comparação de e-values | 446 |
+| `no-nr-filter` | não compara com o NR; para quem não tem o banco do DIAMOND | 346 |
+| `contigs-only` | só os contigs vão à busca; use com `denovo` | 370 (com `denovo`) |
+| `phage` | busca contra o banco de fagos | 350 |
+| `remove-bacteria` | descarta bactérias e mantém o humano | 402 |
+| `remove-both` | descarta humano e bactérias | 404 |
+| `clark` | classificação taxonômica pelo CLARK | 362 |
 | `nt` | contagem por taxon contra o banco nt | 382 |
 | `merge-pairs` | funde as duas leituras de cada par com o FLASH | 354 |
 | `from-bam` | entrada em BAM, extraida pelo picard | 350 |

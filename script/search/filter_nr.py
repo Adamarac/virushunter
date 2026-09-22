@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Descarta candidatos virais que se parecem mais com algo nao viral.
-# Dois metodos, escolhidos em steps.nr_filter_method: "diamond" olha so quem foi
-# o parente mais proximo; "blast" compara o quanto cada semelhanca foi boa.
+# Tres modos, vindos de steps.nr_filter e steps.nr_filter_method: "diamond" olha
+# so quem foi o parente mais proximo; "blast" compara o quanto cada semelhanca foi
+# boa; "nenhum" nao descarta nada, para quem nao tem o banco do NR.
 import linecache
 import re
 import sys
@@ -73,14 +74,16 @@ def readVirusXML1(fname, metodo):
                         virusE[query] = float(hsp.expect)
                         virusID[query] = subject
     except Exception:
-        if metodo != 'diamond':
+        if metodo == 'blast':
             raise
     result_handle.close()
     return virusE, virusID
 
 
 def descartar(query, expect, metodo, nrE, virusE):
-    """A regra que separa os dois metodos: pertencer a lista negra ou perder no e-value."""
+    """A regra de cada modo: nada, pertencer a lista negra, ou perder no e-value."""
+    if metodo == 'nenhum':
+        return False
     if metodo == 'diamond':
         return query in nrE
     return query in nrE and query in virusE and expect >= nrE[query]
@@ -106,8 +109,9 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH, metodo, nrE, virusE,
                     query_nt = sequence(cachename, cache, blast_record.query)
                     if hsp_only == 'YES':
                         query_nt = query_nt[int(hsp.query_start) - 1:int(hsp.query_end)]
-                    # O metodo diamond nao guarda o e-value nao viral, so a lista negra.
-                    nre = '-' if metodo == 'diamond' else nrE.get(query, 'no-hit')
+                    # So o metodo blast guarda o e-value nao viral; os outros dois
+                    # trabalham com lista negra, ou com nada.
+                    nre = nrE.get(query, 'no-hit') if metodo == 'blast' else '-'
                     of.write('****Alignment****\n')
                     of.write(blast_record.query + '\n')
                     of.write('query_nt ' + query_nt + '\n')
@@ -120,7 +124,7 @@ def OutputVirus(fname, filtertxt, hsp_only, E_VALUE_THRESH, metodo, nrE, virusE,
                     of.write(' '.ljust(11) + ' ' + hsp.match + '\n')
                     of.write(str(hsp.sbjct_start).ljust(11) + ' ' + hsp.sbjct + '\n')
     except Exception:
-        if metodo != 'diamond':
+        if metodo == 'blast':
             raise
         print('XML format bad')
     result_handle.close()
@@ -144,22 +148,26 @@ if __name__ == '__main__':
         metodo = sys.argv[7]
     except IndexError:
         metodo = 'diamond'
-    if metodo not in ('diamond', 'blast'):
-        sys.exit(f'metodo invalido: {metodo!r}; use "diamond" ou "blast"')
+    if metodo not in ('diamond', 'blast', 'nenhum'):
+        sys.exit(f'metodo invalido: {metodo!r}; use "diamond", "blast" ou "nenhum"')
     print('hsp_only', hsp_only)
 
     cache = index_headers(cachename)
-    virusE, virusID = readVirusXML1(virusxml, metodo)
-    if metodo == 'diamond':
-        try:
-            nrE = readDiamondNR(nrfile)
-        except Exception:
-            nrE = set([])
-            print('no diamond')
+    if metodo == 'nenhum':
+        # Sem filtro nao se le nada do NR; o e-value viral so servia ao descarte.
+        virusE, nrE = {}, set([])
     else:
-        try:
-            nrE, nrID = readNRXML(nrfile, readVirusGI())
-        except Exception:
-            nrE = {}
+        virusE, virusID = readVirusXML1(virusxml, metodo)
+        if metodo == 'diamond':
+            try:
+                nrE = readDiamondNR(nrfile)
+            except Exception:
+                nrE = set([])
+                print('no diamond')
+        else:
+            try:
+                nrE, nrID = readNRXML(nrfile, readVirusGI())
+            except Exception:
+                nrE = {}
     OutputVirus(virusxml, filtertxt, hsp_only, E_VALUE_THRESH, metodo, nrE, virusE,
                 cache, cachename)
