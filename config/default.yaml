@@ -1,7 +1,10 @@
 # Ajustes do pipeline. Os valores reproduzem o codigo original.
 
 compute:
-  threads: 48          # processadores usados por cada programa
+  # Processadores por programa -- nao e o total da maquina. A busca ja vem
+  # dividida em 50 pedacos, entao vale rodar muitos pedacos pequenos ao mesmo
+  # tempo: use --cores com o total e deixe este numero baixo.
+  threads: 8
   query_splits: 50     # pedacos em que a busca e dividida
 
 params:
