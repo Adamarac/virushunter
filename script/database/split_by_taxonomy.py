@@ -56,7 +56,11 @@ class Node(object):
                 nm = names[child.tid].replace(' ', '_')
             except:
                 nm = 'none'
-            print("\t" * depth, '-', depth, level, nm, file=of)
+            # O print do Python 2 nao punha espaco depois de uma tabulacao; o do
+            # Python 3 poe sempre. Montado a mao para a saida sair igual.
+            recuo = "\t" * depth
+            resto = ' '.join(['-', str(depth), level, nm])
+            print(recuo + ('' if recuo else ' ') + resto, file=of)
             child.printTree(depth + 1, of)
 
 

@@ -1,6 +1,6 @@
 # 0022 — Migrar o separador por taxonomia
 
-- **Status:** Aceita (verificação parcial — ver Limites)
+- **Status:** Aceita
 - **Data:** 2026-09-22
 - **Decidido por:** Alan M
 
@@ -80,15 +80,23 @@ taxonomia, accession duplicado e o filtro de nomes repetidos:
 Os rótulos saem no formato que o `build_report.py` espera, com `category$ssRNA_viruses`
 derivada da posição na linhagem — a mesma que aparece no comentário do código original.
 
+### Comparação com o original
+
+Rodado o `nr_virus3.py` original em `python:2.7-slim`, sobre o mesmo fixture, com as
+funções intocadas e apenas o driver do fim completado com a sequência que os comentários
+descreviam. **Os sete arquivos saem idênticos**: `virus.fa`, `virus.tmp.fa`, `phage.fa`,
+`diamond.fa`, `human.virome.fa`, `virus.DNA.fa` e `tax_tree.txt`.
+
+A comparação encontrou uma divergência real, que só ela revelaria: o `print` do Python 2
+**não emitia o espaço separador quando o item anterior terminava em tabulação** — a regra
+de *softspace*, que o Python 3 não tem. O `tax_tree.txt` saía com um espaço a mais por
+nível de indentação. Corrigido montando a linha à mão.
+
+Nenhum banco era afetado por isso; só o despejo diagnóstico da árvore. Mas é exatamente o
+tipo de diferença silenciosa que justifica comparar byte a byte em vez de confiar na
+leitura.
+
 ### Limites
-
-**A comparação byte a byte contra o Python 2 não foi feita.** Era o plano: rodar o original
-em `python:2.7-slim` sobre o mesmo fixture e comparar as saídas, como se fez com os filtros
-NR. O Docker parou de rodar na máquina antes disso. O driver do original já está preparado
-para essa comparação; falta executá-la.
-
-Enquanto isso não acontecer, a equivalência está sustentada por leitura e pelo fixture, não
-por prova.
 
 **Ordem de dicionário.** O filtro de nomes repetidos itera sobre as quatro chaves. Em
 Python 2 essa ordem era arbitrária; aqui é a de inserção. Só faria diferença se um mesmo

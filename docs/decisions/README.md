@@ -64,4 +64,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0019](0019-local-tools.md) | Ferramentas locais em `tools/` | Aceita (parcial) |
 | [0020](0020-prune-to-the-migrated-version.md) | Podar o repositório para a versão migrada | Aceita |
 | [0021](0021-organize-scripts-by-stage.md) | Organizar `script/` por etapa do pipeline | Aceita |
-| [0022](0022-migrate-taxonomy-split.md) | Migrar o separador por taxonomia | Aceita (verificação parcial) |
+| [0022](0022-migrate-taxonomy-split.md) | Migrar o separador por taxonomia | Aceita |
