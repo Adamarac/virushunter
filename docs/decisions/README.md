@@ -65,3 +65,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [0020](0020-prune-to-the-migrated-version.md) | Podar o repositório para a versão migrada | Aceita |
 | [0021](0021-organize-scripts-by-stage.md) | Organizar `script/` por etapa do pipeline | Aceita |
 | [0022](0022-migrate-taxonomy-split.md) | Migrar o separador por taxonomia | Aceita |
+| [0023](0023-herv-by-default.md) | O `HERVaa.fasta` passa a ser montado por padrão | Aceita |

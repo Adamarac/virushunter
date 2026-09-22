@@ -19,8 +19,8 @@ giset = set([])
 c1, c2, ap, h, v, nv, p, hm = 0, 0, 0, 0, 0, 0, 0, 0
 cats = set([])
 
-# Quando --gravar-herv e usado, os retrovirus endogenos humanos que o script acha
-# no NR sao escritos aqui em vez de so descartados. Ver docs/databases.md.
+# Os retrovirus endogenos humanos que o script acha no NR sao escritos aqui, para
+# formar o HERVaa.fasta. Fica None quando o arquivo ja existe. Ver docs/databases.md.
 hervf = None
 
 # Nomes que aparecem milhares de vezes no NR; so a primeira ocorrencia de cada um
@@ -367,15 +367,19 @@ def main():
                             help='proteins: virus.fa, phage.fa e diamond.fa; dna: virus.DNA.fa')
     argumentos.add_argument('--mapa-inteiro', action='store_true',
                             help='carrega todo o accession2taxid na memoria, como o original')
-    argumentos.add_argument('--gravar-herv', action='store_true',
-                            help='monta o HERVaa.fasta a partir dos HERV achados no NR')
+    argumentos.add_argument('--refazer-herv', action='store_true',
+                            help='refaz o HERVaa.fasta mesmo que ja exista')
     args = argumentos.parse_args()
 
+    # O HERVaa.fasta e montado a partir dos HERV que o proprio NR traz, a menos que
+    # ja exista um -- um arquivo curado pelo grupo tem precedencia sobre o gerado.
     global hervf
-    if args.gravar_herv:
-        if os.path.exists('HERVaa.fasta'):
-            raise SystemExit('HERVaa.fasta ja existe; mova-o antes de gerar outro.')
-        hervf = open('HERVaa.fasta', 'w')
+    if args.etapa == 'proteins':
+        if os.path.exists('HERVaa.fasta') and not args.refazer_herv:
+            print('HERVaa.fasta ja existe: usando o que esta no disco, nao vou refazer')
+        else:
+            print('HERVaa.fasta sera montado a partir dos HERV encontrados no NR')
+            hervf = open('HERVaa.fasta', 'w')
 
     print('current directory', os.getcwd())
     entradas = (['viral.protein.fa.gz', 'nr.gz'] if args.etapa == 'proteins'

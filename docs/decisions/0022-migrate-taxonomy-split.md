@@ -1,6 +1,6 @@
 # 0022 — Migrar o separador por taxonomia
 
-- **Status:** Aceita
+- **Status:** Aceita (o padrao do `HERVaa.fasta` foi revisto pela [ADR-0023](0023-herv-by-default.md))
 - **Data:** 2026-09-22
 - **Decidido por:** Alan M
 

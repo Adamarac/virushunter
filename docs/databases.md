@@ -96,7 +96,8 @@ python <projeto>/script/database/split_by_taxonomy.py proteins
 ```
 
 Produz `virus.fa`, `phage.fa`, `human.virome.fa` e `diamond.fa`, todos com a taxonomia no
-cabeçalho. Para a rota `nucleotide`, depois:
+cabeçalho — e também o `HERVaa.fasta`, se ele ainda não existir na pasta (ver abaixo).
+Para a rota `nucleotide`, depois:
 
 ```sh
 python <projeto>/script/database/split_by_taxonomy.py dna     # -> virus.DNA.fa
@@ -138,39 +139,45 @@ databases:
   human_bowtie_index: "/home/<usuario>/db/GRCh38_noalt_as/GRCh38_noalt_as"
 ```
 
-## Três coisas que faltam resolver
+## Três pontos de atenção
 
-**1. O `HERVaa.fasta` não existe — mas dá para reconstruí-lo.** O passo 2 junta ao banco
-viral um arquivo de retrovírus endógenos humanos, para que eles não sejam reportados como
-achados. Esse arquivo **nunca esteve no repositório**, em nenhum commit, e não há registro
-de sua origem — o nome da função que o usa (`addLinlinHerv`) sugere que veio de uma pessoa
-do grupo.
+**1. O `HERVaa.fasta` é montado sozinho.** O passo 2 junta ao banco viral um arquivo de
+retrovírus endógenos humanos, para que eles não sejam reportados como achados. Esse arquivo
+**nunca esteve no repositório**, em nenhum commit, e não há registro de sua origem — o nome
+da função que o usa (`addLinlinHerv`) sugere que veio de uma pessoa do grupo.
 
-Três formas de obter a sequência, em ordem de recomendação:
+Não precisa mais de download nenhum: **o script já identifica os HERV dentro do NR** — é
+assim que ele os separa — e antes só os descartava. Agora ele escreve esses mesmos
+registros num `HERVaa.fasta`, na mesma passagem. O comando padrão basta:
+
+```sh
+python <projeto>/script/database/split_by_taxonomy.py proteins
+```
+
+A regra é simples e o script diz na tela qual caminho tomou:
+
+| Situação | O que acontece |
+|---|---|
+| já existe um `HERVaa.fasta` na pasta | **usa o que está lá**, não sobrescreve |
+| não existe | monta a partir dos HERV do NR |
+| `--refazer-herv` | refaz mesmo existindo |
+
+Um arquivo curado pelo grupo, portanto, tem precedência — é só deixá-lo na pasta antes de
+rodar. E quando ele está presente, a saída é **byte a byte igual à do script original**,
+verificado ([ADR-0023](decisions/0023-herv-by-default.md)).
+
+O conjunto gerado é autossuficiente e reproduzível: passa a ser exatamente o que o pipeline
+considera HERV, pelo mesmo critério de taxonomia (o nome científico
+`Human endogenous retroviruses`, táxon 206037). Se preferir uma origem externa:
 
 | Origem | Quantas sequências | Observação |
 |---|---|---|
-| **o próprio NR** | as que o script achar | `--gravar-herv` |
 | NCBI, `txid206037` | 550 proteínas | inclui descendentes do táxon |
-| UniProt, `taxonomy_id:206037` | 71 proteínas | curadas, conjunto menor |
+| UniProt, `taxonomy_id:206037` | 71 proteínas | conjunto menor, nenhuma revisada |
 
-O caminho recomendado não precisa de download nenhum: **o script já identifica os HERV
-dentro do NR** — é assim que ele os separa — e só os descartava. Com `--gravar-herv` ele
-escreve esses mesmos registros num `HERVaa.fasta`, durante a mesma passagem:
-
-```sh
-python <projeto>/script/database/split_by_taxonomy.py proteins --gravar-herv
-```
-
-Isso é autossuficiente e reproduzível: o conjunto de HERV passa a ser exatamente o que o
-pipeline considera HERV, pelo mesmo critério de taxonomia (o nome científico
-`Human endogenous retroviruses`, táxon 206037). A opção recusa sobrescrever um
-`HERVaa.fasta` existente.
-
-**Qual conjunto usar é decisão científica, não técnica.** O arquivo original pode ter sido
-curado à mão e conter sequências que o NR não traz, ou excluir algumas que ele traz. Se
-alguém do grupo ainda tiver o arquivo, ele é a escolha fiel; o `--gravar-herv` é a
-alternativa quando ninguém tiver.
+**Qual conjunto usar continua sendo decisão científica, não técnica.** O arquivo original
+pode ter sido curado à mão e conter sequências que o NR não traz, ou excluir algumas que
+ele traz.
 
 **2. A memória.** O mapa de accessions tem mais de um bilhão de entradas; guardá-lo inteiro
 custaria centenas de GB de RAM. O script agora faz duas passagens — descobre quais
