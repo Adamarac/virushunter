@@ -543,3 +543,22 @@ funciona.
 Foi isso que se migrou. A montagem espúria da pseudo-amostra ficou de fora, por não ter
 entrada. Quem quiser uma remontagem de leituras, e não de contigs, precisa defini-la — não
 há comportamento original a preservar.
+
+### K37
+
+**`diamond.fa` recebe identificadores duplicados.** Aberta, herdada.
+
+O contador `total` reinicia a cada chamada de `addTaxon`, e as duas chamadas — proteínas
+virais do RefSeq e depois o NR — escrevem no **mesmo** arquivo, a segunda em modo de
+acréscimo. A primeira sequência de cada passagem sai como `>VIRUS_1_...`.
+
+Observado no fixture da [ADR-0022](decisions/0022-migrate-taxonomy-split.md): `diamond.fa`
+tem duas entradas `VIRUS_1`.
+
+Não quebra o filtro: [`filter_nr.py`](../script/search/filter_nr.py) lê apenas o prefixo
+até o primeiro `_`. Mas um banco com identificadores repetidos é defeito: o
+`makeblastdb -parse_seqids` recusaria, e qualquer rastreamento de qual sequência gerou um
+acerto fica ambíguo.
+
+Corrigir é mudança de comportamento — os identificadores do banco mudariam — e portanto
+decisão de quem vai usar o resultado.
