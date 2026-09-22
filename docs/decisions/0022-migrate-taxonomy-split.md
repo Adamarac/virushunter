@@ -113,5 +113,9 @@ tenho como executar de verdade, preservar o comportamento vale mais.
 - Registrado [K37](../known-issues.md): `diamond.fa` recebe **identificadores duplicados**,
   porque o contador reinicia entre as duas chamadas de `addTaxon`. Herdado, não introduzido.
   Não quebra o `filter_nr.py`, que só lê o prefixo até o primeiro `_`.
-- O `HERVaa.fasta` continua sem origem conhecida, e sem ele a etapa `proteins` não completa
-  o último passo. É o próximo item que depende do grupo, não de código.
+- O `HERVaa.fasta` continua sem origem conhecida, mas deixou de ser bloqueio: a opção
+  `--gravar-herv` monta o arquivo a partir dos HERV que o próprio script encontra no NR,
+  pelo mesmo critério de taxonomia. Desligada por padrão, e recusa sobrescrever um arquivo
+  existente — o comportamento sem ela segue idêntico ao original, verificado.
+  **Qual conjunto de HERV usar continua sendo decisão do grupo**: o arquivo original pode
+  ter sido curado à mão.

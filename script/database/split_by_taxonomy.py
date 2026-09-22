@@ -19,6 +19,10 @@ giset = set([])
 c1, c2, ap, h, v, nv, p, hm = 0, 0, 0, 0, 0, 0, 0, 0
 cats = set([])
 
+# Quando --gravar-herv e usado, os retrovirus endogenos humanos que o script acha
+# no NR sao escritos aqui em vez de so descartados. Ver docs/databases.md.
+hervf = None
+
 # Nomes que aparecem milhares de vezes no NR; so a primeira ocorrencia de cada um
 # entra no banco, para nao inflar o resultado com um unico virus.
 REPETIDOS = ['Human immunodeficiency virus 1', 'Hepatitis C virus',
@@ -245,6 +249,9 @@ def addTaxon(infile, isnr):
                 print(acc + ' ' + rotulo, file=hf)
             if r['herv']:
                 h += 1
+                if hervf is not None:
+                    # Cabecalho simples: quem rotula e o addLinlinHerv, adiante.
+                    print(line.rstrip('\n'), file=hervf)
                 continue
             elif r['phage']:
                 diamondLabel = 'PHAGE'
@@ -264,6 +271,8 @@ def addTaxon(infile, isnr):
             if r['human'] and r['virus']:
                 print(line.strip().replace('-', ''), file=hf)
             if r['herv']:
+                if hervf is not None:
+                    print(line.strip(), file=hervf)
                 continue
             elif r['phage']:
                 print(line.strip(), file=phagef)
@@ -358,7 +367,15 @@ def main():
                             help='proteins: virus.fa, phage.fa e diamond.fa; dna: virus.DNA.fa')
     argumentos.add_argument('--mapa-inteiro', action='store_true',
                             help='carrega todo o accession2taxid na memoria, como o original')
+    argumentos.add_argument('--gravar-herv', action='store_true',
+                            help='monta o HERVaa.fasta a partir dos HERV achados no NR')
     args = argumentos.parse_args()
+
+    global hervf
+    if args.gravar_herv:
+        if os.path.exists('HERVaa.fasta'):
+            raise SystemExit('HERVaa.fasta ja existe; mova-o antes de gerar outro.')
+        hervf = open('HERVaa.fasta', 'w')
 
     print('current directory', os.getcwd())
     entradas = (['viral.protein.fa.gz', 'nr.gz'] if args.etapa == 'proteins'
@@ -380,6 +397,8 @@ def main():
         addTaxon('viral.protein.fa.gz', False)
         print('adding taxons nr')
         addTaxon('nr.gz', True)
+        if hervf is not None:
+            hervf.close()
         addLinlinHerv()
     else:
         addTaxonDNA('viral.genomic.fa.gz', False)

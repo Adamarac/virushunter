@@ -140,12 +140,37 @@ databases:
 
 ## Três coisas que faltam resolver
 
-**1. O `HERVaa.fasta` não existe.** O passo 2 junta ao banco viral um arquivo de
-retrovírus endógenos humanos, para que eles não sejam reportados como achados. Esse arquivo
-**nunca esteve no repositório**, em nenhum commit, e não há registro de sua origem. Sem
-ele, o `split_by_taxonomy.py proteins` falha no fim — e os HERV que o próprio script
-separou do NR ficam de fora do banco, o que é o comportamento pretendido, mas o passo de
-junção não completa.
+**1. O `HERVaa.fasta` não existe — mas dá para reconstruí-lo.** O passo 2 junta ao banco
+viral um arquivo de retrovírus endógenos humanos, para que eles não sejam reportados como
+achados. Esse arquivo **nunca esteve no repositório**, em nenhum commit, e não há registro
+de sua origem — o nome da função que o usa (`addLinlinHerv`) sugere que veio de uma pessoa
+do grupo.
+
+Três formas de obter a sequência, em ordem de recomendação:
+
+| Origem | Quantas sequências | Observação |
+|---|---|---|
+| **o próprio NR** | as que o script achar | `--gravar-herv` |
+| NCBI, `txid206037` | 550 proteínas | inclui descendentes do táxon |
+| UniProt, `taxonomy_id:206037` | 71 proteínas | curadas, conjunto menor |
+
+O caminho recomendado não precisa de download nenhum: **o script já identifica os HERV
+dentro do NR** — é assim que ele os separa — e só os descartava. Com `--gravar-herv` ele
+escreve esses mesmos registros num `HERVaa.fasta`, durante a mesma passagem:
+
+```sh
+python <projeto>/script/database/split_by_taxonomy.py proteins --gravar-herv
+```
+
+Isso é autossuficiente e reproduzível: o conjunto de HERV passa a ser exatamente o que o
+pipeline considera HERV, pelo mesmo critério de taxonomia (o nome científico
+`Human endogenous retroviruses`, táxon 206037). A opção recusa sobrescrever um
+`HERVaa.fasta` existente.
+
+**Qual conjunto usar é decisão científica, não técnica.** O arquivo original pode ter sido
+curado à mão e conter sequências que o NR não traz, ou excluir algumas que ele traz. Se
+alguém do grupo ainda tiver o arquivo, ele é a escolha fiel; o `--gravar-herv` é a
+alternativa quando ninguém tiver.
 
 **2. A memória.** O mapa de accessions tem mais de um bilhão de entradas; guardá-lo inteiro
 custaria centenas de GB de RAM. O script agora faz duas passagens — descobre quais
