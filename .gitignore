@@ -84,3 +84,6 @@ tools/*
 # Bytecode do Python.
 __pycache__/
 *.pyc
+
+# pacote git usado para enviar o projeto ao servidor
+*.bundle
